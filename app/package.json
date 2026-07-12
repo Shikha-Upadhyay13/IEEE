@@ -13,7 +13,8 @@
     "pagedjs": "^0.4.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",
