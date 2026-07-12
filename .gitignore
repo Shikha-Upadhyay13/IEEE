@@ -1,0 +1,5 @@
+# Applies repo-wide; app/ also has its own .gitignore for Vite-specific paths.
+node_modules
+
+# Generated PDF export output — never a source artifact.
+*.pdf

@@ -18,7 +18,16 @@ import ieeeTemplateCssUrl from "../../styles/ieee-template.css?url";
  * visible output. The stale run's work happens entirely in a detached
  * DocumentFragment (see paginate()) and is simply discarded.
  */
-export function PagedPreview({ document }: { document: ResolvedDocument }) {
+export function PagedPreview({
+  document,
+  onReady,
+}: {
+  document: ResolvedDocument;
+  /** Called once the winning run has committed its output to the visible DOM.
+   *  Used by PrintView to signal the PDF export service that it's safe to
+   *  snapshot — never called for a stale/superseded run. */
+  onReady?: () => void;
+}) {
   const sourceRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<"idle" | "paginating" | "done" | "error">("idle");
@@ -33,6 +42,7 @@ export function PagedPreview({ document }: { document: ResolvedDocument }) {
         if (cancelled) return; // stale run — discard without touching the visible DOM
         targetRef.current.replaceChildren(fragment);
         setStatus("done");
+        onReady?.();
       } catch (err) {
         console.error("Paged.js pagination failed:", err);
         if (!cancelled) setStatus("error");
@@ -42,6 +52,9 @@ export function PagedPreview({ document }: { document: ResolvedDocument }) {
     return () => {
       cancelled = true;
     };
+    // onReady intentionally excluded: re-pagination should only be triggered by
+    // document content changing, not by the caller passing a new callback identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document]);
 
   return (

@@ -1,0 +1,12 @@
+{
+  "name": "pdf-service",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "export": "node export.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.61.1"
+  }
+}
