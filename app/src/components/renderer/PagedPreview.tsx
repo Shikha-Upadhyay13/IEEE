@@ -1,15 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import type { ResolvedDocument } from "../../types/document";
 import { IEEEConferenceTemplate } from "./IEEEConferenceTemplate";
-import { paginateInto } from "../../lib/pagination/pagedjs-adapter";
+import { paginate } from "../../lib/pagination/pagedjs-adapter";
 import ieeeTemplateCssUrl from "../../styles/ieee-template.css?url";
 
 /**
  * Renders `document` twice: once into a hidden "source" container (plain,
  * unpaginated HTML), then hands that HTML to Paged.js, which chunks it into
- * real letter-sized, two-column pages inside the visible "target" container.
- * This is deliberately the only place the two containers meet — everything
- * upstream (IEEEConferenceTemplate) has no idea pagination exists.
+ * real letter-sized, two-column pages. This is deliberately the only place
+ * the two containers meet — everything upstream (IEEEConferenceTemplate) has
+ * no idea pagination exists.
+ *
+ * Pagination result is only committed to the visible target if this effect
+ * run is still the latest one (guarded by the `cancelled` flag) — otherwise
+ * a superseded run (React StrictMode's dev-mode double-invoke, or two rapid
+ * edits in production) would race a newer run and duplicate/corrupt the
+ * visible output. The stale run's work happens entirely in a detached
+ * DocumentFragment (see paginate()) and is simply discarded.
  */
 export function PagedPreview({ document }: { document: ResolvedDocument }) {
   const sourceRef = useRef<HTMLDivElement>(null);
@@ -22,8 +29,10 @@ export function PagedPreview({ document }: { document: ResolvedDocument }) {
       if (!sourceRef.current || !targetRef.current) return;
       setStatus("paginating");
       try {
-        await paginateInto(sourceRef.current, targetRef.current, [ieeeTemplateCssUrl]);
-        if (!cancelled) setStatus("done");
+        const fragment = await paginate(sourceRef.current.innerHTML, [ieeeTemplateCssUrl]);
+        if (cancelled) return; // stale run — discard without touching the visible DOM
+        targetRef.current.replaceChildren(fragment);
+        setStatus("done");
       } catch (err) {
         console.error("Paged.js pagination failed:", err);
         if (!cancelled) setStatus("error");
@@ -49,7 +58,7 @@ export function PagedPreview({ document }: { document: ResolvedDocument }) {
         <IEEEConferenceTemplate document={document} />
       </div>
 
-      {/* Visible target: Paged.js injects the real paginated pages here. */}
+      {/* Visible target: the winning run's paginated pages land here. */}
       <div ref={targetRef} className="paged-preview-target" />
     </div>
   );

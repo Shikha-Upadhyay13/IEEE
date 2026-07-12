@@ -29,8 +29,31 @@ type Counters = {
   figure: number;
   table: number;
   equation: number;
-  section: number;
 };
+
+// n=1 -> A, 26 -> Z, 27 -> AA (IEEE papers rarely nest deep enough to hit this).
+function toLetters(num: number): string {
+  let n = num;
+  let result = "";
+  while (n > 0) {
+    const rem = (n - 1) % 26;
+    result = String.fromCharCode(65 + rem) + result;
+    n = Math.floor((n - 1) / 26);
+  }
+  return result;
+}
+
+// IEEE section numbering convention by nesting depth:
+// depth 0 (top-level): Roman numerals — I, II, III
+// depth 1 (subsection): capital letters — A, B, C
+// depth 2: Arabic numerals — 1, 2, 3
+// depth 3+: lowercase letters — a, b, c
+function formatSectionNumber(siblingIndex: number, depth: number): string {
+  if (depth === 0) return toRoman(siblingIndex);
+  if (depth === 1) return toLetters(siblingIndex);
+  if (depth === 2) return String(siblingIndex);
+  return toLetters(siblingIndex).toLowerCase();
+}
 
 /**
  * Deterministic tree-walk: assigns figure/table/equation/section numbers and
@@ -38,7 +61,7 @@ type Counters = {
  * Never reads or writes stored numbers — this is the only place numbers exist.
  */
 export function resolveNumbering(doc: Document): ResolvedDocument {
-  const counters: Counters = { figure: 0, table: 0, equation: 0, section: 0 };
+  const counters: Counters = { figure: 0, table: 0, equation: 0 };
   const citationOrder = new Map<string, number>();
 
   function citationNumber(refId: string): number {
@@ -65,11 +88,14 @@ export function resolveNumbering(doc: Document): ResolvedDocument {
   }
 
   function resolveBody(nodes: BodyNode[], depth: number): ResolvedBodyNode[] {
+    // Scoped to this one call, i.e. to one set of siblings — this is what makes
+    // subsection numbering reset within each parent instead of sharing a global count.
+    let sectionSiblingIndex = 0;
     return nodes.map((node): ResolvedBodyNode => {
       switch (node.type) {
         case "section": {
-          counters.section += 1;
-          const number = depth === 0 ? toRoman(counters.section) : String(counters.section);
+          sectionSiblingIndex += 1;
+          const number = formatSectionNumber(sectionSiblingIndex, depth);
           return {
             ...node,
             resolvedNumber: number,

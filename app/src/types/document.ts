@@ -126,7 +126,7 @@ export type Document = z.infer<typeof DocumentSchema>;
 // The rendered/resolved counterparts — same shape, with computed numbers attached.
 // Produced only by lib/numbering.ts; never persisted, never hand-authored.
 export type ResolvedInlineNode =
-  | InlineNode
+  | Extract<InlineNode, { type: "text" }>
   | (Extract<InlineNode, { type: "citeRef" }> & { resolvedNumber: number })
   | (Extract<InlineNode, { type: "xref" }> & { resolvedNumber: number | string });
 

@@ -14,6 +14,13 @@
 }
 
 .ieee-paper {
+  /* Explicit width = 2 × 88mm columns + 4mm gutter. Without this, the container
+     shrink-to-fits to its content's natural width (observed: 5000px+ in testing),
+     which makes CSS column-count/column-width divide up a width far larger than
+     the actual page, so only column 1's left edge is ever visible on the page —
+     column 2 ends up thousands of pixels off to the right. */
+  width: 180mm;
+  margin: 0 auto;
   font-family: "Times New Roman", Times, serif;
   color: #000;
 }

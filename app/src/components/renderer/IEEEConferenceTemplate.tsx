@@ -39,7 +39,9 @@ function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
     case "section": {
       const HeadingTag = node.level === 1 ? "h2" : "h3";
       const headingClass = node.level === 1 ? "ieee-heading-1" : "ieee-heading-2";
-      const label = node.level === 1 ? `${node.resolvedNumber}. ` : `${node.resolvedNumber}) `;
+      // IEEE convention: top-level (I., A.) sections use a period, deeper
+      // nesting (1), a)) uses a parenthesis — matches numbering.ts's depth rule.
+      const label = node.level <= 2 ? `${node.resolvedNumber}. ` : `${node.resolvedNumber}) `;
       return (
         <section id={`sec-${node.id}`}>
           <HeadingTag className={headingClass}>
