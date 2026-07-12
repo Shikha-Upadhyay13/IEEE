@@ -66,7 +66,11 @@ function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
           id={`figure-${node.id}`}
           className={`ieee-figure ${node.width === "double-column" ? "ieee-double-column" : ""}`}
         >
-          <img src={node.image.url} alt={node.image.alt} />
+          {node.image.url ? (
+            <img src={node.image.url} alt={node.image.alt} />
+          ) : (
+            <div className="ieee-figure-placeholder">[Image not yet uploaded]</div>
+          )}
           <figcaption className="ieee-figure-caption">
             Fig. {node.resolvedNumber}. <InlineContent nodes={node.caption} />
           </figcaption>

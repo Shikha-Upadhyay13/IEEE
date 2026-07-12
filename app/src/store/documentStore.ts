@@ -3,6 +3,8 @@ import type { Document, BodyNode, InlineNode } from "../types/document";
 import { samplePaper } from "../data/samplePaper";
 import { generateId } from "../lib/id";
 
+type BlockWidth = Extract<BodyNode, { type: "figure" }>["width"];
+
 // Recursively find `id` among a section's children too, not just its direct siblings.
 function updateNodeById(
   nodes: BodyNode[],
@@ -68,8 +70,16 @@ type DocumentStore = {
   setKeywords: (commaSeparated: string) => void;
   appendParagraph: () => void;
   appendSection: () => void;
+  appendFigure: () => void;
+  appendTable: () => void;
   updateParagraphContent: (id: string, content: InlineNode[]) => void;
   updateSectionHeading: (id: string, heading: string) => void;
+  updateFigureImage: (id: string, image: { url: string; alt: string }) => void;
+  updateFigureCaption: (id: string, caption: InlineNode[]) => void;
+  updateFigureWidth: (id: string, width: BlockWidth) => void;
+  updateTableCaption: (id: string, caption: InlineNode[]) => void;
+  updateTableRows: (id: string, rows: string[][]) => void;
+  updateTableWidth: (id: string, width: BlockWidth) => void;
   removeBlock: (id: string) => void;
   reorderBlocks: (containerId: string | null, activeId: string, overId: string) => void;
 };
@@ -125,6 +135,43 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
       },
     })),
 
+  appendFigure: () =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: [
+          ...state.document.body,
+          {
+            type: "figure",
+            id: generateId("fig"),
+            width: "single-column",
+            image: { url: "", alt: "" },
+            caption: [{ type: "text", text: "New figure — upload an image and add a caption." }],
+          },
+        ],
+      },
+    })),
+
+  appendTable: () =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: [
+          ...state.document.body,
+          {
+            type: "table",
+            id: generateId("tbl"),
+            width: "single-column",
+            caption: [{ type: "text", text: "New table" }],
+            rows: [
+              ["", ""],
+              ["", ""],
+            ],
+          },
+        ],
+      },
+    })),
+
   // Full inline-content replacement, preserving any citeRef/xref nodes the
   // rich-text editor (TipTap) round-trips — unlike Milestone 2's plain-text
   // textarea, this no longer destroys citations on edit.
@@ -144,6 +191,66 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         ...state.document,
         body: updateNodeById(state.document.body, id, (node) =>
           node.type === "section" ? { ...node, heading } : node
+        ),
+      },
+    })),
+
+  updateFigureImage: (id, image) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "figure" ? { ...node, image } : node
+        ),
+      },
+    })),
+
+  updateFigureCaption: (id, caption) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "figure" ? { ...node, caption } : node
+        ),
+      },
+    })),
+
+  updateFigureWidth: (id, width) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "figure" ? { ...node, width } : node
+        ),
+      },
+    })),
+
+  updateTableCaption: (id, caption) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "table" ? { ...node, caption } : node
+        ),
+      },
+    })),
+
+  updateTableRows: (id, rows) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "table" ? { ...node, rows } : node
+        ),
+      },
+    })),
+
+  updateTableWidth: (id, width) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "table" ? { ...node, width } : node
         ),
       },
     })),

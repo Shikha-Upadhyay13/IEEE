@@ -18,6 +18,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { useDocumentStore } from "../../store/documentStore";
 import type { BodyNode } from "../../types/document";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
+import { FigureEditor } from "./FigureEditor";
+import { TableEditor } from "./TableEditor";
 
 // Two problems compound here, both from nested sortable items having
 // wildly different heights (a section's rect spans all its nested content):
@@ -125,8 +127,35 @@ function SortableBlockItem({
     );
   }
 
-  // figure / table / equation: not yet editable in this milestone (upload/
-  // table-editor UI arrives later) — but can be reordered and removed.
+  if (node.type === "figure") {
+    return (
+      <div ref={setNodeRef} data-block-id={node.id} style={wrapperStyle}>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+          {dragHandle}
+          <div style={{ flex: 1 }}>
+            <FigureEditor node={node} />
+          </div>
+          <button onClick={() => removeBlock(node.id)}>Delete</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (node.type === "table") {
+    return (
+      <div ref={setNodeRef} data-block-id={node.id} style={wrapperStyle}>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+          {dragHandle}
+          <div style={{ flex: 1 }}>
+            <TableEditor node={node} />
+          </div>
+          <button onClick={() => removeBlock(node.id)}>Delete</button>
+        </div>
+      </div>
+    );
+  }
+
+  // equation: not yet editable in this milestone — can be reordered/removed.
   return (
     <div
       ref={setNodeRef}
@@ -197,6 +226,8 @@ export function EditorPanel() {
   const setKeywords = useDocumentStore((s) => s.setKeywords);
   const appendParagraph = useDocumentStore((s) => s.appendParagraph);
   const appendSection = useDocumentStore((s) => s.appendSection);
+  const appendFigure = useDocumentStore((s) => s.appendFigure);
+  const appendTable = useDocumentStore((s) => s.appendTable);
   const reorderBlocks = useDocumentStore((s) => s.reorderBlocks);
 
   const sensors = useSensors(
@@ -261,9 +292,11 @@ export function EditorPanel() {
         <SortableBlockList containerId={null} nodes={document.body} depth={0} />
       </DndContext>
 
-      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+      <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
         <button onClick={appendParagraph}>+ Paragraph</button>
         <button onClick={appendSection}>+ Section</button>
+        <button onClick={appendFigure}>+ Figure</button>
+        <button onClick={appendTable}>+ Table</button>
       </div>
     </div>
   );

@@ -132,6 +132,15 @@
   max-width: 100%;
 }
 
+.ieee-figure-placeholder {
+  border: 1px dashed #999;
+  padding: 24pt 8pt;
+  font-size: 8pt;
+  color: #666;
+  display: inline-block;
+  min-width: 60mm;
+}
+
 .ieee-figure-caption {
   font-size: 8pt;
   margin-top: 4pt;

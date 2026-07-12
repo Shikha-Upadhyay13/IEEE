@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="180" viewBox="0 0 300 180">
+  <rect width="300" height="180" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1"/>
+  <line x1="0" y1="0" x2="300" y2="180" stroke="#9ca3af" stroke-width="1"/>
+  <line x1="300" y1="0" x2="0" y2="180" stroke="#9ca3af" stroke-width="1"/>
+  <text x="150" y="95" font-family="sans-serif" font-size="14" fill="#4b5563" text-anchor="middle">Sample Figure</text>
+</svg>
