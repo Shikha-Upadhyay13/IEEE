@@ -1,10 +1,7 @@
 import { create } from "zustand";
-import type { Document, BodyNode } from "../types/document";
+import type { Document, BodyNode, InlineNode } from "../types/document";
 import { samplePaper } from "../data/samplePaper";
-
-function generateId(prefix: string): string {
-  return `${prefix}-${crypto.randomUUID()}`;
-}
+import { generateId } from "../lib/id";
 
 // Recursively find `id` among a section's children too, not just its direct siblings.
 function updateNodeById(
@@ -71,7 +68,7 @@ type DocumentStore = {
   setKeywords: (commaSeparated: string) => void;
   appendParagraph: () => void;
   appendSection: () => void;
-  updateParagraphText: (id: string, text: string) => void;
+  updateParagraphContent: (id: string, content: InlineNode[]) => void;
   updateSectionHeading: (id: string, heading: string) => void;
   removeBlock: (id: string) => void;
   reorderBlocks: (containerId: string | null, activeId: string, overId: string) => void;
@@ -128,16 +125,15 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
       },
     })),
 
-  // NOTE: replaces the paragraph's content with a single plain-text run — any
-  // citeRef/xref nodes it contained are lost. Rich, citation-aware editing
-  // arrives in Milestone 4 (TipTap); this is the accepted plain-textarea
-  // editing model for Milestone 2, not a regression.
-  updateParagraphText: (id, text) =>
+  // Full inline-content replacement, preserving any citeRef/xref nodes the
+  // rich-text editor (TipTap) round-trips — unlike Milestone 2's plain-text
+  // textarea, this no longer destroys citations on edit.
+  updateParagraphContent: (id, content) =>
     set((state) => ({
       document: {
         ...state.document,
         body: updateNodeById(state.document.body, id, (node) =>
-          node.type === "paragraph" ? { ...node, content: [{ type: "text", text }] } : node
+          node.type === "paragraph" ? { ...node, content } : node
         ),
       },
     })),

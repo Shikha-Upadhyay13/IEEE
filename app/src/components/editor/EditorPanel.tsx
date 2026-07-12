@@ -17,8 +17,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useDocumentStore } from "../../store/documentStore";
 import type { BodyNode } from "../../types/document";
-
-type Paragraph = Extract<BodyNode, { type: "paragraph" }>;
+import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 
 // Two problems compound here, both from nested sortable items having
 // wildly different heights (a section's rect spans all its nested content):
@@ -42,14 +41,6 @@ const collisionDetectionWithinContainer: CollisionDetection = (args) => {
   return pointerCollisions.length > 0 ? pointerCollisions : closestCenter(filteredArgs);
 };
 
-function plainTextOf(node: Paragraph): string {
-  return node.content.filter((n) => n.type === "text").map((n) => n.text).join("");
-}
-
-function hasNonTextContent(node: Paragraph): boolean {
-  return node.content.some((n) => n.type !== "text");
-}
-
 // `containerId` is the id of the sibling list this node lives in (null for the
 // document's top-level body, or the parent section's id) — dnd-kit needs this
 // on each draggable so reorderBlocks knows which list to reorder within, and
@@ -63,7 +54,7 @@ function SortableBlockItem({
   containerId: string | null;
   depth: number;
 }) {
-  const updateParagraphText = useDocumentStore((s) => s.updateParagraphText);
+  const updateParagraphContent = useDocumentStore((s) => s.updateParagraphContent);
   const updateSectionHeading = useDocumentStore((s) => s.updateSectionHeading);
   const removeBlock = useDocumentStore((s) => s.removeBlock);
 
@@ -118,23 +109,16 @@ function SortableBlockItem({
   }
 
   if (node.type === "paragraph") {
-    const warn = hasNonTextContent(node);
     return (
       <div ref={setNodeRef} data-block-id={node.id} style={wrapperStyle}>
-        {warn && (
-          <p style={{ color: "#a60", fontSize: 12, margin: "0 0 4px" }}>
-            Contains citations/cross-references — editing this will remove them
-            (rich-text editing arrives in a later milestone).
-          </p>
-        )}
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
           {dragHandle}
-          <textarea
-            value={plainTextOf(node)}
-            onChange={(e) => updateParagraphText(node.id, e.target.value)}
-            rows={3}
-            style={{ flex: 1 }}
-          />
+          <div style={{ flex: 1 }}>
+            <RichParagraphEditor
+              content={node.content}
+              onChange={(content) => updateParagraphContent(node.id, content)}
+            />
+          </div>
           <button onClick={() => removeBlock(node.id)}>Delete</button>
         </div>
       </div>
