@@ -29,6 +29,41 @@ function removeNodeById(nodes: BodyNode[], id: string): BodyNode[] {
     );
 }
 
+function arrayMove<T>(arr: T[], fromIndex: number, toIndex: number): T[] {
+  const copy = arr.slice();
+  const [item] = copy.splice(fromIndex, 1);
+  copy.splice(toIndex, 0, item);
+  return copy;
+}
+
+// `containerId` identifies the sibling list being reordered: null for the
+// document's top-level body, or a section's id for reordering within its
+// children. Only reorders within the same list — dragging a block into a
+// *different* section is a future enhancement, not this milestone's scope.
+function reorderWithin(
+  nodes: BodyNode[],
+  containerId: string | null,
+  activeId: string,
+  overId: string
+): BodyNode[] {
+  if (containerId === null) {
+    const activeIndex = nodes.findIndex((n) => n.id === activeId);
+    const overIndex = nodes.findIndex((n) => n.id === overId);
+    if (activeIndex === -1 || overIndex === -1) return nodes;
+    return arrayMove(nodes, activeIndex, overIndex);
+  }
+  return nodes.map((node) => {
+    if (node.type !== "section") return node;
+    if (node.id === containerId) {
+      const activeIndex = node.children.findIndex((n) => n.id === activeId);
+      const overIndex = node.children.findIndex((n) => n.id === overId);
+      if (activeIndex === -1 || overIndex === -1) return node;
+      return { ...node, children: arrayMove(node.children, activeIndex, overIndex) };
+    }
+    return { ...node, children: reorderWithin(node.children, containerId, activeId, overId) };
+  });
+}
+
 type DocumentStore = {
   document: Document;
   setTitle: (text: string) => void;
@@ -39,6 +74,7 @@ type DocumentStore = {
   updateParagraphText: (id: string, text: string) => void;
   updateSectionHeading: (id: string, heading: string) => void;
   removeBlock: (id: string) => void;
+  reorderBlocks: (containerId: string | null, activeId: string, overId: string) => void;
 };
 
 export const useDocumentStore = create<DocumentStore>((set) => ({
@@ -118,4 +154,12 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   removeBlock: (id) =>
     set((state) => ({ document: { ...state.document, body: removeNodeById(state.document.body, id) } })),
+
+  reorderBlocks: (containerId, activeId, overId) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: reorderWithin(state.document.body, containerId, activeId, overId),
+      },
+    })),
 }));
