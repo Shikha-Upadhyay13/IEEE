@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Document, BodyNode, InlineNode } from "../types/document";
+import type { Document, BodyNode, InlineNode, TableSpacing } from "../types/document";
 import { samplePaper } from "../data/samplePaper";
 import { generateId } from "../lib/id";
 import { emptyReferenceFields, generateReferenceText, type ReferenceFields } from "../lib/generateReferenceText";
@@ -86,6 +86,7 @@ type DocumentStore = {
   updateTableCaption: (id: string, caption: InlineNode[]) => void;
   updateTableRows: (id: string, rows: string[][]) => void;
   updateTableWidth: (id: string, width: BlockWidth) => void;
+  updateTableSpacing: (id: string, spacing: TableSpacing) => void;
   updateEquationLatex: (id: string, latex: string) => void;
   removeBlock: (id: string) => void;
   reorderBlocks: (containerId: string | null, activeId: string, overId: string) => void;
@@ -182,6 +183,7 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
               ["", ""],
               ["", ""],
             ],
+            spacing: "comfortable",
           },
         ],
       },
@@ -274,6 +276,16 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         ...state.document,
         body: updateNodeById(state.document.body, id, (node) =>
           node.type === "table" ? { ...node, width } : node
+        ),
+      },
+    })),
+
+  updateTableSpacing: (id, spacing) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "table" ? { ...node, spacing } : node
         ),
       },
     })),

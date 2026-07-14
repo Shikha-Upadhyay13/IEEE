@@ -99,7 +99,7 @@ function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
           <div className="ieee-table-caption">
             TABLE {node.resolvedNumber}. <InlineContent nodes={node.caption} />
           </div>
-          <table className="ieee-table">
+          <table className="ieee-table" data-spacing={node.spacing}>
             <tbody>
               {node.rows.map((row, i) => (
                 <tr key={i}>

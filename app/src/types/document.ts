@@ -25,6 +25,13 @@ export const InlineNodeSchema = z.discriminatedUnion("type", [
 export type InlineNode = z.infer<typeof InlineNodeSchema>;
 
 const BlockWidthSchema = z.enum(["single-column", "double-column"]);
+// IEEE doesn't prescribe an exact table cell padding, unlike margins/fonts/
+// column width — so this is safe to make user-adjustable per table without
+// risking the "guaranteed IEEE-compliant" promise the rest of the template
+// chrome makes. Optional + defaulted to "comfortable" for tables predating
+// this field (see numbering.ts's resolveNumbering, which fills in the default).
+const TableSpacingSchema = z.enum(["compact", "comfortable", "spacious"]);
+export type TableSpacing = z.infer<typeof TableSpacingSchema>;
 
 // BodyNode is recursive (a section contains children that may themselves be sections),
 // so the schema is built with z.lazy().
@@ -44,6 +51,7 @@ export type BodyNode =
       width: z.infer<typeof BlockWidthSchema>;
       caption: InlineNode[];
       rows: string[][];
+      spacing?: TableSpacing;
     }
   | { type: "equation"; id: string; latex: string };
 
@@ -74,6 +82,7 @@ export const BodyNodeSchema: z.ZodType<BodyNode> = z.lazy(() =>
       width: BlockWidthSchema,
       caption: z.array(InlineNodeSchema),
       rows: z.array(z.array(z.string())),
+      spacing: TableSpacingSchema.optional(),
     }),
     z.object({
       type: z.literal("equation"),
@@ -147,6 +156,7 @@ export type ResolvedBodyNode =
       width: "single-column" | "double-column";
       caption: ResolvedInlineNode[];
       rows: string[][];
+      spacing: TableSpacing; // defaulted in resolveNumbering; always present once resolved
       resolvedNumber: string; // Roman numeral
     }
   | { type: "equation"; id: string; latex: string; resolvedNumber: number };

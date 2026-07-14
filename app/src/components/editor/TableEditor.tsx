@@ -1,4 +1,4 @@
-import type { BodyNode } from "../../types/document";
+import type { BodyNode, TableSpacing } from "../../types/document";
 import { useDocumentStore } from "../../store/documentStore";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 import { btnGhost } from "../../lib/uiClasses";
@@ -9,6 +9,7 @@ export function TableEditor({ node }: { node: Table }) {
   const updateTableCaption = useDocumentStore((s) => s.updateTableCaption);
   const updateTableRows = useDocumentStore((s) => s.updateTableRows);
   const updateTableWidth = useDocumentStore((s) => s.updateTableWidth);
+  const updateTableSpacing = useDocumentStore((s) => s.updateTableSpacing);
 
   const columnCount = node.rows[0]?.length ?? 0;
 
@@ -36,15 +37,29 @@ export function TableEditor({ node }: { node: Table }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="flex items-center gap-1.5 text-xs text-gray-600">
-        <input
-          type="checkbox"
-          checked={node.width === "double-column"}
-          onChange={(e) => updateTableWidth(node.id, e.target.checked ? "double-column" : "single-column")}
-          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-        />
-        Span both columns
-      </label>
+      <div className="flex items-center gap-4 flex-wrap">
+        <label className="flex items-center gap-1.5 text-xs text-gray-600">
+          <input
+            type="checkbox"
+            checked={node.width === "double-column"}
+            onChange={(e) => updateTableWidth(node.id, e.target.checked ? "double-column" : "single-column")}
+            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          />
+          Span both columns
+        </label>
+        <label className="flex items-center gap-1.5 text-xs text-gray-600">
+          Spacing
+          <select
+            value={node.spacing ?? "comfortable"}
+            onChange={(e) => updateTableSpacing(node.id, e.target.value as TableSpacing)}
+            className="rounded border-gray-200 text-xs px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+          >
+            <option value="compact">Compact</option>
+            <option value="comfortable">Comfortable</option>
+            <option value="spacious">Spacious</option>
+          </select>
+        </label>
+      </div>
 
       <table className="border-collapse">
         <tbody>

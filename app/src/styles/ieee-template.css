@@ -174,8 +174,24 @@
 .ieee-table th,
 .ieee-table td {
   border: 0.5pt solid #000;
-  padding: 2pt 4pt;
   text-align: center;
+}
+
+/* Per-table cell padding, user-adjustable (TableEditor's spacing control) —
+   safe to make adjustable since IEEE doesn't prescribe an exact cell padding
+   value, unlike margins/fonts/column width. "comfortable" is the default for
+   new tables (and any table predating this field, via numbering.ts). */
+.ieee-table[data-spacing="compact"] th,
+.ieee-table[data-spacing="compact"] td {
+  padding: 2pt 4pt;
+}
+.ieee-table[data-spacing="comfortable"] th,
+.ieee-table[data-spacing="comfortable"] td {
+  padding: 4pt 8pt;
+}
+.ieee-table[data-spacing="spacious"] th,
+.ieee-table[data-spacing="spacious"] td {
+  padding: 7pt 12pt;
 }
 
 /* --- Equations --- */

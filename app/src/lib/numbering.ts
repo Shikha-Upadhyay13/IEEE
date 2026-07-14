@@ -115,6 +115,7 @@ export function resolveNumbering(doc: Document): ResolvedDocument {
           counters.table += 1;
           return {
             ...node,
+            spacing: node.spacing ?? "comfortable", // default for tables predating this field
             resolvedNumber: toRoman(counters.table),
             caption: resolveInline(node.caption),
           };
