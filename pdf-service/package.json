@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "export": "node export.mjs"
+    "export": "node export.mjs",
+    "start": "node server.mjs"
   },
   "dependencies": {
     "playwright": "^1.61.1"

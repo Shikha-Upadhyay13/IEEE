@@ -206,8 +206,9 @@ function KeywordsInput({
 
   return (
     <>
-      <label>Keywords (comma-separated)</label>
+      <label htmlFor="paper-keywords">Keywords (comma-separated)</label>
       <input
+        id="paper-keywords"
         value={draft}
         onChange={(e) => {
           setDraft(e.target.value);
@@ -257,7 +258,8 @@ export function EditorPanel() {
         width: 380,
         padding: 16,
         overflowY: "auto",
-        height: "100vh",
+        flex: 1,
+        minHeight: 0,
         boxSizing: "border-box",
         fontFamily: "sans-serif",
         fontSize: 14,
@@ -265,16 +267,18 @@ export function EditorPanel() {
     >
       <h2>Editor</h2>
 
-      <label>Title</label>
+      <label htmlFor="paper-title">Title</label>
       <textarea
+        id="paper-title"
         value={titleText}
         onChange={(e) => setTitle(e.target.value)}
         rows={2}
         style={{ width: "100%", marginBottom: 12, boxSizing: "border-box" }}
       />
 
-      <label>Abstract</label>
+      <label htmlFor="paper-abstract">Abstract</label>
       <textarea
+        id="paper-abstract"
         value={document.abstract.text}
         onChange={(e) => setAbstract(e.target.value)}
         rows={4}

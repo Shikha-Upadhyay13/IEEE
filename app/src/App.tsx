@@ -1,24 +1,20 @@
-import { useMemo } from "react";
-import { resolveNumbering } from "./lib/numbering";
-import { useDocumentStore } from "./store/documentStore";
-import { useDebouncedValue } from "./lib/useDebouncedValue";
-import { PagedPreview } from "./components/renderer/PagedPreview";
-import { EditorPanel } from "./components/editor/EditorPanel";
+import { Routes, Route } from "react-router-dom";
+import { LoginPage } from "./routes/LoginPage";
+import { Dashboard } from "./routes/Dashboard";
+import { EditorPage } from "./routes/EditorPage";
+import { PrintView } from "./routes/PrintView";
+import { RequireAuth } from "./components/RequireAuth";
 
 function App() {
-  const document = useDocumentStore((s) => s.document);
-  // Pagination re-runs Paged.js's full chunker — too expensive to do on every
-  // keystroke, so the preview follows edits after a short pause instead.
-  const debouncedDocument = useDebouncedValue(document, 250);
-  const resolvedDoc = useMemo(() => resolveNumbering(debouncedDocument), [debouncedDocument]);
-
   return (
-    <div style={{ display: "flex" }}>
-      <EditorPanel />
-      <div style={{ background: "#525659", minHeight: "100vh", padding: "24px 0", flex: 1 }}>
-        <PagedPreview document={resolvedDoc} />
-      </div>
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
+      <Route path="/editor/:documentId" element={<RequireAuth><EditorPage /></RequireAuth>} />
+      {/* Not behind RequireAuth: the headless PDF export path has no user
+          session at all (see PrintView's own token-vs-session handling). */}
+      <Route path="/print/:documentId" element={<PrintView />} />
+    </Routes>
   );
 }
 

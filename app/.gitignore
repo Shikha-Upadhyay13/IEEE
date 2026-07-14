@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Supabase credentials — not secret in the sense of the service-role key, but
+# still shouldn't be hardcoded/committed; keep them out of version control.
+.env
+.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

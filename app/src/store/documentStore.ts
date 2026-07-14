@@ -65,6 +65,10 @@ function reorderWithin(
 
 type DocumentStore = {
   document: Document;
+  // Which persisted row `document` corresponds to, or null before a real
+  // document has been loaded (e.g. the transient initial/default state).
+  documentId: string | null;
+  loadDocument: (id: string, doc: Document) => void;
   setTitle: (text: string) => void;
   setAbstract: (text: string) => void;
   setKeywords: (commaSeparated: string) => void;
@@ -85,7 +89,12 @@ type DocumentStore = {
 };
 
 export const useDocumentStore = create<DocumentStore>((set) => ({
+  // Transient placeholder shown only while the Editor route's load-on-mount
+  // is in flight — real usage always calls loadDocument before a user edits.
   document: samplePaper,
+  documentId: null,
+
+  loadDocument: (id, doc) => set({ documentId: id, document: doc }),
 
   setTitle: (text) =>
     set((state) => ({
