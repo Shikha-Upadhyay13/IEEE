@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../supabaseClient";
+import { btnPrimary } from "../../lib/uiClasses";
 
 const PDF_SERVICE_URL = import.meta.env.VITE_PDF_SERVICE_URL ?? "http://localhost:3001";
 
@@ -40,11 +41,13 @@ export function ExportButton({ documentId }: { documentId: string }) {
   }
 
   return (
-    <div style={{ padding: 16, borderTop: "1px solid #eee" }}>
-      <button onClick={handleExport} disabled={status === "exporting"}>
+    <div className="p-4 border-t border-gray-100">
+      <button onClick={handleExport} disabled={status === "exporting"} className={`${btnPrimary} w-full`}>
         {status === "exporting" ? "Exporting…" : "Export PDF"}
       </button>
-      {status === "error" && <p style={{ color: "red", fontSize: 12 }}>Export failed — is pdf-service running?</p>}
+      {status === "error" && (
+        <p className="text-xs text-red-600 mt-1.5">Export failed — is pdf-service running?</p>
+      )}
     </div>
   );
 }

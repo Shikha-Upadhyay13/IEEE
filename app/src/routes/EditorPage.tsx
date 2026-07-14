@@ -21,14 +21,20 @@ export function EditorPage() {
 
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  // The exact object just fetched from Supabase — compared by reference
-  // (not a fire-count flag) against the debounced value below, so autosave
-  // skips only a genuinely unchanged post-load state, not just "the first
-  // debounce cycle" (which would wrongly eat a real edit if the user starts
-  // typing before that cycle elapses — the debounce timer keeps resetting,
-  // so fast edits right after load can reach the effect on their very first
-  // fire with no separate "unedited load" fire ever having happened).
-  const justLoadedContent = useRef<Document | null>(null);
+  // The last content known to be persisted — compared by reference (not a
+  // fire-count flag) against the debounced value below, so autosave skips
+  // only a genuinely unchanged state, not just "the first debounce cycle"
+  // (which would wrongly eat a real edit if the user starts typing before
+  // that cycle elapses — the debounce timer keeps resetting, so fast edits
+  // right after load can reach the effect on their very first fire with no
+  // separate "unedited load" fire ever having happened). Updated on load AND
+  // after every successful save, so the flush-on-navigate-away check below
+  // (not just the debounced autosave) knows what's actually safe to skip.
+  const lastSavedContent = useRef<Document | null>(null);
+  // Always the latest document, independent of the save debounce — read by
+  // the unmount flush below, which must not act on a stale closed-over value.
+  const latestDocument = useRef(document);
+  latestDocument.current = document;
 
   useEffect(() => {
     if (!documentId) return;
@@ -46,7 +52,7 @@ export function EditorPage() {
           return;
         }
         const content = data.content as Document;
-        justLoadedContent.current = content;
+        lastSavedContent.current = content;
         loadDocument(documentId, content);
         setLoadState("ready");
       });
@@ -63,35 +69,69 @@ export function EditorPage() {
   const debouncedForSave = useDebouncedValue(document, 2000);
   useEffect(() => {
     if (loadState !== "ready" || !documentId || loadedDocumentId !== documentId) return;
-    if (debouncedForSave === justLoadedContent.current) return; // genuinely unedited since load
+    if (debouncedForSave === lastSavedContent.current) return; // genuinely unedited since last save
     setSaveState("saving");
     supabase
       .from("documents")
       .update({ title: extractTitleText(debouncedForSave), content: debouncedForSave })
       .eq("id", documentId)
-      .then(({ error }) => setSaveState(error ? "error" : "saved"));
+      .then(({ error }) => {
+        if (!error) lastSavedContent.current = debouncedForSave;
+        setSaveState(error ? "error" : "saved");
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedForSave]);
+
+  // Flush-on-navigate-away: without this, edits made within the last 2s
+  // before leaving the editor (e.g. clicking "Dashboard" right after typing)
+  // would never reach the debounced effect above and would be silently lost
+  // — caught by testing the "back to dashboard" flow right after an edit.
+  useEffect(() => {
+    return () => {
+      if (!documentId || latestDocument.current === lastSavedContent.current) return;
+      const finalContent = latestDocument.current;
+      supabase
+        .from("documents")
+        .update({ title: extractTitleText(finalContent), content: finalContent })
+        .eq("id", documentId)
+        .then(({ error }) => {
+          if (error) console.error("Final save on navigate-away failed:", error);
+        });
+    };
+  }, [documentId]);
 
   const debouncedForPreview = useDebouncedValue(document, 250);
   const resolvedDoc = useMemo(() => resolveNumbering(debouncedForPreview), [debouncedForPreview]);
 
-  if (loadState === "loading") return <p style={{ padding: 16 }}>Loading paper…</p>;
-  if (loadState === "error") return <p style={{ padding: 16 }}>Couldn't load that paper — it may not exist, or you may not have access.</p>;
+  if (loadState === "loading") {
+    return <p className="p-6 text-sm text-gray-500">Loading paper…</p>;
+  }
+  if (loadState === "error") {
+    return (
+      <p className="p-6 text-sm text-gray-500">
+        Couldn't load that paper — it may not exist, or you may not have access.
+      </p>
+    );
+  }
+
+  const saveLabel =
+    saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : saveState === "error" ? "Save failed" : "";
+  const saveLabelClass =
+    saveState === "error" ? "text-red-600" : saveState === "saving" ? "text-gray-400" : "text-emerald-600";
 
   return (
-    <div style={{ display: "flex" }}>
-      <div style={{ width: 380, flexShrink: 0, height: "100vh", display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px" }}>
-          <Link to="/">← Dashboard</Link>
-          <span style={{ fontSize: 12, color: "#888" }}>
-            {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : saveState === "error" ? "Save failed" : ""}
-          </span>
+    <div className="flex h-screen">
+      <div className="w-[380px] flex-shrink-0 h-screen flex flex-col border-r border-gray-200 bg-white">
+        <div className="flex justify-between items-center px-4 py-2.5 border-b border-gray-100">
+          <Link to="/" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
+            ← Dashboard
+          </Link>
+          <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
         </div>
         <EditorPanel />
         {documentId && <ExportButton documentId={documentId} />}
       </div>
-      <div style={{ background: "#525659", minHeight: "100vh", padding: "24px 0", flex: 1 }}>
+      <div className="flex-1 overflow-y-auto bg-gray-500 py-6">
         <PagedPreview document={resolvedDoc} />
       </div>
     </div>

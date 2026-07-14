@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { createBlankDocument } from "../lib/blankDocument";
+import { btnPrimary, btnSecondary, cardBase } from "../lib/uiClasses";
 
 type DocumentRow = { id: string; title: string | null; updated_at: string };
 
@@ -54,34 +55,50 @@ export function Dashboard() {
   }
 
   return (
-    <div style={{ maxWidth: 640, margin: "40px auto", fontFamily: "sans-serif" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1>Your papers</h1>
-        <button onClick={handleSignOut}>Sign out</button>
+    <div className="min-h-screen">
+      <div className="max-w-2xl mx-auto px-6 py-10">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">Your papers</h1>
+            <p className="text-sm text-gray-500">IEEE Paper Builder</p>
+          </div>
+          <button onClick={handleSignOut} className={btnSecondary}>
+            Sign out
+          </button>
+        </div>
+
+        <button onClick={handleCreate} disabled={creating} className={`${btnPrimary} mb-6`}>
+          {creating ? "Creating…" : "+ New paper"}
+        </button>
+
+        {loading ? (
+          <p className="text-sm text-gray-500">Loading…</p>
+        ) : documents.length === 0 ? (
+          <p className="text-sm text-gray-400">No papers yet — create one to get started.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {documents.map((doc) => (
+              <li key={doc.id}>
+                <a
+                  href={`/editor/${doc.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate(`/editor/${doc.id}`);
+                  }}
+                  className={`${cardBase} flex justify-between items-center px-4 py-3 hover:border-indigo-300 hover:shadow transition-shadow`}
+                >
+                  <span className="text-sm font-medium text-gray-800">
+                    {doc.title || "Untitled paper"}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    updated {new Date(doc.updated_at).toLocaleString()}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-
-      <button onClick={handleCreate} disabled={creating} style={{ marginBottom: 16 }}>
-        {creating ? "Creating…" : "+ New paper"}
-      </button>
-
-      {loading ? (
-        <p>Loading…</p>
-      ) : documents.length === 0 ? (
-        <p style={{ color: "#888" }}>No papers yet — create one to get started.</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {documents.map((doc) => (
-            <li key={doc.id} style={{ padding: "8px 0", borderBottom: "1px solid #eee" }}>
-              <a href={`/editor/${doc.id}`} onClick={(e) => { e.preventDefault(); navigate(`/editor/${doc.id}`); }}>
-                {doc.title || "Untitled paper"}
-              </a>
-              <span style={{ color: "#888", fontSize: 12, marginLeft: 8 }}>
-                updated {new Date(doc.updated_at).toLocaleString()}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }

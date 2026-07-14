@@ -6,11 +6,11 @@ export function XrefView({ node }: NodeViewProps) {
   const label = targetType === "figure" ? `Fig. ${targetId.replace(/^fig-/, "")}` : `Table ${targetId.replace(/^tbl-/, "")}`;
 
   return (
-    <NodeViewWrapper as="span" style={{ display: "inline" }} data-xref="">
+    <NodeViewWrapper as="span" className="inline" data-xref="">
       <span
         contentEditable={false}
         title={`Cross-reference to ${targetType} ${targetId}`}
-        style={{ background: "#dcfce7", borderRadius: 3, padding: "0 4px", fontSize: "0.85em" }}
+        className="rounded px-1 text-[0.85em] bg-emerald-100 text-emerald-800"
       >
         {label}
       </span>

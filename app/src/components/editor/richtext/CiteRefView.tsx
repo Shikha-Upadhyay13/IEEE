@@ -13,16 +13,13 @@ export function CiteRefView({ node }: NodeViewProps) {
   const label = reference ? refId.replace(/^ref-/, "") : "missing ref";
 
   return (
-    <NodeViewWrapper as="span" style={{ display: "inline" }} data-cite-ref="">
+    <NodeViewWrapper as="span" className="inline" data-cite-ref="">
       <span
         contentEditable={false}
         title={reference?.renderedText ?? "This reference no longer exists"}
-        style={{
-          background: reference ? "#dbeafe" : "#fee2e2",
-          borderRadius: 3,
-          padding: "0 4px",
-          fontSize: "0.85em",
-        }}
+        className={`rounded px-1 text-[0.85em] ${
+          reference ? "bg-indigo-100 text-indigo-800" : "bg-red-100 text-red-700"
+        }`}
       >
         [{label}]
       </span>

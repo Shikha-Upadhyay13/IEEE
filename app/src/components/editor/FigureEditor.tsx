@@ -42,26 +42,37 @@ export function FigureEditor({ node }: { node: Figure }) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <input type="file" accept="image/*" onChange={handleFileChange} disabled={uploading} />
-        <label style={{ fontSize: 12 }}>
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-3 items-center flex-wrap">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          disabled={uploading}
+          className="text-xs text-gray-600 file:mr-2 file:rounded file:border-0 file:bg-gray-100 file:px-2 file:py-1 file:text-xs file:font-medium file:text-gray-700 hover:file:bg-gray-200"
+        />
+        <label className="flex items-center gap-1.5 text-xs text-gray-600">
           <input
             type="checkbox"
             checked={node.width === "double-column"}
             onChange={(e) =>
               updateFigureWidth(node.id, e.target.checked ? "double-column" : "single-column")
             }
+            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
           />
           Span both columns
         </label>
       </div>
-      {uploading && <p style={{ fontSize: 12, color: "#888" }}>Uploading…</p>}
-      {uploadError && <p style={{ fontSize: 12, color: "red" }}>{uploadError}</p>}
+      {uploading && <p className="text-xs text-gray-500">Uploading…</p>}
+      {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
       {node.image.url ? (
-        <img src={node.image.url} alt={node.image.alt} style={{ maxWidth: 200, maxHeight: 120 }} />
+        <img
+          src={node.image.url}
+          alt={node.image.alt}
+          className="max-w-[200px] max-h-[120px] rounded border border-gray-200"
+        />
       ) : (
-        <p style={{ color: "#888", fontSize: 12 }}>No image uploaded yet.</p>
+        <p className="text-xs text-gray-400">No image uploaded yet.</p>
       )}
       <RichParagraphEditor
         content={node.caption}

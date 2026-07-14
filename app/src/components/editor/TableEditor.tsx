@@ -1,6 +1,7 @@
 import type { BodyNode } from "../../types/document";
 import { useDocumentStore } from "../../store/documentStore";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
+import { btnGhost } from "../../lib/uiClasses";
 
 type Table = Extract<BodyNode, { type: "table" }>;
 
@@ -34,31 +35,32 @@ export function TableEditor({ node }: { node: Table }) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontSize: 12 }}>
+    <div className="flex flex-col gap-2">
+      <label className="flex items-center gap-1.5 text-xs text-gray-600">
         <input
           type="checkbox"
           checked={node.width === "double-column"}
           onChange={(e) => updateTableWidth(node.id, e.target.checked ? "double-column" : "single-column")}
+          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
         />
         Span both columns
       </label>
 
-      <table style={{ borderCollapse: "collapse" }}>
+      <table className="border-collapse">
         <tbody>
           {node.rows.map((row, r) => (
             <tr key={r}>
               {row.map((cell, c) => (
-                <td key={c} style={{ border: "1px solid #ccc", padding: 2 }}>
+                <td key={c} className="border border-gray-200 p-0.5">
                   <input
                     value={cell}
                     onChange={(e) => setCell(r, c, e.target.value)}
-                    style={{ width: 70, fontSize: 12, border: "none" }}
+                    className="w-[70px] text-xs px-1 py-0.5 border-none focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded"
                   />
                 </td>
               ))}
-              <td>
-                <button onClick={() => removeRow(r)} disabled={node.rows.length <= 1}>
+              <td className="pl-1">
+                <button onClick={() => removeRow(r)} disabled={node.rows.length <= 1} className={btnGhost}>
                   − row
                 </button>
               </td>
@@ -67,10 +69,10 @@ export function TableEditor({ node }: { node: Table }) {
         </tbody>
       </table>
 
-      <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={addRow}>+ Row</button>
-        <button onClick={addColumn}>+ Column</button>
-        <button onClick={removeColumn} disabled={columnCount <= 1}>
+      <div className="flex gap-2">
+        <button onClick={addRow} className={btnGhost}>+ Row</button>
+        <button onClick={addColumn} className={btnGhost}>+ Column</button>
+        <button onClick={removeColumn} disabled={columnCount <= 1} className={btnGhost}>
           − Column
         </button>
       </div>

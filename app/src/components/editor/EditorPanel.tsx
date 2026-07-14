@@ -20,6 +20,7 @@ import type { BodyNode } from "../../types/document";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 import { FigureEditor } from "./FigureEditor";
 import { TableEditor } from "./TableEditor";
+import { btnDanger, btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
 
 // Two problems compound here, both from nested sortable items having
 // wildly different heights (a section's rect spans all its nested content):
@@ -65,23 +66,24 @@ function SortableBlockItem({
     data: { containerId },
   });
 
-  const wrapperStyle = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    marginLeft: depth * 16,
-    marginBottom: 8,
-  };
+  const wrapperStyle = { transform: CSS.Transform.toString(transform), transition };
+  const wrapperClass = `${isDragging ? "opacity-50" : ""} mb-2`;
 
   const dragHandle = (
     <button
       {...attributes}
       {...listeners}
       data-drag-handle={node.id}
-      style={{ cursor: "grab", touchAction: "none" }}
       aria-label="Drag to reorder"
+      className="flex-none w-6 h-6 flex items-center justify-center rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100 cursor-grab active:cursor-grabbing touch-none"
     >
       ⠿
+    </button>
+  );
+
+  const deleteButton = (
+    <button onClick={() => removeBlock(node.id)} className={btnDanger} aria-label="Delete block">
+      Delete
     </button>
   );
 
@@ -90,21 +92,24 @@ function SortableBlockItem({
       <div
         ref={setNodeRef}
         data-block-id={node.id}
-        style={{ ...wrapperStyle, border: "1px solid #ccc", padding: 8 }}
+        style={{ ...wrapperStyle, marginLeft: depth * 16 }}
+        className={`${wrapperClass} ${cardBase} p-3`}
       >
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="flex gap-2 items-center mb-2">
           {dragHandle}
           <input
             value={node.heading}
             onChange={(e) => updateSectionHeading(node.id, e.target.value)}
-            style={{ flex: 1, fontWeight: "bold" }}
+            className={`${inputBase} font-semibold`}
           />
-          <button onClick={() => removeBlock(node.id)}>Delete</button>
+          {deleteButton}
         </div>
         {node.children.length === 0 ? (
-          <p style={{ color: "#888", fontSize: 12 }}>(empty section)</p>
+          <p className="text-xs text-gray-400 pl-8">Empty section</p>
         ) : (
-          <SortableBlockList containerId={node.id} nodes={node.children} depth={depth + 1} />
+          <div className="pl-6 border-l-2 border-gray-100">
+            <SortableBlockList containerId={node.id} nodes={node.children} depth={depth + 1} />
+          </div>
         )}
       </div>
     );
@@ -112,16 +117,21 @@ function SortableBlockItem({
 
   if (node.type === "paragraph") {
     return (
-      <div ref={setNodeRef} data-block-id={node.id} style={wrapperStyle}>
-        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+      <div
+        ref={setNodeRef}
+        data-block-id={node.id}
+        style={{ ...wrapperStyle, marginLeft: depth * 16 }}
+        className={wrapperClass}
+      >
+        <div className="flex gap-2 items-start">
           {dragHandle}
-          <div style={{ flex: 1 }}>
+          <div className="flex-1 min-w-0">
             <RichParagraphEditor
               content={node.content}
               onChange={(content) => updateParagraphContent(node.id, content)}
             />
           </div>
-          <button onClick={() => removeBlock(node.id)}>Delete</button>
+          {deleteButton}
         </div>
       </div>
     );
@@ -129,13 +139,18 @@ function SortableBlockItem({
 
   if (node.type === "figure") {
     return (
-      <div ref={setNodeRef} data-block-id={node.id} style={wrapperStyle}>
-        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+      <div
+        ref={setNodeRef}
+        data-block-id={node.id}
+        style={{ ...wrapperStyle, marginLeft: depth * 16 }}
+        className={`${wrapperClass} ${cardBase} p-3`}
+      >
+        <div className="flex gap-2 items-start">
           {dragHandle}
-          <div style={{ flex: 1 }}>
+          <div className="flex-1 min-w-0">
             <FigureEditor node={node} />
           </div>
-          <button onClick={() => removeBlock(node.id)}>Delete</button>
+          {deleteButton}
         </div>
       </div>
     );
@@ -143,13 +158,18 @@ function SortableBlockItem({
 
   if (node.type === "table") {
     return (
-      <div ref={setNodeRef} data-block-id={node.id} style={wrapperStyle}>
-        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+      <div
+        ref={setNodeRef}
+        data-block-id={node.id}
+        style={{ ...wrapperStyle, marginLeft: depth * 16 }}
+        className={`${wrapperClass} ${cardBase} p-3`}
+      >
+        <div className="flex gap-2 items-start">
           {dragHandle}
-          <div style={{ flex: 1 }}>
+          <div className="flex-1 min-w-0">
             <TableEditor node={node} />
           </div>
-          <button onClick={() => removeBlock(node.id)}>Delete</button>
+          {deleteButton}
         </div>
       </div>
     );
@@ -160,13 +180,14 @@ function SortableBlockItem({
     <div
       ref={setNodeRef}
       data-block-id={node.id}
-      style={{ ...wrapperStyle, display: "flex", gap: 8, alignItems: "center" }}
+      style={{ ...wrapperStyle, marginLeft: depth * 16 }}
+      className={`${wrapperClass} flex gap-2 items-center ${cardBase} px-3 py-2`}
     >
       {dragHandle}
-      <span style={{ fontSize: 12, color: "#555" }}>
+      <span className="text-xs text-gray-500 font-mono">
         [{node.type}] {node.id}
       </span>
-      <button onClick={() => removeBlock(node.id)}>Delete</button>
+      {deleteButton}
     </div>
   );
 }
@@ -205,8 +226,10 @@ function KeywordsInput({
   const [draft, setDraft] = useState(keywords.join(", "));
 
   return (
-    <>
-      <label htmlFor="paper-keywords">Keywords (comma-separated)</label>
+    <div className="mb-4">
+      <label htmlFor="paper-keywords" className={labelBase}>
+        Keywords (comma-separated)
+      </label>
       <input
         id="paper-keywords"
         value={draft}
@@ -214,9 +237,9 @@ function KeywordsInput({
           setDraft(e.target.value);
           onChange(e.target.value);
         }}
-        style={{ width: "100%", marginBottom: 12, boxSizing: "border-box" }}
+        className={inputBase}
       />
-    </>
+    </div>
   );
 }
 
@@ -253,41 +276,38 @@ export function EditorPanel() {
     .join("");
 
   return (
-    <div
-      style={{
-        width: 380,
-        padding: 16,
-        overflowY: "auto",
-        flex: 1,
-        minHeight: 0,
-        boxSizing: "border-box",
-        fontFamily: "sans-serif",
-        fontSize: 14,
-      }}
-    >
-      <h2>Editor</h2>
+    <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+      <div className="mb-4">
+        <label htmlFor="paper-title" className={labelBase}>
+          Title
+        </label>
+        <textarea
+          id="paper-title"
+          value={titleText}
+          onChange={(e) => setTitle(e.target.value)}
+          rows={2}
+          className={`${inputBase} resize-none`}
+        />
+      </div>
 
-      <label htmlFor="paper-title">Title</label>
-      <textarea
-        id="paper-title"
-        value={titleText}
-        onChange={(e) => setTitle(e.target.value)}
-        rows={2}
-        style={{ width: "100%", marginBottom: 12, boxSizing: "border-box" }}
-      />
-
-      <label htmlFor="paper-abstract">Abstract</label>
-      <textarea
-        id="paper-abstract"
-        value={document.abstract.text}
-        onChange={(e) => setAbstract(e.target.value)}
-        rows={4}
-        style={{ width: "100%", marginBottom: 12, boxSizing: "border-box" }}
-      />
+      <div className="mb-4">
+        <label htmlFor="paper-abstract" className={labelBase}>
+          Abstract
+        </label>
+        <textarea
+          id="paper-abstract"
+          value={document.abstract.text}
+          onChange={(e) => setAbstract(e.target.value)}
+          rows={4}
+          className={`${inputBase} resize-none`}
+        />
+      </div>
 
       <KeywordsInput keywords={document.keywords} onChange={setKeywords} />
 
-      <h3>Body</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2 mt-6">
+        Body
+      </h3>
       <DndContext
         sensors={sensors}
         collisionDetection={collisionDetectionWithinContainer}
@@ -296,11 +316,19 @@ export function EditorPanel() {
         <SortableBlockList containerId={null} nodes={document.body} depth={0} />
       </DndContext>
 
-      <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-        <button onClick={appendParagraph}>+ Paragraph</button>
-        <button onClick={appendSection}>+ Section</button>
-        <button onClick={appendFigure}>+ Figure</button>
-        <button onClick={appendTable}>+ Table</button>
+      <div className="flex gap-2 flex-wrap mt-3">
+        <button onClick={appendParagraph} className={btnSecondary}>
+          + Paragraph
+        </button>
+        <button onClick={appendSection} className={btnSecondary}>
+          + Section
+        </button>
+        <button onClick={appendFigure} className={btnSecondary}>
+          + Figure
+        </button>
+        <button onClick={appendTable} className={btnSecondary}>
+          + Table
+        </button>
       </div>
     </div>
   );
