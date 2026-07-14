@@ -156,9 +156,19 @@ export function resolveNumbering(doc: Document): ResolvedDocument {
     }
   })(resolvedBody);
 
-  const resolvedReferences = doc.references
-    .map((ref) => ({ ...ref, resolvedNumber: citationOrder.get(ref.id) ?? Number.MAX_SAFE_INTEGER }))
+  // Cited references get their first-appearance number (1..N). Uncited ones
+  // (a real, common case once references can be added via a form before —
+  // or without ever — being cited in text) continue numbering from N+1 in
+  // their existing list order, rather than sorting a placeholder number
+  // like Number.MAX_SAFE_INTEGER, which would render as "[9007199254740991]".
+  const cited = doc.references
+    .filter((ref) => citationOrder.has(ref.id))
+    .map((ref) => ({ ...ref, resolvedNumber: citationOrder.get(ref.id)! }))
     .sort((a, b) => a.resolvedNumber - b.resolvedNumber);
+  const uncited = doc.references
+    .filter((ref) => !citationOrder.has(ref.id))
+    .map((ref, i) => ({ ...ref, resolvedNumber: cited.length + i + 1 }));
+  const resolvedReferences = [...cited, ...uncited];
 
   return {
     ...doc,

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { Document, BodyNode, InlineNode } from "../types/document";
 import { samplePaper } from "../data/samplePaper";
 import { generateId } from "../lib/id";
+import { emptyReferenceFields, generateReferenceText, type ReferenceFields } from "../lib/generateReferenceText";
 
 type BlockWidth = Extract<BodyNode, { type: "figure" }>["width"];
 
@@ -86,6 +87,9 @@ type DocumentStore = {
   updateTableWidth: (id: string, width: BlockWidth) => void;
   removeBlock: (id: string) => void;
   reorderBlocks: (containerId: string | null, activeId: string, overId: string) => void;
+  addReference: () => void;
+  updateReferenceField: (id: string, field: keyof ReferenceFields, value: string) => void;
+  removeReference: (id: string) => void;
 };
 
 export const useDocumentStore = create<DocumentStore>((set) => ({
@@ -272,6 +276,40 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
       document: {
         ...state.document,
         body: reorderWithin(state.document.body, containerId, activeId, overId),
+      },
+    })),
+
+  addReference: () =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        references: [
+          ...state.document.references,
+          { id: generateId("ref"), fields: { ...emptyReferenceFields }, renderedText: "" },
+        ],
+      },
+    })),
+
+  // Regenerates renderedText from the full field set on every change, so the
+  // displayed citation always matches what's actually in the form — never a
+  // stale string the user could otherwise end up hand-editing out of sync.
+  updateReferenceField: (id, field, value) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        references: state.document.references.map((ref) => {
+          if (ref.id !== id) return ref;
+          const fields = { ...(ref.fields as ReferenceFields), [field]: value };
+          return { ...ref, fields, renderedText: generateReferenceText(fields) };
+        }),
+      },
+    })),
+
+  removeReference: (id) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        references: state.document.references.filter((ref) => ref.id !== id),
       },
     })),
 }));

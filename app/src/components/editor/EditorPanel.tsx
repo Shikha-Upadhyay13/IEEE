@@ -20,6 +20,7 @@ import type { BodyNode } from "../../types/document";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 import { FigureEditor } from "./FigureEditor";
 import { TableEditor } from "./TableEditor";
+import { ReferencesEditor } from "./ReferencesEditor";
 import { btnDanger, btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
 
 // Two problems compound here, both from nested sortable items having
@@ -330,6 +331,8 @@ export function EditorPanel() {
           + Table
         </button>
       </div>
+
+      <ReferencesEditor />
     </div>
   );
 }

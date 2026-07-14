@@ -86,9 +86,20 @@ export function EditorPage() {
   // before leaving the editor (e.g. clicking "Dashboard" right after typing)
   // would never reach the debounced effect above and would be silently lost
   // — caught by testing the "back to dashboard" flow right after an edit.
+  //
+  // lastSavedContent.current === null is a required guard, not an edge case:
+  // React 18 StrictMode mounts this component, immediately unmounts it (to
+  // verify cleanup logic), then remounts it — and that first synthetic
+  // unmount's cleanup can run before the load-on-mount fetch above has
+  // resolved. Without this guard, the flush would fire with whatever content
+  // happened to be sitting in the store from a *previous* document (or the
+  // module's default sample), silently overwriting a brand-new document with
+  // stale, unrelated content. Caught by testing "+ New paper" end-to-end —
+  // the freshly created blank document showed old sample content instead.
   useEffect(() => {
     return () => {
-      if (!documentId || latestDocument.current === lastSavedContent.current) return;
+      if (!documentId || lastSavedContent.current === null) return;
+      if (latestDocument.current === lastSavedContent.current) return;
       const finalContent = latestDocument.current;
       supabase
         .from("documents")
