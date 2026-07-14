@@ -77,6 +77,7 @@ type DocumentStore = {
   appendSection: () => void;
   appendFigure: () => void;
   appendTable: () => void;
+  appendEquation: () => void;
   updateParagraphContent: (id: string, content: InlineNode[]) => void;
   updateSectionHeading: (id: string, heading: string) => void;
   updateFigureImage: (id: string, image: { url: string; alt: string }) => void;
@@ -85,6 +86,7 @@ type DocumentStore = {
   updateTableCaption: (id: string, caption: InlineNode[]) => void;
   updateTableRows: (id: string, rows: string[][]) => void;
   updateTableWidth: (id: string, width: BlockWidth) => void;
+  updateEquationLatex: (id: string, latex: string) => void;
   removeBlock: (id: string) => void;
   reorderBlocks: (containerId: string | null, activeId: string, overId: string) => void;
   addReference: () => void;
@@ -185,6 +187,14 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
       },
     })),
 
+  appendEquation: () =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: [...state.document.body, { type: "equation", id: generateId("eq"), latex: "" }],
+      },
+    })),
+
   // Full inline-content replacement, preserving any citeRef/xref nodes the
   // rich-text editor (TipTap) round-trips — unlike Milestone 2's plain-text
   // textarea, this no longer destroys citations on edit.
@@ -264,6 +274,16 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         ...state.document,
         body: updateNodeById(state.document.body, id, (node) =>
           node.type === "table" ? { ...node, width } : node
+        ),
+      },
+    })),
+
+  updateEquationLatex: (id, latex) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "equation" ? { ...node, latex } : node
         ),
       },
     })),

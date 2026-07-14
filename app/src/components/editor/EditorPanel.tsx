@@ -21,6 +21,7 @@ import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 import { FigureEditor } from "./FigureEditor";
 import { TableEditor } from "./TableEditor";
 import { ReferencesEditor } from "./ReferencesEditor";
+import { EquationEditor } from "./EquationEditor";
 import { btnDanger, btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
 
 // Two problems compound here, both from nested sortable items having
@@ -60,6 +61,7 @@ function SortableBlockItem({
 }) {
   const updateParagraphContent = useDocumentStore((s) => s.updateParagraphContent);
   const updateSectionHeading = useDocumentStore((s) => s.updateSectionHeading);
+  const updateEquationLatex = useDocumentStore((s) => s.updateEquationLatex);
   const removeBlock = useDocumentStore((s) => s.removeBlock);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -176,19 +178,21 @@ function SortableBlockItem({
     );
   }
 
-  // equation: not yet editable in this milestone — can be reordered/removed.
+  // equation
   return (
     <div
       ref={setNodeRef}
       data-block-id={node.id}
       style={{ ...wrapperStyle, marginLeft: depth * 16 }}
-      className={`${wrapperClass} flex gap-2 items-center ${cardBase} px-3 py-2`}
+      className={`${wrapperClass} ${cardBase} p-3`}
     >
-      {dragHandle}
-      <span className="text-xs text-gray-500 font-mono">
-        [{node.type}] {node.id}
-      </span>
-      {deleteButton}
+      <div className="flex gap-2 items-start">
+        {dragHandle}
+        <div className="flex-1 min-w-0">
+          <EquationEditor latex={node.latex} onChange={(latex) => updateEquationLatex(node.id, latex)} />
+        </div>
+        {deleteButton}
+      </div>
     </div>
   );
 }
@@ -253,6 +257,7 @@ export function EditorPanel() {
   const appendSection = useDocumentStore((s) => s.appendSection);
   const appendFigure = useDocumentStore((s) => s.appendFigure);
   const appendTable = useDocumentStore((s) => s.appendTable);
+  const appendEquation = useDocumentStore((s) => s.appendEquation);
   const reorderBlocks = useDocumentStore((s) => s.reorderBlocks);
 
   const sensors = useSensors(
@@ -329,6 +334,9 @@ export function EditorPanel() {
         </button>
         <button onClick={appendTable} className={btnSecondary}>
           + Table
+        </button>
+        <button onClick={appendEquation} className={btnSecondary}>
+          + Equation
         </button>
       </div>
 

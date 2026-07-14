@@ -1,9 +1,23 @@
+import katex from "katex";
+import "katex/dist/katex.min.css";
 import type {
   ResolvedDocument,
   ResolvedBodyNode,
   ResolvedInlineNode,
 } from "../../types/document";
 import "../../styles/ieee-template.css";
+
+// Real math rendering (KaTeX) rather than displaying the stored LaTeX as
+// literal text. throwOnError: false so a mid-edit/incomplete expression
+// degrades to KaTeX's own inline error rendering instead of crashing the
+// whole paper preview.
+function EquationMath({ latex }: { latex: string }) {
+  if (!latex.trim()) {
+    return <span className="ieee-equation-placeholder">[Empty equation]</span>;
+  }
+  const html = katex.renderToString(latex, { throwOnError: false, displayMode: true });
+  return <span dangerouslySetInnerHTML={{ __html: html }} />;
+}
 
 function InlineContent({ nodes }: { nodes: ResolvedInlineNode[] }) {
   return (
@@ -101,7 +115,7 @@ function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
     case "equation":
       return (
         <div className="ieee-equation">
-          <div>{node.latex}</div>
+          <EquationMath latex={node.latex} />
           <div className="ieee-equation-number">({node.resolvedNumber})</div>
         </div>
       );
