@@ -33,6 +33,12 @@ const BlockWidthSchema = z.enum(["single-column", "double-column"]);
 const TableSpacingSchema = z.enum(["compact", "comfortable", "spacious"]);
 export type TableSpacing = z.infer<typeof TableSpacingSchema>;
 
+const FigureImageSchema = z.object({ url: z.string(), alt: z.string() });
+export type FigureImage = z.infer<typeof FigureImageSchema>;
+const FigureScaleSchema = z.number().int().min(10).max(100);
+const FigureAlignSchema = z.enum(["left", "center", "right"]);
+export type FigureAlign = z.infer<typeof FigureAlignSchema>;
+
 // BodyNode is recursive (a section contains children that may themselves be sections),
 // so the schema is built with z.lazy().
 export type BodyNode =
@@ -42,8 +48,12 @@ export type BodyNode =
       type: "figure";
       id: string;
       width: z.infer<typeof BlockWidthSchema>;
-      image: { url: string; alt: string };
+      images: FigureImage[]; // 2+ renders as side-by-side subfigures (a), (b), ...
+      scale?: number; // percentage, 10-100; default 100 (see numbering.ts)
+      align?: FigureAlign; // default "center"
       caption: InlineNode[];
+      /** @deprecated legacy single-image shape, read-only for documents predating multi-image support — see numbering.ts's normalization. Never written by new code. */
+      image?: { url: string; alt: string };
     }
   | {
       type: "table";
@@ -73,8 +83,11 @@ export const BodyNodeSchema: z.ZodType<BodyNode> = z.lazy(() =>
       type: z.literal("figure"),
       id: z.string(),
       width: BlockWidthSchema,
-      image: z.object({ url: z.string(), alt: z.string() }),
+      images: z.array(FigureImageSchema),
+      scale: FigureScaleSchema.optional(),
+      align: FigureAlignSchema.optional(),
       caption: z.array(InlineNodeSchema),
+      image: FigureImageSchema.optional(), // legacy — see BodyNode's figure variant
     }),
     z.object({
       type: z.literal("table"),
@@ -146,7 +159,9 @@ export type ResolvedBodyNode =
       type: "figure";
       id: string;
       width: "single-column" | "double-column";
-      image: { url: string; alt: string };
+      images: FigureImage[];
+      scale: number; // defaulted in resolveNumbering; always present once resolved
+      align: FigureAlign; // defaulted in resolveNumbering; always present once resolved
       caption: ResolvedInlineNode[];
       resolvedNumber: number;
     }

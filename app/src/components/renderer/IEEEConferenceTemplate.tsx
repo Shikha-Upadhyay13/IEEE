@@ -79,9 +79,19 @@ function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
         <figure
           id={`figure-${node.id}`}
           className={`ieee-figure ${node.width === "double-column" ? "ieee-double-column" : ""}`}
+          style={{ alignItems: node.align === "left" ? "flex-start" : node.align === "right" ? "flex-end" : "center" }}
         >
-          {node.image.url ? (
-            <img src={node.image.url} alt={node.image.alt} />
+          {node.images.length > 0 ? (
+            <div className="ieee-figure-images">
+              {node.images.map((img, i) => (
+                <div key={img.url + i} className="ieee-subfigure" style={{ width: `${node.scale}%` }}>
+                  <img src={img.url} alt={img.alt} />
+                  {node.images.length > 1 && (
+                    <div className="ieee-subfigure-label">({String.fromCharCode(97 + i)})</div>
+                  )}
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="ieee-figure-placeholder">[Image not yet uploaded]</div>
           )}

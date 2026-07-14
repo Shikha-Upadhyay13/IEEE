@@ -119,6 +119,9 @@
 /* --- Figures --- */
 
 .ieee-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* overridden inline per-figure via the align field */
   break-inside: avoid;
   margin: 8pt 0;
   text-align: center;
@@ -128,8 +131,29 @@
   column-span: all;
 }
 
-.ieee-figure img {
+.ieee-figure-images {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4pt;
+}
+
+/* 2+ images render as side-by-side subfigures, each auto-labeled (a), (b), ... */
+.ieee-subfigure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ieee-subfigure img {
   max-width: 100%;
+  display: block;
+}
+
+.ieee-subfigure-label {
+  font-size: 8pt;
+  margin-top: 2pt;
 }
 
 .ieee-figure-placeholder {

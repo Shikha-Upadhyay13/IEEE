@@ -140,7 +140,7 @@ export const samplePaper: Document = {
           type: "figure",
           id: "fig-1",
           width: "single-column",
-          image: { url: "/sample-figure-placeholder.svg", alt: "Example of a figure" },
+          images: [{ url: "/sample-figure-placeholder.svg", alt: "Example of a figure" }],
           caption: [{ type: "text", text: "Example of a figure caption." }],
         },
         {

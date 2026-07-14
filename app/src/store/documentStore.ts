@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Document, BodyNode, InlineNode, TableSpacing } from "../types/document";
+import type { Document, BodyNode, InlineNode, TableSpacing, FigureImage, FigureAlign } from "../types/document";
 import { samplePaper } from "../data/samplePaper";
 import { generateId } from "../lib/id";
 import { emptyReferenceFields, generateReferenceText, type ReferenceFields } from "../lib/generateReferenceText";
@@ -80,9 +80,12 @@ type DocumentStore = {
   appendEquation: () => void;
   updateParagraphContent: (id: string, content: InlineNode[]) => void;
   updateSectionHeading: (id: string, heading: string) => void;
-  updateFigureImage: (id: string, image: { url: string; alt: string }) => void;
+  addFigureImage: (id: string, image: FigureImage) => void;
+  removeFigureImageAt: (id: string, index: number) => void;
   updateFigureCaption: (id: string, caption: InlineNode[]) => void;
   updateFigureWidth: (id: string, width: BlockWidth) => void;
+  updateFigureScale: (id: string, scale: number) => void;
+  updateFigureAlign: (id: string, align: FigureAlign) => void;
   updateTableCaption: (id: string, caption: InlineNode[]) => void;
   updateTableRows: (id: string, rows: string[][]) => void;
   updateTableWidth: (id: string, width: BlockWidth) => void;
@@ -161,7 +164,9 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
             type: "figure",
             id: generateId("fig"),
             width: "single-column",
-            image: { url: "", alt: "" },
+            images: [],
+            scale: 100,
+            align: "center",
             caption: [{ type: "text", text: "New figure — upload an image and add a caption." }],
           },
         ],
@@ -220,12 +225,24 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
       },
     })),
 
-  updateFigureImage: (id, image) =>
+  addFigureImage: (id, image) =>
     set((state) => ({
       document: {
         ...state.document,
         body: updateNodeById(state.document.body, id, (node) =>
-          node.type === "figure" ? { ...node, image } : node
+          node.type === "figure" ? { ...node, images: [...(node.images ?? []), image] } : node
+        ),
+      },
+    })),
+
+  removeFigureImageAt: (id, index) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "figure"
+            ? { ...node, images: (node.images ?? []).filter((_, i) => i !== index) }
+            : node
         ),
       },
     })),
@@ -246,6 +263,26 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         ...state.document,
         body: updateNodeById(state.document.body, id, (node) =>
           node.type === "figure" ? { ...node, width } : node
+        ),
+      },
+    })),
+
+  updateFigureScale: (id, scale) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "figure" ? { ...node, scale } : node
+        ),
+      },
+    })),
+
+  updateFigureAlign: (id, align) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, id, (node) =>
+          node.type === "figure" ? { ...node, align } : node
         ),
       },
     })),

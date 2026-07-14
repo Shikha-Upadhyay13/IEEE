@@ -108,6 +108,11 @@ export function resolveNumbering(doc: Document): ResolvedDocument {
           counters.figure += 1;
           return {
             ...node,
+            // Normalizes documents predating multi-image support (only had
+            // a single `image` field) into the `images` array shape.
+            images: node.images && node.images.length > 0 ? node.images : node.image ? [node.image] : [],
+            scale: node.scale ?? 100,
+            align: node.align ?? "center",
             resolvedNumber: counters.figure,
             caption: resolveInline(node.caption),
           };

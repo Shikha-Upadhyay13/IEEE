@@ -10,7 +10,8 @@ export function collectXrefTargets(body: BodyNode[]): XrefTarget[] {
   function walk(nodes: BodyNode[]) {
     for (const node of nodes) {
       if (node.type === "figure") {
-        targets.push({ id: node.id, targetType: "figure", label: node.image.alt || node.id });
+        const firstImage = node.images?.[0] ?? node.image; // node.image is the pre-multi-image legacy field
+        targets.push({ id: node.id, targetType: "figure", label: firstImage?.alt || node.id });
       } else if (node.type === "table") {
         const captionText = node.caption.find((c) => c.type === "text")?.text;
         targets.push({ id: node.id, targetType: "table", label: captionText || node.id });
