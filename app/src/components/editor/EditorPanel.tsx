@@ -242,6 +242,7 @@ function KeywordsInput({
           setDraft(e.target.value);
           onChange(e.target.value);
         }}
+        placeholder="e.g., machine learning, edge computing, IoT"
         className={inputBase}
       />
     </div>
@@ -281,6 +282,12 @@ export function EditorPanel() {
     .map((n) => (n.type === "text" ? n.text : ""))
     .join("");
 
+  const abstractWordCount = document.abstract.text.trim() === "" ? 0 : document.abstract.text.trim().split(/\s+/).length;
+  // IEEE's own guidance (verified in this project's research): abstracts run
+  // ~150 words. This is advisory, not enforced — going over doesn't block
+  // anything, it just tells you before your target venue's reviewer does.
+  const abstractOverLimit = abstractWordCount > 150;
+
   return (
     <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
       <div className="mb-4">
@@ -292,19 +299,26 @@ export function EditorPanel() {
           value={titleText}
           onChange={(e) => setTitle(e.target.value)}
           rows={2}
+          placeholder="e.g., A Novel Approach to Efficient Edge Computing"
           className={`${inputBase} resize-none`}
         />
       </div>
 
       <div className="mb-4">
-        <label htmlFor="paper-abstract" className={labelBase}>
-          Abstract
-        </label>
+        <div className="flex justify-between items-baseline">
+          <label htmlFor="paper-abstract" className={labelBase}>
+            Abstract
+          </label>
+          <span className={`text-xs ${abstractOverLimit ? "text-amber-600" : "text-gray-400"}`}>
+            {abstractWordCount} / 150 words
+          </span>
+        </div>
         <textarea
           id="paper-abstract"
           value={document.abstract.text}
           onChange={(e) => setAbstract(e.target.value)}
           rows={4}
+          placeholder="Summarize the problem, your approach, and key results in about 150 words."
           className={`${inputBase} resize-none`}
         />
       </div>
