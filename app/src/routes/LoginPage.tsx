@@ -31,14 +31,14 @@ export function LoginPage() {
         // immediately — the user is already logged in, nothing to check.
         // With it enabled, no session comes back until they click the link.
         if (data.session) {
-          navigate("/");
+          navigate("/dashboard");
         } else {
           setMessage("Check your email to confirm your account, then sign in.");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

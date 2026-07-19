@@ -154,7 +154,7 @@ export function EditorPage() {
     <div className="flex h-screen">
       <div className="w-[380px] flex-shrink-0 h-screen flex flex-col border-r border-gray-200 bg-white">
         <div className="flex justify-between items-center px-4 py-2.5 border-b border-gray-100">
-          <Link to="/" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
+          <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
             ← Dashboard
           </Link>
           <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
