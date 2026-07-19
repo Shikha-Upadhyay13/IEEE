@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type MouseEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { resolveNumbering } from "../lib/numbering";
 import { samplePaper } from "../data/samplePaper";
@@ -14,6 +14,12 @@ const HERO_PAGE_HEIGHT = 560;
 const TRUST_ITEMS = ["No credit card required", "No LaTeX to learn", "Free to start"];
 
 const BLOCK_LIST_MOCKUP = ["Title & authors", "Abstract", "I. Introduction", "Fig. 1 — Diagram", "References"];
+
+const STATS = [
+  { value: "2-column", label: "Exact IEEE layout, every time" },
+  { value: "0", label: "Manual formatting fixes needed" },
+  { value: "1-click", label: "From draft to submission PDF" },
+];
 
 /* ---------------------------------------------------------------------- */
 /* Small inline icon set — plain geometric strokes, not emoji glyphs, so   */
@@ -114,7 +120,7 @@ const STEPS = [
   },
   {
     icon: "export" as const,
-    color: "emerald",
+    color: "rose",
     title: "Export a ready PDF",
     body: "One click renders a submission-ready PDF from the exact same layout you've been previewing all along.",
   },
@@ -160,12 +166,21 @@ const FEATURES = [
 ];
 
 const ICON_BADGE_CLASSES: Record<string, string> = {
-  indigo: "bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-indigo-500/25",
-  sky: "bg-gradient-to-br from-sky-400 to-sky-600 shadow-sky-500/25",
-  amber: "bg-gradient-to-br from-amber-400 to-amber-600 shadow-amber-500/25",
-  violet: "bg-gradient-to-br from-violet-500 to-violet-700 shadow-violet-500/25",
-  emerald: "bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-emerald-500/25",
-  rose: "bg-gradient-to-br from-rose-400 to-rose-600 shadow-rose-500/25",
+  indigo: "bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-indigo-500/30",
+  sky: "bg-gradient-to-br from-sky-400 to-sky-600 shadow-sky-500/30",
+  amber: "bg-gradient-to-br from-amber-400 to-amber-600 shadow-amber-500/30",
+  violet: "bg-gradient-to-br from-violet-500 to-violet-700 shadow-violet-500/30",
+  emerald: "bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-emerald-500/30",
+  rose: "bg-gradient-to-br from-rose-400 to-rose-600 shadow-rose-500/30",
+};
+
+const CARD_HOVER_GLOW: Record<string, string> = {
+  indigo: "hover:shadow-indigo-200/70 hover:border-indigo-200",
+  sky: "hover:shadow-sky-200/70 hover:border-sky-200",
+  amber: "hover:shadow-amber-200/70 hover:border-amber-200",
+  violet: "hover:shadow-violet-200/70 hover:border-violet-200",
+  emerald: "hover:shadow-emerald-200/70 hover:border-emerald-200",
+  rose: "hover:shadow-rose-200/70 hover:border-rose-200",
 };
 
 const FAQS = [
@@ -195,25 +210,11 @@ const FAQS = [
   },
 ];
 
-function GridBackdrop({ className = "" }: { className?: string }) {
-  return (
-    <div
-      aria-hidden="true"
-      className={`pointer-events-none absolute inset-0 opacity-[0.06] ${className}`}
-      style={{
-        backgroundImage:
-          "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
-        backgroundSize: "40px 40px",
-      }}
-    />
-  );
-}
-
 function IconBadge({ icon, color, size = "md" }: { icon: keyof typeof Icons; color: string; size?: "md" | "lg" }) {
-  const dims = size === "lg" ? "w-12 h-12" : "w-10 h-10";
-  const iconDims = size === "lg" ? "w-6 h-6" : "w-5 h-5";
+  const dims = size === "lg" ? "w-14 h-14" : "w-11 h-11";
+  const iconDims = size === "lg" ? "w-7 h-7" : "w-5 h-5";
   return (
-    <div className={`${dims} rounded-xl flex items-center justify-center text-white shadow-lg ${ICON_BADGE_CLASSES[color]}`}>
+    <div className={`${dims} rounded-2xl flex items-center justify-center text-white shadow-lg ${ICON_BADGE_CLASSES[color]}`}>
       {Icons[icon](iconDims)}
     </div>
   );
@@ -223,13 +224,13 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div
-      className={`rounded-xl border transition-colors ${
-        open ? "border-indigo-200 bg-indigo-50/40" : "border-gray-200 bg-white hover:border-gray-300"
+      className={`rounded-2xl border transition-all ${
+        open ? "border-indigo-200 bg-indigo-50/40 shadow-sm" : "border-gray-200 bg-white hover:border-gray-300"
       }`}
     >
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-4 text-left px-5 py-4"
+        className="w-full flex items-center justify-between gap-4 text-left px-6 py-4"
       >
         <span className="text-sm font-medium text-gray-900">{q}</span>
         <span
@@ -240,17 +241,17 @@ function FaqItem({ q, a }: { q: string; a: string }) {
           +
         </span>
       </button>
-      {open && <p className="text-sm text-gray-500 leading-relaxed px-5 pb-4 max-w-2xl">{a}</p>}
+      {open && <p className="text-sm text-gray-500 leading-relaxed px-6 pb-5 max-w-2xl">{a}</p>}
     </div>
   );
 }
 
 function NavBar() {
   return (
-    <header className="border-b border-gray-100 bg-white/80 backdrop-blur sticky top-0 z-20">
+    <header className="border-b border-gray-100 bg-white/70 backdrop-blur-md sticky top-0 z-20">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-gradient-to-br from-indigo-600 to-indigo-800 text-white flex items-center justify-center font-serif text-sm shadow-sm">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 text-white flex items-center justify-center font-serif text-sm shadow-md shadow-indigo-500/30">
             §
           </div>
           <span className="font-semibold text-gray-900 tracking-tight">IEEE Paper Builder</span>
@@ -279,6 +280,37 @@ function NavBar() {
   );
 }
 
+/** The hero's product shot tilts in 3D and responds to the cursor — a cheap,
+ *  high-payoff trick for making a static screenshot feel alive and premium
+ *  rather than a flat pasted image. */
+function TiltCard({ children }: { children: ReactNode }) {
+  const [tilt, setTilt] = useState({ x: -6, y: 8 });
+
+  function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({ x: py * -14, y: px * 14 });
+  }
+  function handleMouseLeave() {
+    setTilt({ x: -6, y: 8 });
+  }
+
+  return (
+    <div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="transition-transform duration-300 ease-out will-change-transform"
+      style={{
+        transform: `perspective(1400px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+        transformStyle: "preserve-3d",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function LandingPage() {
   const resolvedSample = useMemo(() => resolveNumbering(samplePaper), []);
 
@@ -288,36 +320,43 @@ export function LandingPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <GridBackdrop className="text-indigo-900" />
+        {/* Colorful mesh backdrop — several saturated, softly blurred blobs
+            rather than one flat tint, so the (light-mode) hero still reads
+            as vivid instead of plain white. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-40 -right-32 w-[560px] h-[560px] rounded-full bg-gradient-to-br from-indigo-300/40 via-violet-200/30 to-transparent blur-3xl"
+          className="pointer-events-none absolute -top-52 -right-40 w-[640px] h-[640px] rounded-full bg-gradient-to-br from-indigo-400/40 via-violet-300/30 to-transparent blur-3xl"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-40 -left-40 w-[420px] h-[420px] rounded-full bg-gradient-to-br from-sky-200/40 to-transparent blur-3xl"
+          className="pointer-events-none absolute top-20 -left-52 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-sky-300/40 to-transparent blur-3xl"
         />
-        <div className="relative max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-32 grid lg:grid-cols-2 gap-16 items-center">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-0 right-1/4 w-[420px] h-[420px] rounded-full bg-gradient-to-br from-rose-300/30 to-transparent blur-3xl"
+        />
+
+        <div className="relative max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-16 grid lg:grid-cols-2 gap-16 items-center">
           <div className="animate-fade-in-up">
-            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1.5 mb-6">
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1.5 mb-7">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
               Free IEEE conference paper builder
             </p>
-            <h1 className="text-5xl sm:text-6xl font-semibold tracking-tight text-gray-900 leading-[1.05] mb-6">
+            <h1 className="text-6xl sm:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.02] mb-6">
               Write your paper.
               <br />
-              <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
                 We'll handle the formatting.
               </span>
             </h1>
-            <p className="text-lg text-gray-500 leading-relaxed mb-8 max-w-md">
+            <p className="text-lg text-gray-500 leading-relaxed mb-9 max-w-md">
               Drag, drop, and write your content — margins, two-column layout, fonts, figure
               numbering, and citations are handled automatically, to the real IEEE conference spec.
             </p>
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-7">
               <Link
                 to="/login"
-                className={`${btnPrimary} px-6 py-3 text-base shadow-lg shadow-indigo-600/25 hover:shadow-xl hover:shadow-indigo-600/30 hover:-translate-y-0.5`}
+                className={`${btnPrimary} px-7 py-3.5 text-base shadow-lg shadow-indigo-600/30 hover:shadow-xl hover:shadow-indigo-600/40 hover:-translate-y-0.5`}
               >
                 Get started for free
                 {Icons.arrowRight("w-4 h-4")}
@@ -341,39 +380,42 @@ export function LandingPage() {
               embed would only ever show a corner of one; scale the whole page
               down to a thumbnail instead of letting the crop cut into it. */}
           <div className="relative animate-fade-in-up" style={{ animationDelay: "120ms" }}>
-            <div className="absolute -inset-8 bg-gradient-to-br from-indigo-100 via-violet-50 to-transparent rounded-[2.5rem] -z-10" />
-            <div
-              className="relative mx-auto rounded-xl border border-gray-200 shadow-2xl shadow-indigo-900/15 overflow-hidden bg-gray-500"
-              style={{ width: HERO_PAGE_WIDTH, height: HERO_PAGE_HEIGHT }}
-            >
+            <div className="absolute -inset-10 bg-gradient-to-br from-indigo-200/50 via-violet-100/40 to-rose-100/30 rounded-[3rem] -z-10 blur-2xl" />
+
+            <TiltCard>
               <div
-                style={{ width: 816, transform: `scale(${HERO_PAGE_SCALE})`, transformOrigin: "top left" }}
-                className="pt-6 flex justify-center"
+                className="relative mx-auto rounded-2xl border border-gray-200 shadow-2xl shadow-indigo-900/20 overflow-hidden bg-gray-500"
+                style={{ width: HERO_PAGE_WIDTH, height: HERO_PAGE_HEIGHT }}
               >
-                <PagedPreview document={resolvedSample} />
+                <div
+                  style={{ width: 816, transform: `scale(${HERO_PAGE_SCALE})`, transformOrigin: "top left" }}
+                  className="pt-6 flex justify-center"
+                >
+                  <PagedPreview document={resolvedSample} />
+                </div>
+                {/* Fade the crop into the container's own background instead of a
+                    hard cut, so the second page reads as "more paper below", not
+                    a clipping bug. */}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-gray-500 to-transparent" />
               </div>
-              {/* Fade the crop into the container's own background instead of a
-                  hard cut, so the second page reads as "more paper below", not
-                  a clipping bug. */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-gray-500 to-transparent" />
-            </div>
+            </TiltCard>
 
             {/* Floating badge — truthful about what the product actually
                 does (real numbering), styled like a live status chip. */}
-            <div className="hidden sm:flex absolute -right-4 -top-4 items-center gap-2 bg-white rounded-lg border border-gray-200 shadow-lg px-3 py-2">
+            <div className="hidden sm:flex absolute -right-6 -top-6 items-center gap-2 bg-white rounded-xl border border-gray-200 shadow-xl px-3.5 py-2.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-medium text-gray-700">Auto-numbered · Fig. 1, Table I, [1]</span>
             </div>
 
             {/* Floating "your paper" block-list mockup — makes the drag-and-
                 drop editing model concrete instead of only showing the output. */}
-            <div className="hidden lg:block absolute -left-12 -bottom-10 w-60 bg-white rounded-xl border border-gray-200 shadow-xl p-3">
+            <div className="hidden lg:block absolute -left-14 -bottom-12 w-60 bg-white rounded-2xl border border-gray-200 shadow-2xl p-3 rotate-[-2deg]">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your paper</p>
               <div className="flex flex-col gap-1">
                 {BLOCK_LIST_MOCKUP.map((label, i) => (
                   <div
                     key={label}
-                    className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium ${
+                    className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium ${
                       i === 1 ? "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200" : "text-gray-600"
                     }`}
                   >
@@ -385,13 +427,29 @@ export function LandingPage() {
             </div>
           </div>
         </div>
+
+        {/* Stat strip — overlaps the hero/next-section boundary, a common
+            "floating bar" pattern that gives the fold a confident, finished
+            edge instead of just trailing off into whitespace. */}
+        <div className="relative max-w-4xl mx-auto px-6">
+          <div className="relative z-10 bg-white rounded-3xl border border-gray-200 shadow-2xl shadow-gray-900/10 grid grid-cols-3 divide-x divide-gray-100">
+            {STATS.map((s) => (
+              <div key={s.label} className="px-4 sm:px-8 py-6 text-center">
+                <p className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+                  {s.value}
+                </p>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1 leading-snug">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="relative bg-gradient-to-b from-indigo-50/50 to-white">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-10 py-24">
+      <section id="how-it-works" className="relative">
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-24">
           <div className="text-center mb-14">
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-3">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
               From blank page to submission-ready, in three steps
             </h2>
             <p className="text-sm text-gray-500 max-w-xl mx-auto">
@@ -402,10 +460,10 @@ export function LandingPage() {
             {STEPS.map((s) => (
               <div
                 key={s.title}
-                className="bg-white rounded-2xl border border-gray-200 shadow-sm p-7 transition-all hover:shadow-md hover:-translate-y-0.5"
+                className={`bg-white rounded-3xl border border-gray-200 shadow-sm p-8 transition-all hover:shadow-xl hover:-translate-y-1 ${CARD_HOVER_GLOW[s.color]}`}
               >
                 <IconBadge icon={s.icon} color={s.color} size="lg" />
-                <h3 className="text-base font-semibold text-gray-900 mt-5 mb-2">{s.title}</h3>
+                <h3 className="text-base font-semibold text-gray-900 mt-6 mb-2">{s.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{s.body}</p>
               </div>
             ))}
@@ -414,9 +472,9 @@ export function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="bg-[#f7f6f3] py-24">
+      <section id="features" className="relative bg-gradient-to-b from-[#f7f6f3] to-[#f2f0ec] py-24">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-10">
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-3">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
             Everything you need for an IEEE paper
           </h2>
           <p className="text-sm text-gray-500 mb-12 max-w-xl">
@@ -427,12 +485,12 @@ export function LandingPage() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="group bg-white rounded-2xl border border-gray-200 p-6 shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 hover:border-gray-300"
+                className={`group bg-white rounded-3xl border border-gray-200 p-7 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 ${CARD_HOVER_GLOW[f.color]}`}
               >
-                <div className="transition-transform group-hover:scale-110 inline-flex">
+                <div className="transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 inline-flex">
                   <IconBadge icon={f.icon} color={f.color} />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mt-4 mb-1.5">{f.title}</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mt-5 mb-1.5">{f.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{f.body}</p>
               </div>
             ))}
@@ -442,7 +500,7 @@ export function LandingPage() {
 
       {/* FAQ */}
       <section id="faq" className="max-w-4xl mx-auto px-6 py-24">
-        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-10 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-10 text-center">
           Frequently asked questions
         </h2>
         <div className="flex flex-col gap-3">
@@ -452,23 +510,28 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 py-24">
-        <GridBackdrop className="text-white" />
+      {/* Final CTA — a vivid gradient band rather than the muted neutrals
+          used elsewhere, so the page ends on its highest-energy note. */}
+      <section className="relative overflow-hidden py-24">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600" />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] rounded-full bg-indigo-500/20 blur-3xl"
+          className="pointer-events-none absolute -top-24 left-1/4 w-[500px] h-[500px] rounded-full bg-white/10 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-32 right-1/4 w-[500px] h-[500px] rounded-full bg-white/10 blur-3xl"
         />
         <div className="relative max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
             Stop fighting your formatting.
           </h2>
-          <p className="text-indigo-200/80 text-base mb-8 max-w-md mx-auto">
+          <p className="text-indigo-100 text-base mb-8 max-w-md mx-auto">
             Start your paper with a template that's already correct.
           </p>
           <Link
             to="/login"
-            className={`${btnPrimary} px-7 py-3.5 text-base shadow-lg shadow-black/20 hover:-translate-y-0.5`}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-white text-indigo-700 font-semibold px-7 py-3.5 text-base shadow-xl shadow-black/20 hover:-translate-y-0.5 hover:shadow-2xl transition-all"
           >
             Get started for free
             {Icons.arrowRight("w-4 h-4")}
