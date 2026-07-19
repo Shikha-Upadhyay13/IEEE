@@ -356,9 +356,7 @@ export function LandingPage() {
             <h1 className="text-6xl sm:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.02] mb-6">
               Write your paper.
               <br />
-              <span className="bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
-                We'll handle the formatting.
-              </span>
+              <span className="text-blue-700">We'll handle the formatting.</span>
             </h1>
             <p className="text-lg text-gray-500 leading-relaxed mb-9 max-w-md">
               Drag, drop, and write your content — margins, two-column layout, fonts, figure
