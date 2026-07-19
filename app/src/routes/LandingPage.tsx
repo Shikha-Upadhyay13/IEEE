@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { resolveNumbering } from "../lib/numbering";
 import { samplePaper } from "../data/samplePaper";
@@ -13,19 +13,108 @@ const HERO_PAGE_HEIGHT = 560;
 
 const TRUST_ITEMS = ["No credit card required", "No LaTeX to learn", "Free to start"];
 
+const BLOCK_LIST_MOCKUP = ["Title & authors", "Abstract", "I. Introduction", "Fig. 1 — Diagram", "References"];
+
+/* ---------------------------------------------------------------------- */
+/* Small inline icon set — plain geometric strokes, not emoji glyphs, so   */
+/* the marketing page renders identically and crisply across platforms.   */
+/* ---------------------------------------------------------------------- */
+
+function IconBase({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {children}
+    </svg>
+  );
+}
+
+const Icons = {
+  drag: (className: string) => (
+    <IconBase className={className}>
+      <circle cx="9" cy="6" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="6" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="12" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="12" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="18" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="18" r="1.3" fill="currentColor" stroke="none" />
+    </IconBase>
+  ),
+  preview: (className: string) => (
+    <IconBase className={className}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="2" />
+      <line x1="12" y1="3.5" x2="12" y2="20.5" />
+      <line x1="6" y1="8" x2="9.5" y2="8" />
+      <line x1="6" y1="11" x2="9.5" y2="11" />
+      <line x1="6" y1="14" x2="9.5" y2="14" />
+      <line x1="14.5" y1="8" x2="18" y2="8" />
+      <line x1="14.5" y1="11" x2="18" y2="11" />
+      <line x1="14.5" y1="14" x2="18" y2="14" />
+    </IconBase>
+  ),
+  citation: (className: string) => (
+    <IconBase className={className}>
+      <path d="M9 4H6a1 1 0 00-1 1v14a1 1 0 001 1h3" />
+      <path d="M15 4h3a1 1 0 011 1v14a1 1 0 01-1 1h-3" />
+      <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+    </IconBase>
+  ),
+  equation: (className: string) => (
+    <IconBase className={className}>
+      <path d="M17 5H7l5.5 7L7 19h10" />
+    </IconBase>
+  ),
+  figure: (className: string) => (
+    <IconBase className={className}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <circle cx="8.5" cy="9.5" r="1.5" />
+      <path d="M4.5 16.5l4.2-4.2a1.5 1.5 0 012.1 0L15 16.5" />
+      <path d="M13 15l1.3-1.3a1.5 1.5 0 012.1 0l3.1 3.1" />
+    </IconBase>
+  ),
+  export: (className: string) => (
+    <IconBase className={className}>
+      <path d="M12 3.5v11" />
+      <path d="M8 10.5l4 4 4-4" />
+      <path d="M4.5 17v2a2 2 0 002 2h11a2 2 0 002-2v-2" />
+    </IconBase>
+  ),
+  check: (className: string) => (
+    <IconBase className={className}>
+      <path d="M5 13l4.5 4.5L19 7" />
+    </IconBase>
+  ),
+  arrowRight: (className: string) => (
+    <IconBase className={className}>
+      <path d="M5 12h13" />
+      <path d="M13 6l6 6-6 6" />
+    </IconBase>
+  ),
+};
+
 const STEPS = [
   {
-    n: "01",
+    icon: "equation" as const,
+    color: "indigo",
     title: "Write your content",
     body: "Add your title, abstract, sections, figures, tables, and references in a normal, distraction-free editor.",
   },
   {
-    n: "02",
+    icon: "drag" as const,
+    color: "violet",
     title: "Arrange with drag-and-drop",
     body: "Reorder sections and blocks visually — the fixed IEEE template underneath never breaks, no matter how you arrange it.",
   },
   {
-    n: "03",
+    icon: "export" as const,
+    color: "emerald",
     title: "Export a ready PDF",
     body: "One click renders a submission-ready PDF from the exact same layout you've been previewing all along.",
   },
@@ -33,50 +122,50 @@ const STEPS = [
 
 const FEATURES = [
   {
-    icon: "⠿",
+    icon: "drag" as const,
     color: "indigo",
     title: "Drag-and-drop editing",
     body: "Reorder sections, figures, and tables like building blocks — no LaTeX, no fighting Word's styles.",
   },
   {
-    icon: "▤",
+    icon: "preview" as const,
     color: "sky",
     title: "Live, always-accurate preview",
     body: "The two-column IEEE layout you see while editing is pixel-identical to the exported PDF — always.",
   },
   {
-    icon: "❞",
+    icon: "citation" as const,
     color: "amber",
     title: "Automatic citation numbering",
     body: "Cite a reference anywhere in your text; numbering, ordering, and the reference list update themselves.",
   },
   {
-    icon: "∑",
+    icon: "equation" as const,
     color: "violet",
     title: "Visual equation editor",
     body: "Build equations by hand with a math keyboard, no LaTeX syntax to memorize, rendered crisply with KaTeX.",
   },
   {
-    icon: "🖼",
+    icon: "figure" as const,
     color: "emerald",
     title: "Figures, tables & subfigures",
     body: "Upload images, arrange multi-part figures with auto (a)/(b) labels, and size/align them precisely.",
   },
   {
-    icon: "⇩",
+    icon: "export" as const,
     color: "rose",
     title: "One-click PDF export",
     body: "Export a submission-ready PDF rendered from the exact same layout engine as your live preview.",
   },
 ];
 
-const FEATURE_ICON_CLASSES: Record<string, string> = {
-  indigo: "bg-indigo-50 text-indigo-600",
-  sky: "bg-sky-50 text-sky-600",
-  amber: "bg-amber-50 text-amber-600",
-  violet: "bg-violet-50 text-violet-600",
-  emerald: "bg-emerald-50 text-emerald-600",
-  rose: "bg-rose-50 text-rose-600",
+const ICON_BADGE_CLASSES: Record<string, string> = {
+  indigo: "bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-indigo-500/25",
+  sky: "bg-gradient-to-br from-sky-400 to-sky-600 shadow-sky-500/25",
+  amber: "bg-gradient-to-br from-amber-400 to-amber-600 shadow-amber-500/25",
+  violet: "bg-gradient-to-br from-violet-500 to-violet-700 shadow-violet-500/25",
+  emerald: "bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-emerald-500/25",
+  rose: "bg-gradient-to-br from-rose-400 to-rose-600 shadow-rose-500/25",
 };
 
 const FAQS = [
@@ -120,6 +209,16 @@ function GridBackdrop({ className = "" }: { className?: string }) {
   );
 }
 
+function IconBadge({ icon, color, size = "md" }: { icon: keyof typeof Icons; color: string; size?: "md" | "lg" }) {
+  const dims = size === "lg" ? "w-12 h-12" : "w-10 h-10";
+  const iconDims = size === "lg" ? "w-6 h-6" : "w-5 h-5";
+  return (
+    <div className={`${dims} rounded-xl flex items-center justify-center text-white shadow-lg ${ICON_BADGE_CLASSES[color]}`}>
+      {Icons[icon](iconDims)}
+    </div>
+  );
+}
+
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -149,7 +248,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 function NavBar() {
   return (
     <header className="border-b border-gray-100 bg-white/80 backdrop-blur sticky top-0 z-20">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-md bg-gradient-to-br from-indigo-600 to-indigo-800 text-white flex items-center justify-center font-serif text-sm shadow-sm">
             §
@@ -192,10 +291,14 @@ export function LandingPage() {
         <GridBackdrop className="text-indigo-900" />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-40 -right-40 w-[560px] h-[560px] rounded-full bg-gradient-to-br from-indigo-200/50 to-transparent blur-3xl"
+          className="pointer-events-none absolute -top-40 -right-32 w-[560px] h-[560px] rounded-full bg-gradient-to-br from-indigo-300/40 via-violet-200/30 to-transparent blur-3xl"
         />
-        <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-24 grid lg:grid-cols-2 gap-16 items-center">
-          <div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-40 -left-40 w-[420px] h-[420px] rounded-full bg-gradient-to-br from-sky-200/40 to-transparent blur-3xl"
+        />
+        <div className="relative max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-32 grid lg:grid-cols-2 gap-16 items-center">
+          <div className="animate-fade-in-up">
             <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1.5 mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
               Free IEEE conference paper builder
@@ -203,7 +306,7 @@ export function LandingPage() {
             <h1 className="text-5xl sm:text-6xl font-semibold tracking-tight text-gray-900 leading-[1.05] mb-6">
               Write your paper.
               <br />
-              <span className="bg-gradient-to-r from-indigo-600 to-indigo-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-500 bg-clip-text text-transparent">
                 We'll handle the formatting.
               </span>
             </h1>
@@ -214,18 +317,19 @@ export function LandingPage() {
             <div className="flex items-center gap-4 mb-6">
               <Link
                 to="/login"
-                className={`${btnPrimary} px-6 py-3 text-base shadow-md shadow-indigo-600/20 hover:shadow-lg hover:shadow-indigo-600/25 hover:-translate-y-0.5`}
+                className={`${btnPrimary} px-6 py-3 text-base shadow-lg shadow-indigo-600/25 hover:shadow-xl hover:shadow-indigo-600/30 hover:-translate-y-0.5`}
               >
                 Get started for free
+                {Icons.arrowRight("w-4 h-4")}
               </Link>
               <a href="#how-it-works" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-                See how it works →
+                See how it works
               </a>
             </div>
             <ul className="flex flex-wrap gap-x-6 gap-y-2">
               {TRUST_ITEMS.map((t) => (
                 <li key={t} className="flex items-center gap-1.5 text-sm text-gray-500">
-                  <span className="text-emerald-600">✓</span>
+                  <span className="text-emerald-600">{Icons.check("w-4 h-4")}</span>
                   {t}
                 </li>
               ))}
@@ -236,10 +340,10 @@ export function LandingPage() {
               The renderer produces real US-letter (816x1056px) pages, so a raw
               embed would only ever show a corner of one; scale the whole page
               down to a thumbnail instead of letting the crop cut into it. */}
-          <div className="relative">
-            <div className="absolute -inset-6 bg-gradient-to-br from-indigo-100 via-indigo-50 to-transparent rounded-[2rem] -z-10" />
+          <div className="relative animate-fade-in-up" style={{ animationDelay: "120ms" }}>
+            <div className="absolute -inset-8 bg-gradient-to-br from-indigo-100 via-violet-50 to-transparent rounded-[2.5rem] -z-10" />
             <div
-              className="relative mx-auto rounded-xl border border-gray-200 shadow-2xl shadow-indigo-900/10 overflow-hidden bg-gray-500"
+              className="relative mx-auto rounded-xl border border-gray-200 shadow-2xl shadow-indigo-900/15 overflow-hidden bg-gray-500"
               style={{ width: HERO_PAGE_WIDTH, height: HERO_PAGE_HEIGHT }}
             >
               <div
@@ -254,50 +358,64 @@ export function LandingPage() {
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-gray-500 to-transparent" />
             </div>
 
-            {/* Floating badges — decorative, but truthful about what the
-                product actually does (real numbering + real export). */}
-            <div className="hidden sm:flex absolute -left-6 top-10 items-center gap-2 bg-white rounded-lg border border-gray-200 shadow-lg px-3 py-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            {/* Floating badge — truthful about what the product actually
+                does (real numbering), styled like a live status chip. */}
+            <div className="hidden sm:flex absolute -right-4 -top-4 items-center gap-2 bg-white rounded-lg border border-gray-200 shadow-lg px-3 py-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-medium text-gray-700">Auto-numbered · Fig. 1, Table I, [1]</span>
             </div>
-            <div className="hidden sm:flex absolute -right-4 bottom-16 items-center gap-2 bg-white rounded-lg border border-gray-200 shadow-lg px-3 py-2">
-              <span className="text-xs font-medium text-gray-700">✓ Ready to export as PDF</span>
+
+            {/* Floating "your paper" block-list mockup — makes the drag-and-
+                drop editing model concrete instead of only showing the output. */}
+            <div className="hidden lg:block absolute -left-12 -bottom-10 w-60 bg-white rounded-xl border border-gray-200 shadow-xl p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your paper</p>
+              <div className="flex flex-col gap-1">
+                {BLOCK_LIST_MOCKUP.map((label, i) => (
+                  <div
+                    key={label}
+                    className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium ${
+                      i === 1 ? "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200" : "text-gray-600"
+                    }`}
+                  >
+                    <span className="text-gray-300">{Icons.drag("w-3.5 h-3.5")}</span>
+                    {label}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="max-w-6xl mx-auto px-6 py-24">
-        <div className="text-center mb-14">
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-3">
-            From blank page to submission-ready, in three steps
-          </h2>
-          <p className="text-sm text-gray-500 max-w-xl mx-auto">
-            No setup, no formatting rules to memorize — just write and arrange.
-          </p>
-        </div>
-        <div className="grid sm:grid-cols-3 gap-8">
-          {STEPS.map((s, i) => (
-            <div key={s.n} className="relative">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="w-9 h-9 rounded-full bg-indigo-600 text-white text-sm font-semibold flex items-center justify-center">
-                  {s.n}
-                </span>
-                {i < STEPS.length - 1 && (
-                  <span className="hidden sm:block flex-1 h-px bg-gradient-to-r from-indigo-200 to-transparent" />
-                )}
+      <section id="how-it-works" className="relative bg-gradient-to-b from-indigo-50/50 to-white">
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-10 py-24">
+          <div className="text-center mb-14">
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-3">
+              From blank page to submission-ready, in three steps
+            </h2>
+            <p className="text-sm text-gray-500 max-w-xl mx-auto">
+              No setup, no formatting rules to memorize — just write and arrange.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-6">
+            {STEPS.map((s) => (
+              <div
+                key={s.title}
+                className="bg-white rounded-2xl border border-gray-200 shadow-sm p-7 transition-all hover:shadow-md hover:-translate-y-0.5"
+              >
+                <IconBadge icon={s.icon} color={s.color} size="lg" />
+                <h3 className="text-base font-semibold text-gray-900 mt-5 mb-2">{s.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{s.body}</p>
               </div>
-              <h3 className="text-base font-semibold text-gray-900 mb-2">{s.title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{s.body}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Features */}
       <section id="features" className="bg-[#f7f6f3] py-24">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-10">
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-3">
             Everything you need for an IEEE paper
           </h2>
@@ -309,14 +427,12 @@ export function LandingPage() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="group bg-white rounded-xl border border-gray-200 p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300"
+                className="group bg-white rounded-2xl border border-gray-200 p-6 shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 hover:border-gray-300"
               >
-                <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg mb-4 transition-transform group-hover:scale-110 ${FEATURE_ICON_CLASSES[f.color]}`}
-                >
-                  {f.icon}
+                <div className="transition-transform group-hover:scale-110 inline-flex">
+                  <IconBadge icon={f.icon} color={f.color} />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1.5">{f.title}</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mt-4 mb-1.5">{f.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{f.body}</p>
               </div>
             ))}
@@ -325,7 +441,7 @@ export function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="max-w-3xl mx-auto px-6 py-24">
+      <section id="faq" className="max-w-4xl mx-auto px-6 py-24">
         <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-10 text-center">
           Frequently asked questions
         </h2>
@@ -339,7 +455,11 @@ export function LandingPage() {
       {/* Final CTA */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 py-24">
         <GridBackdrop className="text-white" />
-        <div className="relative max-w-3xl mx-auto px-6 text-center">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] rounded-full bg-indigo-500/20 blur-3xl"
+        />
+        <div className="relative max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
             Stop fighting your formatting.
           </h2>
@@ -351,6 +471,7 @@ export function LandingPage() {
             className={`${btnPrimary} px-7 py-3.5 text-base shadow-lg shadow-black/20 hover:-translate-y-0.5`}
           >
             Get started for free
+            {Icons.arrowRight("w-4 h-4")}
           </Link>
         </div>
       </section>
