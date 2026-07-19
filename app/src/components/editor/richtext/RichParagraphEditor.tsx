@@ -44,11 +44,17 @@ export function RichParagraphEditor({
     onUpdate: ({ editor }) => onChange(tipTapDocToInlineNodes(editor.getJSON())),
   });
 
+  // .focus('end') rather than plain .focus(): if this paragraph has never
+  // been clicked into, TipTap's cursor defaults to the very start of the
+  // document — inserting there merges the citation directly into the first
+  // word with no space ("[1]Introduce the problem..."). Defaulting to the
+  // end instead means the common "pick a citation before you've clicked
+  // anywhere in this paragraph" case appends after existing text, not into it.
   function insertCitation(refId: string) {
     if (!refId || !editor) return;
     editor
       .chain()
-      .focus()
+      .focus("end")
       .insertContent({ type: "citeRef", attrs: { id: generateId("cite"), refId } })
       .run();
   }
@@ -58,7 +64,7 @@ export function RichParagraphEditor({
     const [targetType, targetId] = targetKey.split(":");
     editor
       .chain()
-      .focus()
+      .focus("end")
       .insertContent({ type: "xref", attrs: { id: generateId("xref"), targetType, targetId } })
       .run();
   }

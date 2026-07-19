@@ -1,6 +1,6 @@
 import { useDocumentStore } from "../../store/documentStore";
 import { emptyReferenceFields, type ReferenceFields } from "../../lib/generateReferenceText";
-import { btnDanger, btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
+import { btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
 
 const FIELD_LABELS: { key: keyof ReferenceFields; label: string; placeholder: string }[] = [
   { key: "authors", label: "Authors", placeholder: "J. F. Fuller, E. F. Fuchs, and K. J. Roesler" },
@@ -36,8 +36,12 @@ export function ReferencesEditor() {
             <div key={ref.id} className={`${cardBase} p-3`}>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-xs font-semibold text-gray-400">[{index + 1}]</span>
-                <button onClick={() => removeReference(ref.id)} className={btnDanger}>
-                  Delete
+                <button
+                  onClick={() => removeReference(ref.id)}
+                  aria-label="Delete reference"
+                  className="w-6 h-6 flex items-center justify-center rounded text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  ✕
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-2">

@@ -111,6 +111,26 @@ export function EditorPage() {
     };
   }, [documentId]);
 
+  // The flush-on-navigate-away effect above only helps for in-app SPA
+  // navigation (e.g. clicking the Dashboard link), where React's cleanup
+  // effect has time to let its async Supabase call finish. An actual browser-
+  // level navigation — closing the tab, typing a new URL, hitting refresh —
+  // tears down the JS context before that call can complete, and Supabase's
+  // authenticated requests can't use navigator.sendBeacon (no custom auth
+  // header support) as a reliable alternative. So instead of a silent save
+  // that might not finish, warn before the browser actually leaves — the same
+  // pattern Google Docs/Notion use for this exact constraint.
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (lastSavedContent.current !== null && latestDocument.current !== lastSavedContent.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
   const debouncedForPreview = useDebouncedValue(document, 250);
   const resolvedDoc = useMemo(() => resolveNumbering(debouncedForPreview), [debouncedForPreview]);
 
