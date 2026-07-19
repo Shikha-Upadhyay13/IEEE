@@ -22,7 +22,7 @@ import { FigureEditor } from "./FigureEditor";
 import { TableEditor } from "./TableEditor";
 import { ReferencesEditor } from "./ReferencesEditor";
 import { EquationEditor } from "./EquationEditor";
-import { btnDanger, btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
+import { btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
 
 // Two problems compound here, both from nested sortable items having
 // wildly different heights (a section's rect spans all its nested content):
@@ -84,9 +84,17 @@ function SortableBlockItem({
     </button>
   );
 
+  // A small, quiet icon rather than a persistent red "Delete" label — with
+  // several blocks on screen at once, a loud label per block competes with
+  // the actual content for attention. Still fully visible/clickable, just
+  // not shouting; hover shifts it to red so intent is still unambiguous.
   const deleteButton = (
-    <button onClick={() => removeBlock(node.id)} className={btnDanger} aria-label="Delete block">
-      Delete
+    <button
+      onClick={() => removeBlock(node.id)}
+      aria-label="Delete block"
+      className="flex-none w-6 h-6 flex items-center justify-center rounded text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors"
+    >
+      ✕
     </button>
   );
 
@@ -336,7 +344,11 @@ export function EditorPanel() {
         <SortableBlockList containerId={null} nodes={document.body} depth={0} />
       </DndContext>
 
-      <div className="flex gap-2 flex-wrap mt-3">
+      {/* Sticky rather than inline: these are the buttons used constantly
+          while writing, so — unlike Export PDF, which is rare enough to only
+          need to live at the very bottom of the panel — they shouldn't
+          require scrolling to the end of a growing block list to reach. */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-100 pt-2 pb-1 mt-3 flex gap-2 flex-wrap">
         <button onClick={appendParagraph} className={btnSecondary}>
           + Paragraph
         </button>
