@@ -210,6 +210,20 @@ const FAQS = [
   },
 ];
 
+function GridBackdrop({ className = "" }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`pointer-events-none absolute inset-0 opacity-[0.07] ${className}`}
+      style={{
+        backgroundImage:
+          "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+        backgroundSize: "40px 40px",
+      }}
+    />
+  );
+}
+
 function IconBadge({ icon, color, size = "md" }: { icon: keyof typeof Icons; color: string; size?: "md" | "lg" }) {
   const dims = size === "lg" ? "w-14 h-14" : "w-11 h-11";
   const iconDims = size === "lg" ? "w-7 h-7" : "w-5 h-5";
@@ -251,7 +265,7 @@ function NavBar() {
     <header className="border-b border-gray-100 bg-white/70 backdrop-blur-md sticky top-0 z-20">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 text-white flex items-center justify-center font-serif text-sm shadow-md shadow-indigo-500/30">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-800 text-white flex items-center justify-center font-serif text-sm shadow-md shadow-indigo-500/30">
             §
           </div>
           <span className="font-semibold text-gray-900 tracking-tight">IEEE Paper Builder</span>
@@ -320,20 +334,17 @@ export function LandingPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        {/* Colorful mesh backdrop — several saturated, softly blurred blobs
-            rather than one flat tint, so the (light-mode) hero still reads
-            as vivid instead of plain white. */}
+        {/* Soft blue-toned backdrop — a couple of gentle blurred blobs plus a
+            faint grid, kept to one cohesive indigo/blue family rather than a
+            multi-hue mix. */}
+        <GridBackdrop className="text-indigo-900" />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-52 -right-40 w-[640px] h-[640px] rounded-full bg-gradient-to-br from-indigo-400/40 via-violet-300/30 to-transparent blur-3xl"
+          className="pointer-events-none absolute -top-52 -right-40 w-[640px] h-[640px] rounded-full bg-gradient-to-br from-indigo-300/40 via-blue-200/30 to-transparent blur-3xl"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-20 -left-52 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-sky-300/40 to-transparent blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute bottom-0 right-1/4 w-[420px] h-[420px] rounded-full bg-gradient-to-br from-rose-300/30 to-transparent blur-3xl"
+          className="pointer-events-none absolute top-20 -left-52 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-sky-200/40 to-transparent blur-3xl"
         />
 
         <div className="relative max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-16 grid lg:grid-cols-2 gap-16 items-center">
@@ -345,7 +356,7 @@ export function LandingPage() {
             <h1 className="text-6xl sm:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.02] mb-6">
               Write your paper.
               <br />
-              <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
                 We'll handle the formatting.
               </span>
             </h1>
@@ -380,7 +391,7 @@ export function LandingPage() {
               embed would only ever show a corner of one; scale the whole page
               down to a thumbnail instead of letting the crop cut into it. */}
           <div className="relative animate-fade-in-up" style={{ animationDelay: "120ms" }}>
-            <div className="absolute -inset-10 bg-gradient-to-br from-indigo-200/50 via-violet-100/40 to-rose-100/30 rounded-[3rem] -z-10 blur-2xl" />
+            <div className="absolute -inset-10 bg-gradient-to-br from-indigo-200/50 via-blue-100/40 to-transparent rounded-[3rem] -z-10 blur-2xl" />
 
             <TiltCard>
               <div
@@ -435,7 +446,7 @@ export function LandingPage() {
           <div className="relative z-10 bg-white rounded-3xl border border-gray-200 shadow-2xl shadow-gray-900/10 grid grid-cols-3 divide-x divide-gray-100">
             {STATS.map((s) => (
               <div key={s.label} className="px-4 sm:px-8 py-6 text-center">
-                <p className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+                <p className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-indigo-600 to-blue-600 bg-clip-text text-transparent">
                   {s.value}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 mt-1 leading-snug">{s.label}</p>
@@ -510,28 +521,21 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA — a vivid gradient band rather than the muted neutrals
-          used elsewhere, so the page ends on its highest-energy note. */}
-      <section className="relative overflow-hidden py-24">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600" />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-24 left-1/4 w-[500px] h-[500px] rounded-full bg-white/10 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-32 right-1/4 w-[500px] h-[500px] rounded-full bg-white/10 blur-3xl"
-        />
+      {/* Final CTA — dark slate/indigo with a faint grid, matching the rest
+          of the page's restrained indigo/blue palette instead of a rainbow
+          gradient. */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 py-24">
+        <GridBackdrop className="text-white" />
         <div className="relative max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
             Stop fighting your formatting.
           </h2>
-          <p className="text-indigo-100 text-base mb-8 max-w-md mx-auto">
+          <p className="text-indigo-200/80 text-base mb-8 max-w-md mx-auto">
             Start your paper with a template that's already correct.
           </p>
           <Link
             to="/login"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-white text-indigo-700 font-semibold px-7 py-3.5 text-base shadow-xl shadow-black/20 hover:-translate-y-0.5 hover:shadow-2xl transition-all"
+            className={`${btnPrimary} px-7 py-3.5 text-base shadow-lg shadow-black/20 hover:-translate-y-0.5`}
           >
             Get started for free
             {Icons.arrowRight("w-4 h-4")}
