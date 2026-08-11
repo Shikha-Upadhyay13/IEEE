@@ -1,4 +1,4 @@
-import { useMemo, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { resolveNumbering } from "../lib/numbering";
 import { samplePaper } from "../data/samplePaper";
@@ -183,6 +183,17 @@ const CARD_HOVER_GLOW: Record<string, string> = {
   rose: "hover:shadow-rose-200/70 hover:border-rose-200",
 };
 
+// A corner glow tinted to each card's own icon color, invisible until hover —
+// adds depth without adding more (loud) color to the page at rest.
+const CARD_GLOW_WASH: Record<string, string> = {
+  indigo: "from-indigo-200/60",
+  sky: "from-sky-200/60",
+  amber: "from-amber-200/60",
+  violet: "from-violet-200/60",
+  emerald: "from-emerald-200/60",
+  rose: "from-rose-200/60",
+};
+
 const FAQS = [
   {
     q: "Is IEEE Paper Builder free?",
@@ -260,9 +271,58 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   );
 }
 
-function NavBar() {
+/** Fades children up into place the first time they scroll into view — used
+ *  throughout the page so sections feel alive while scrolling, not just on
+ *  initial load (which only the hero benefits from). */
+function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <header className="border-b border-gray-100 bg-white/70 backdrop-blur-md sticky top-0 z-20">
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function NavBar() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 8);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <header
+      className={`sticky top-0 z-20 border-b bg-white/70 backdrop-blur-md transition-shadow ${
+        scrolled ? "border-gray-200 shadow-sm" : "border-transparent"
+      }`}
+    >
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-800 text-white flex items-center justify-center font-serif text-sm shadow-md shadow-indigo-500/30">
@@ -356,7 +416,7 @@ export function LandingPage() {
             <h1 className="text-6xl sm:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.02] mb-6">
               Write your paper.
               <br />
-              <span className="text-blue-700">We'll handle the formatting.</span>
+              <span className="text-blue-800">We'll handle the formatting.</span>
             </h1>
             <p className="text-lg text-gray-500 leading-relaxed mb-9 max-w-md">
               Drag, drop, and write your content — margins, two-column layout, fonts, figure
@@ -457,24 +517,31 @@ export function LandingPage() {
       {/* How it works */}
       <section id="how-it-works" className="relative">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-24">
-          <div className="text-center mb-14">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
-              From blank page to submission-ready, in three steps
-            </h2>
-            <p className="text-sm text-gray-500 max-w-xl mx-auto">
-              No setup, no formatting rules to memorize — just write and arrange.
-            </p>
-          </div>
+          <Reveal>
+            <div className="text-center mb-14">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
+                From blank page to submission-ready, in three steps
+              </h2>
+              <p className="text-sm text-gray-500 max-w-xl mx-auto">
+                No setup, no formatting rules to memorize — just write and arrange.
+              </p>
+            </div>
+          </Reveal>
           <div className="grid sm:grid-cols-3 gap-6">
-            {STEPS.map((s) => (
-              <div
-                key={s.title}
-                className={`bg-white rounded-3xl border border-gray-200 shadow-sm p-8 transition-all hover:shadow-xl hover:-translate-y-1 ${CARD_HOVER_GLOW[s.color]}`}
-              >
-                <IconBadge icon={s.icon} color={s.color} size="lg" />
-                <h3 className="text-base font-semibold text-gray-900 mt-6 mb-2">{s.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{s.body}</p>
-              </div>
+            {STEPS.map((s, i) => (
+              <Reveal key={s.title} delay={i * 80}>
+                <div
+                  className={`group relative overflow-hidden bg-white rounded-3xl border border-gray-200 shadow-sm p-8 transition-all hover:shadow-xl hover:-translate-y-1 ${CARD_HOVER_GLOW[s.color]}`}
+                >
+                  <div
+                    aria-hidden="true"
+                    className={`pointer-events-none absolute -top-12 -right-12 w-40 h-40 rounded-full blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-br ${CARD_GLOW_WASH[s.color]} to-transparent`}
+                  />
+                  <IconBadge icon={s.icon} color={s.color} size="lg" />
+                  <h3 className="relative text-base font-semibold text-gray-900 mt-6 mb-2">{s.title}</h3>
+                  <p className="relative text-sm text-gray-500 leading-relaxed">{s.body}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -483,39 +550,70 @@ export function LandingPage() {
       {/* Features */}
       <section id="features" className="relative bg-gradient-to-b from-[#f7f6f3] to-[#f2f0ec] py-24">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-10">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
-            Everything you need for an IEEE paper
-          </h2>
-          <p className="text-sm text-gray-500 mb-12 max-w-xl">
-            One fixed, spec-accurate template — you focus on content, the formatting takes care
-            of itself.
-          </p>
+          <Reveal>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
+              Everything you need for an IEEE paper
+            </h2>
+            <p className="text-sm text-gray-500 mb-12 max-w-xl">
+              One fixed, spec-accurate template — you focus on content, the formatting takes care
+              of itself.
+            </p>
+          </Reveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className={`group bg-white rounded-3xl border border-gray-200 p-7 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 ${CARD_HOVER_GLOW[f.color]}`}
-              >
-                <div className="transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 inline-flex">
-                  <IconBadge icon={f.icon} color={f.color} />
+            {FEATURES.map((f, i) => (
+              <Reveal key={f.title} delay={(i % 3) * 80}>
+                <div
+                  className={`group relative overflow-hidden bg-white rounded-3xl border border-gray-200 p-7 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 ${CARD_HOVER_GLOW[f.color]}`}
+                >
+                  <div
+                    aria-hidden="true"
+                    className={`pointer-events-none absolute -top-12 -right-12 w-40 h-40 rounded-full blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-br ${CARD_GLOW_WASH[f.color]} to-transparent`}
+                  />
+                  <div className="relative transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 inline-flex">
+                    <IconBadge icon={f.icon} color={f.color} />
+                  </div>
+                  <h3 className="relative text-sm font-semibold text-gray-900 mt-5 mb-1.5">{f.title}</h3>
+                  <p className="relative text-sm text-gray-500 leading-relaxed">{f.body}</p>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mt-5 mb-1.5">{f.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{f.body}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="max-w-4xl mx-auto px-6 py-24">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-10 text-center">
-          Frequently asked questions
-        </h2>
-        <div className="flex flex-col gap-3">
-          {FAQS.map((f) => (
-            <FaqItem key={f.q} q={f.q} a={f.a} />
-          ))}
+      <section id="faq" className="max-w-[1440px] mx-auto px-6 lg:px-10 py-24">
+        <div className="grid lg:grid-cols-[minmax(0,340px)_1fr] gap-12">
+          <Reveal>
+            <div className="lg:sticky lg:top-24">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
+                Frequently asked questions
+              </h2>
+              <p className="text-sm text-gray-500 mb-6 max-w-sm">
+                Everything worth knowing before you start writing.
+              </p>
+              <div className="hidden lg:block bg-gray-50 border border-gray-200 rounded-2xl p-5">
+                <p className="text-sm font-medium text-gray-900 mb-1">Still have a question?</p>
+                <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+                  The fastest way to find out is to try it — it's free to start.
+                </p>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-indigo-700 hover:text-indigo-800"
+                >
+                  Get started for free
+                  {Icons.arrowRight("w-3.5 h-3.5")}
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+          <div className="flex flex-col gap-3">
+            {FAQS.map((f, i) => (
+              <Reveal key={f.q} delay={i * 50}>
+                <FaqItem q={f.q} a={f.a} />
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -524,21 +622,23 @@ export function LandingPage() {
           gradient. */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 py-24">
         <GridBackdrop className="text-white" />
-        <div className="relative max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
-            Stop fighting your formatting.
-          </h2>
-          <p className="text-indigo-200/80 text-base mb-8 max-w-md mx-auto">
-            Start your paper with a template that's already correct.
-          </p>
-          <Link
-            to="/login"
-            className={`${btnPrimary} px-7 py-3.5 text-base shadow-lg shadow-black/20 hover:-translate-y-0.5`}
-          >
-            Get started for free
-            {Icons.arrowRight("w-4 h-4")}
-          </Link>
-        </div>
+        <Reveal>
+          <div className="relative max-w-4xl mx-auto px-6 text-center">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
+              Stop fighting your formatting.
+            </h2>
+            <p className="text-indigo-200/80 text-base mb-8 max-w-md mx-auto">
+              Start your paper with a template that's already correct.
+            </p>
+            <Link
+              to="/login"
+              className={`${btnPrimary} px-7 py-3.5 text-base shadow-lg shadow-black/20 hover:-translate-y-0.5`}
+            >
+              Get started for free
+              {Icons.arrowRight("w-4 h-4")}
+            </Link>
+          </div>
+        </Reveal>
       </section>
 
       <footer className="py-8 text-center text-xs text-gray-400">
