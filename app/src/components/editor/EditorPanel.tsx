@@ -22,7 +22,17 @@ import { FigureEditor } from "./FigureEditor";
 import { TableEditor } from "./TableEditor";
 import { ReferencesEditor } from "./ReferencesEditor";
 import { EquationEditor } from "./EquationEditor";
-import { btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
+import { cardBase, inputBase, labelBase } from "../../lib/uiClasses";
+
+type BlockType = "paragraph" | "section" | "figure" | "table" | "equation";
+
+const BLOCK_TYPE_OPTIONS: { value: BlockType; label: string }[] = [
+  { value: "section", label: "Section / heading" },
+  { value: "paragraph", label: "Paragraph" },
+  { value: "figure", label: "Figure" },
+  { value: "table", label: "Table" },
+  { value: "equation", label: "Equation" },
+];
 
 // Two problems compound here, both from nested sortable items having
 // wildly different heights (a section's rect spans all its nested content):
@@ -297,7 +307,7 @@ export function EditorPanel() {
   const abstractOverLimit = abstractWordCount > 150;
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+    <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5">
       <div className="mb-4">
         <label htmlFor="paper-title" className={labelBase}>
           Title
@@ -344,26 +354,35 @@ export function EditorPanel() {
         <SortableBlockList containerId={null} nodes={document.body} depth={0} />
       </DndContext>
 
-      {/* Sticky rather than inline: these are the buttons used constantly
-          while writing, so — unlike Export PDF, which is rare enough to only
-          need to live at the very bottom of the panel — they shouldn't
-          require scrolling to the end of a growing block list to reach. */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-100 pt-2 pb-1 mt-3 flex gap-2 flex-wrap">
-        <button onClick={appendParagraph} className={btnSecondary}>
-          + Paragraph
-        </button>
-        <button onClick={appendSection} className={btnSecondary}>
-          + Section
-        </button>
-        <button onClick={appendFigure} className={btnSecondary}>
-          + Figure
-        </button>
-        <button onClick={appendTable} className={btnSecondary}>
-          + Table
-        </button>
-        <button onClick={appendEquation} className={btnSecondary}>
-          + Equation
-        </button>
+      {/* Sticky rather than inline: this is used constantly while writing,
+          so — unlike Export PDF, which is rare enough to only need to live at
+          the very bottom of the panel — it shouldn't require scrolling to the
+          end of a growing block list to reach. A single dropdown replaces
+          what used to be five separate buttons crowding onto one row. */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-100 pt-3 pb-1 mt-3">
+        <select
+          aria-label="Add block"
+          value=""
+          onChange={(e) => {
+            const type = e.target.value as BlockType | "";
+            if (type === "paragraph") appendParagraph();
+            else if (type === "section") appendSection();
+            else if (type === "figure") appendFigure();
+            else if (type === "table") appendTable();
+            else if (type === "equation") appendEquation();
+            e.target.value = "";
+          }}
+          className={`${inputBase} py-2.5 cursor-pointer font-medium text-gray-700`}
+        >
+          <option value="" disabled>
+            + Add block…
+          </option>
+          {BLOCK_TYPE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <ReferencesEditor />
