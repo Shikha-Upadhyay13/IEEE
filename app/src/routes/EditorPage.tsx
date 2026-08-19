@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { resolveNumbering } from "../lib/numbering";
 import { useDocumentStore } from "../store/documentStore";
@@ -7,6 +7,7 @@ import { PagedPreview } from "../components/renderer/PagedPreview";
 import { EditorPanel } from "../components/editor/EditorPanel";
 import { ExportButton } from "../components/editor/ExportButton";
 import { supabase } from "../supabaseClient";
+import { btnGhost } from "../lib/uiClasses";
 import type { Document } from "../types/document";
 
 function extractTitleText(doc: Document): string {
@@ -134,6 +135,32 @@ export function EditorPage() {
   const debouncedForPreview = useDebouncedValue(document, 250);
   const resolvedDoc = useMemo(() => resolveNumbering(debouncedForPreview), [debouncedForPreview]);
 
+  // Browser fullscreen (edge-to-edge, hides the browser's own chrome) and
+  // focus mode (hides just the side panel, in-app) are independent toggles —
+  // tracked separately since a user can want either without the other, and
+  // `isFullscreen` mirrors the actual document.fullscreenElement state rather
+  // than assuming the request succeeded, since the browser can reject/exit
+  // fullscreen outside our control (e.g. the user hits Esc).
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      setIsFullscreen(window.document.fullscreenElement === rootRef.current);
+    }
+    window.document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => window.document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (window.document.fullscreenElement) {
+      window.document.exitFullscreen();
+    } else {
+      rootRef.current?.requestFullscreen();
+    }
+  }, []);
+
   if (loadState === "loading") {
     return <p className="p-6 text-sm text-gray-500">Loading paper…</p>;
   }
@@ -151,18 +178,49 @@ export function EditorPage() {
     saveState === "error" ? "text-red-600" : saveState === "saving" ? "text-gray-400" : "text-emerald-600";
 
   return (
-    <div className="flex h-screen">
-      <div className="w-[460px] flex-shrink-0 h-screen flex flex-col border-r border-gray-200 bg-white">
-        <div className="flex justify-between items-center px-4 py-2.5 border-b border-gray-100">
-          <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
-            ← Dashboard
-          </Link>
-          <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
+    <div ref={rootRef} className="flex h-screen bg-gray-500">
+      {!focusMode && (
+        <div className="w-[460px] flex-shrink-0 h-screen flex flex-col border-r border-gray-200 bg-white">
+          <div className="flex justify-between items-center px-4 py-2.5 border-b border-gray-100">
+            <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
+              ← Dashboard
+            </Link>
+            <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
+          </div>
+          <EditorPanel />
+          {documentId && <ExportButton documentId={documentId} />}
         </div>
-        <EditorPanel />
-        {documentId && <ExportButton documentId={documentId} />}
-      </div>
-      <div className="flex-1 overflow-y-auto bg-gray-500 py-6">
+      )}
+      <div className="flex-1 relative overflow-y-auto bg-gray-500 py-6">
+        {/* Floating rather than in a header bar: focus mode removes the only
+            other place these controls could live (the side panel), and they
+            need to stay reachable in both modes. */}
+        <div className="fixed top-3 right-3 z-10 flex gap-2">
+          {focusMode && (
+            <Link
+              to="/dashboard"
+              className={`${btnGhost} bg-white/90 backdrop-blur shadow-sm w-auto px-3 gap-1.5 text-xs font-medium`}
+            >
+              ← Dashboard
+            </Link>
+          )}
+          <button
+            onClick={() => setFocusMode((v) => !v)}
+            aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
+            title={focusMode ? "Exit focus mode" : "Focus mode (hide side panel)"}
+            className={`${btnGhost} bg-white/90 backdrop-blur shadow-sm w-auto px-3 gap-1.5 text-xs font-medium`}
+          >
+            {focusMode ? "Show panel" : "Focus mode"}
+          </button>
+          <button
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
+            title={isFullscreen ? "Exit full screen" : "Full screen"}
+            className={`${btnGhost} bg-white/90 backdrop-blur shadow-sm w-auto px-3 gap-1.5 text-xs font-medium`}
+          >
+            {isFullscreen ? "⤡ Exit full screen" : "⤢ Full screen"}
+          </button>
+        </div>
         <PagedPreview document={resolvedDoc} />
       </div>
     </div>
