@@ -1,12 +1,80 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { createBlankDocument } from "../lib/blankDocument";
 import { relativeTime } from "../lib/relativeTime";
-import { btnPrimary, btnSecondary, inputBase } from "../lib/uiClasses";
+import { inputBase } from "../lib/uiClasses";
+import { DashboardSidebar } from "../components/dashboard/DashboardSidebar";
+import { PaperThumbnail } from "../components/dashboard/PaperThumbnail";
 
 type DocumentRow = { id: string; title: string | null; updated_at: string };
+
+function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    window.document.addEventListener("mousedown", handleClickOutside);
+    return () => window.document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  return (
+    <div ref={containerRef} className="relative flex-none">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
+        aria-label="More actions"
+        className="w-7 h-7 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition-colors"
+      >
+        ⋮
+      </button>
+      {open && (
+        <div className="absolute right-0 bottom-full mb-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 text-sm">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDuplicate();
+              setOpen(false);
+            }}
+            className="w-full text-left px-3 py-1.5 hover:bg-gray-50 text-gray-700"
+          >
+            ⎘ Duplicate
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+              setOpen(false);
+            }}
+            className="w-full text-left px-3 py-1.5 hover:bg-red-50 text-red-600"
+          >
+            ✕ Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NewPaperCard({ creating, onClick }: { creating: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={creating}
+      className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/30 transition-colors"
+    >
+      <span className="text-3xl leading-none">+</span>
+      <span className="text-sm font-medium">{creating ? "Creating…" : "New paper"}</span>
+    </button>
+  );
+}
 
 function PaperCard({
   doc,
@@ -32,82 +100,48 @@ function PaperCard({
   }
 
   return (
-    <div className="group relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all overflow-hidden">
+    <div className="flex flex-col">
       <button
         onClick={onOpen}
-        className="w-full text-left"
-        // Clicking the mini-preview/title area opens the paper; the rename
-        // input and action buttons below stop propagation so they don't.
+        className="group relative aspect-[8.5/11] w-full rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all overflow-hidden bg-white"
       >
-        <div className="h-28 bg-gradient-to-br from-indigo-50 to-gray-50 flex items-center justify-center border-b border-gray-100">
-          <div className="w-14 h-[72px] bg-white rounded-sm shadow-sm border border-gray-200 flex flex-col gap-1 p-2">
-            <div className="h-1.5 w-8 bg-gray-300 rounded-full mx-auto" />
-            <div className="h-1 w-full bg-gray-200 rounded-full mt-1" />
-            <div className="h-1 w-full bg-gray-200 rounded-full" />
-            <div className="h-1 w-3/4 bg-gray-200 rounded-full" />
-            <div className="h-1 w-full bg-gray-200 rounded-full mt-1" />
-            <div className="h-1 w-full bg-gray-200 rounded-full" />
-          </div>
+        <PaperThumbnail documentId={doc.id} />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-colors flex items-center justify-center">
+          <span className="text-white text-xs font-semibold bg-black/50 px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+            View paper
+          </span>
         </div>
       </button>
 
-      <div className="p-4">
-        {editing ? (
-          <input
-            autoFocus
-            value={draftTitle}
-            onChange={(e) => setDraftTitle(e.target.value)}
-            onBlur={commitRename}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") e.currentTarget.blur();
-              if (e.key === "Escape") {
-                setDraftTitle(doc.title || "Untitled paper");
-                setEditing(false);
-              }
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full text-sm font-medium text-gray-800 border border-indigo-300 rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        ) : (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditing(true);
-            }}
-            className="text-sm font-medium text-gray-800 hover:text-indigo-600 text-left truncate block w-full"
-            // The full title (not a generic instruction) — otherwise a
-            // truncated title had no way to be read in full at all.
-            title={`${doc.title || "Untitled paper"} (click to rename)`}
-          >
-            {doc.title || "Untitled paper"}
-          </button>
-        )}
-        <p className="text-xs text-gray-400 mt-1">Edited {relativeTime(doc.updated_at)}</p>
-      </div>
-
-      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDuplicate();
-          }}
-          aria-label="Duplicate paper"
-          title="Duplicate"
-          className="w-7 h-7 rounded-md bg-white/90 border border-gray-200 text-gray-400 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center justify-center text-xs"
-        >
-          ⎘
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          aria-label="Delete paper"
-          title="Delete"
-          className="w-7 h-7 rounded-md bg-white/90 border border-gray-200 text-gray-400 hover:text-red-600 hover:border-red-200 transition-all flex items-center justify-center text-sm"
-        >
-          ✕
-        </button>
+      <div className="flex items-start justify-between gap-1 mt-2 px-0.5">
+        <div className="min-w-0">
+          {editing ? (
+            <input
+              autoFocus
+              value={draftTitle}
+              onChange={(e) => setDraftTitle(e.target.value)}
+              onBlur={commitRename}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+                if (e.key === "Escape") {
+                  setDraftTitle(doc.title || "Untitled paper");
+                  setEditing(false);
+                }
+              }}
+              className="w-full text-sm font-medium text-gray-800 border border-indigo-300 rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          ) : (
+            <button
+              onClick={() => setEditing(true)}
+              className="text-sm font-medium text-gray-800 hover:text-indigo-600 text-left truncate block w-full"
+              title={`${doc.title || "Untitled paper"} (click to rename)`}
+            >
+              {doc.title || "Untitled paper"}
+            </button>
+          )}
+          <p className="text-xs text-gray-400 mt-0.5">edited {relativeTime(doc.updated_at)}</p>
+        </div>
+        <CardMenu onDuplicate={onDuplicate} onDelete={onDelete} />
       </div>
     </div>
   );
@@ -216,58 +250,48 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f6f3]">
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Your papers</h1>
-            <p className="text-sm text-gray-500">IEEE Paper Builder</p>
+    <div className="min-h-screen flex bg-[#f7f6f3]">
+      <DashboardSidebar onSignOut={handleSignOut} />
+
+      <div className="flex-1 min-w-0 px-8 py-10">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex justify-between items-end mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Papers</h1>
+              <p className="text-sm text-gray-500">Your first paper is free forever.</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={handleCreate} disabled={creating} className={btnPrimary}>
-              {creating ? "Creating…" : "+ New paper"}
-            </button>
-            <button onClick={handleSignOut} className={btnSecondary}>
-              Sign out
-            </button>
-          </div>
+
+          {!loading && documents.length > 0 && (
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search your papers…"
+              className={`${inputBase} max-w-xs mb-6`}
+            />
+          )}
+
+          {loading ? (
+            <p className="text-sm text-gray-500">Loading…</p>
+          ) : filteredDocuments.length === 0 && search ? (
+            <p className="text-sm text-gray-400">No papers match "{search}".</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+              <NewPaperCard creating={creating} onClick={handleCreate} />
+              {filteredDocuments.map((doc) => (
+                <PaperCard
+                  key={doc.id}
+                  doc={doc}
+                  onOpen={() => navigate(`/editor/${doc.id}`)}
+                  onRename={(title) => handleRename(doc.id, title)}
+                  onDuplicate={() => handleDuplicate(doc.id, doc.title)}
+                  onDelete={() => handleDelete(doc.id, doc.title)}
+                />
+              ))}
+            </div>
+          )}
+          {duplicatingId && <p className="text-xs text-gray-400 mt-4">Duplicating…</p>}
         </div>
-
-        {!loading && documents.length > 0 && (
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search your papers…"
-            className={`${inputBase} max-w-xs mb-6`}
-          />
-        )}
-
-        {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
-        ) : documents.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-sm text-gray-400 mb-4">No papers yet — create one to get started.</p>
-            <button onClick={handleCreate} disabled={creating} className={btnPrimary}>
-              {creating ? "Creating…" : "+ New paper"}
-            </button>
-          </div>
-        ) : filteredDocuments.length === 0 ? (
-          <p className="text-sm text-gray-400">No papers match "{search}".</p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredDocuments.map((doc) => (
-              <PaperCard
-                key={doc.id}
-                doc={doc}
-                onOpen={() => navigate(`/editor/${doc.id}`)}
-                onRename={(title) => handleRename(doc.id, title)}
-                onDuplicate={() => handleDuplicate(doc.id, doc.title)}
-                onDelete={() => handleDelete(doc.id, doc.title)}
-              />
-            ))}
-          </div>
-        )}
-        {duplicatingId && <p className="text-xs text-gray-400 mt-4">Duplicating…</p>}
       </div>
     </div>
   );
