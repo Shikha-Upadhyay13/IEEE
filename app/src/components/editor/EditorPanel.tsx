@@ -16,7 +16,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useDocumentStore } from "../../store/documentStore";
-import type { BodyNode } from "../../types/document";
+import type { BodyNode, FontFamily } from "../../types/document";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 import { FigureEditor } from "./FigureEditor";
 import { TableEditor } from "./TableEditor";
@@ -32,6 +32,14 @@ const BLOCK_TYPE_OPTIONS: { value: BlockType; label: string }[] = [
   { value: "figure", label: "Figure" },
   { value: "table", label: "Table" },
   { value: "equation", label: "Equation" },
+];
+
+const FONT_OPTIONS: { value: FontFamily; label: string }[] = [
+  { value: "times", label: "Times New Roman (IEEE default)" },
+  { value: "arial", label: "Arial" },
+  { value: "helvetica", label: "Helvetica" },
+  { value: "georgia", label: "Georgia" },
+  { value: "calibri", label: "Calibri" },
 ];
 
 // Two problems compound here, both from nested sortable items having
@@ -312,6 +320,7 @@ export function EditorPanel() {
   const setTitle = useDocumentStore((s) => s.setTitle);
   const setAbstract = useDocumentStore((s) => s.setAbstract);
   const setKeywords = useDocumentStore((s) => s.setKeywords);
+  const setFontFamily = useDocumentStore((s) => s.setFontFamily);
   const appendParagraph = useDocumentStore((s) => s.appendParagraph);
   const appendSection = useDocumentStore((s) => s.appendSection);
   const appendFigure = useDocumentStore((s) => s.appendFigure);
@@ -385,6 +394,30 @@ export function EditorPanel() {
         </div>
 
         <KeywordsInput keywords={document.keywords} onChange={setKeywords} />
+
+        <div>
+          <label htmlFor="paper-font" className={labelBase}>
+            Font
+          </label>
+          <select
+            id="paper-font"
+            value={document.meta.fontFamily ?? "times"}
+            onChange={(e) => setFontFamily(e.target.value as FontFamily)}
+            className={`${inputBase} cursor-pointer`}
+          >
+            {FONT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {document.meta.fontFamily && document.meta.fontFamily !== "times" && (
+            <p className="text-xs text-amber-600 mt-1.5">
+              IEEE submissions require Times New Roman — this is for draft/preview only and won't be
+              submission-compliant.
+            </p>
+          )}
+        </div>
       </div>
 
       <div className={`${cardBase} p-5 mb-5`}>

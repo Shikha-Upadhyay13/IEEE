@@ -126,12 +126,22 @@ export const ReferenceSchema = z.object({
 });
 export type Reference = z.infer<typeof ReferenceSchema>;
 
+// IEEE conference submissions require Times New Roman — this is the only
+// meta field a user can actually override, and "times" is always the
+// default: everything downstream (numbering.ts, IEEEConferenceTemplate)
+// falls back to it for documents predating this field, and the editor's own
+// UI says explicitly that anything else is draft/preview-only, not
+// submission-compliant.
+export const FontFamilySchema = z.enum(["times", "arial", "helvetica", "georgia", "calibri"]);
+export type FontFamily = z.infer<typeof FontFamilySchema>;
+
 export const DocumentSchema = z.object({
   schemaVersion: z.literal(1),
   meta: z.object({
     template: z.literal("ieee-conference"),
     paperSize: z.enum(["letter", "a4"]),
     pageLimit: z.number().int().positive().nullable(),
+    fontFamily: FontFamilySchema.optional(),
   }),
   titleBlock: z.object({
     title: z.array(InlineNodeSchema),

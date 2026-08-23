@@ -7,6 +7,18 @@ import type {
 } from "../../types/document";
 import "../../styles/ieee-template.css";
 
+// ieee-template.css's own font-family rule is the IEEE-compliant default
+// (Times New Roman) and is deliberately never edited — this map only
+// supplies an inline override for the non-default, non-compliant choices,
+// so a document that has never set fontFamily (or explicitly chose "times")
+// renders through the CSS file exactly as before.
+const FONT_STACKS: Record<string, string> = {
+  arial: "Arial, Helvetica, sans-serif",
+  helvetica: "Helvetica, Arial, sans-serif",
+  georgia: "Georgia, 'Times New Roman', serif",
+  calibri: "Calibri, 'Segoe UI', sans-serif",
+};
+
 // Real math rendering (KaTeX) rather than displaying the stored LaTeX as
 // literal text. throwOnError: false so a mid-edit/incomplete expression
 // degrades to KaTeX's own inline error rendering instead of crashing the
@@ -133,8 +145,9 @@ function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
 }
 
 export function IEEEConferenceTemplate({ document }: { document: ResolvedDocument }) {
+  const fontOverride = FONT_STACKS[document.meta.fontFamily ?? "times"];
   return (
-    <div className="ieee-paper">
+    <div className="ieee-paper" style={fontOverride ? { fontFamily: fontOverride } : undefined}>
       <h1 className="ieee-title">
         <InlineContent nodes={document.titleBlock.title as ResolvedInlineNode[]} />
       </h1>

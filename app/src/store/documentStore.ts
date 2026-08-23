@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Document, BodyNode, InlineNode, TableSpacing, FigureImage, FigureAlign } from "../types/document";
+import type { Document, BodyNode, InlineNode, TableSpacing, FigureImage, FigureAlign, FontFamily } from "../types/document";
 import { samplePaper } from "../data/samplePaper";
 import { generateId } from "../lib/id";
 import { emptyReferenceFields, generateReferenceText, type ReferenceFields } from "../lib/generateReferenceText";
@@ -109,6 +109,7 @@ type DocumentStore = {
   setTitle: (text: string) => void;
   setAbstract: (text: string) => void;
   setKeywords: (commaSeparated: string) => void;
+  setFontFamily: (fontFamily: FontFamily) => void;
   appendParagraph: () => void;
   appendSection: () => void;
   appendFigure: () => void;
@@ -164,6 +165,9 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
           .filter(Boolean),
       },
     })),
+
+  setFontFamily: (fontFamily) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, fontFamily } } })),
 
   appendParagraph: () =>
     set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("paragraph")] } })),
