@@ -29,6 +29,42 @@ function removeNodeById(nodes: BodyNode[], id: string): BodyNode[] {
     );
 }
 
+// Shared by the top-level append* actions and appendBlockToSection below —
+// one definition of "what a fresh block of type X looks like" rather than
+// two copies that could drift out of sync.
+function createBlock(type: BodyNode["type"]): BodyNode {
+  switch (type) {
+    case "paragraph":
+      return { type: "paragraph", id: generateId("p"), content: [] };
+    case "section":
+      return { type: "section", id: generateId("sec"), heading: "New Section", level: 1, children: [] };
+    case "figure":
+      return {
+        type: "figure",
+        id: generateId("fig"),
+        width: "single-column",
+        images: [],
+        scale: 100,
+        align: "center",
+        caption: [{ type: "text", text: "New figure — upload an image and add a caption." }],
+      };
+    case "table":
+      return {
+        type: "table",
+        id: generateId("tbl"),
+        width: "single-column",
+        caption: [{ type: "text", text: "New table" }],
+        rows: [
+          ["", ""],
+          ["", ""],
+        ],
+        spacing: "comfortable",
+      };
+    case "equation":
+      return { type: "equation", id: generateId("eq"), latex: "" };
+  }
+}
+
 function arrayMove<T>(arr: T[], fromIndex: number, toIndex: number): T[] {
   const copy = arr.slice();
   const [item] = copy.splice(fromIndex, 1);
@@ -78,6 +114,7 @@ type DocumentStore = {
   appendFigure: () => void;
   appendTable: () => void;
   appendEquation: () => void;
+  appendBlockToSection: (sectionId: string, type: BodyNode["type"]) => void;
   updateParagraphContent: (id: string, content: InlineNode[]) => void;
   updateSectionHeading: (id: string, heading: string) => void;
   addFigureImage: (id: string, image: FigureImage) => void;
@@ -129,76 +166,31 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
     })),
 
   appendParagraph: () =>
-    set((state) => ({
-      document: {
-        ...state.document,
-        body: [
-          ...state.document.body,
-          {
-            type: "paragraph",
-            id: generateId("p"),
-            content: [],
-          },
-        ],
-      },
-    })),
+    set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("paragraph")] } })),
 
   appendSection: () =>
-    set((state) => ({
-      document: {
-        ...state.document,
-        body: [
-          ...state.document.body,
-          { type: "section", id: generateId("sec"), heading: "New Section", level: 1, children: [] },
-        ],
-      },
-    })),
+    set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("section")] } })),
 
   appendFigure: () =>
-    set((state) => ({
-      document: {
-        ...state.document,
-        body: [
-          ...state.document.body,
-          {
-            type: "figure",
-            id: generateId("fig"),
-            width: "single-column",
-            images: [],
-            scale: 100,
-            align: "center",
-            caption: [{ type: "text", text: "New figure — upload an image and add a caption." }],
-          },
-        ],
-      },
-    })),
+    set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("figure")] } })),
 
   appendTable: () =>
-    set((state) => ({
-      document: {
-        ...state.document,
-        body: [
-          ...state.document.body,
-          {
-            type: "table",
-            id: generateId("tbl"),
-            width: "single-column",
-            caption: [{ type: "text", text: "New table" }],
-            rows: [
-              ["", ""],
-              ["", ""],
-            ],
-            spacing: "comfortable",
-          },
-        ],
-      },
-    })),
+    set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("table")] } })),
 
   appendEquation: () =>
+    set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("equation")] } })),
+
+  // The top-level append* actions above only ever push onto the document's
+  // root body — there was previously no way to put a block *inside* a
+  // section at all (drag-and-drop only reorders within one existing list).
+  // A section that starts empty (every new one does) was a dead end without this.
+  appendBlockToSection: (sectionId, type) =>
     set((state) => ({
       document: {
         ...state.document,
-        body: [...state.document.body, { type: "equation", id: generateId("eq"), latex: "" }],
+        body: updateNodeById(state.document.body, sectionId, (node) =>
+          node.type === "section" ? { ...node, children: [...node.children, createBlock(type)] } : node
+        ),
       },
     })),
 

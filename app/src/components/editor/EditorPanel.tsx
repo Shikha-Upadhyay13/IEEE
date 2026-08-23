@@ -72,7 +72,14 @@ function SortableBlockItem({
   const updateParagraphContent = useDocumentStore((s) => s.updateParagraphContent);
   const updateSectionHeading = useDocumentStore((s) => s.updateSectionHeading);
   const updateEquationLatex = useDocumentStore((s) => s.updateEquationLatex);
+  const appendBlockToSection = useDocumentStore((s) => s.appendBlockToSection);
   const removeBlock = useDocumentStore((s) => s.removeBlock);
+  // Collapsed by default — a paper with several sections showed every
+  // paragraph/figure/table of all of them at once, which was the actual
+  // complaint ("I don't want the entire content visible already"). Local
+  // component state (not persisted to the document) is fine here since it's
+  // purely an editing convenience, keyed by node.id so it survives reorders.
+  const [expanded, setExpanded] = useState(false);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: node.id,
@@ -118,18 +125,51 @@ function SortableBlockItem({
       >
         <div className="flex gap-2 items-center mb-2">
           {dragHandle}
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            aria-label={expanded ? "Collapse section" : "Expand section"}
+            aria-expanded={expanded}
+            className="flex-none w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-transform"
+            style={{ transform: expanded ? "rotate(90deg)" : "none" }}
+          >
+            ▸
+          </button>
           <input
             value={node.heading}
             onChange={(e) => updateSectionHeading(node.id, e.target.value)}
             className={`${inputBase} font-semibold`}
           />
+          {node.children.length > 0 && (
+            <span className="flex-none text-[11px] text-gray-400 px-1.5">{node.children.length}</span>
+          )}
           {deleteButton}
         </div>
-        {node.children.length === 0 ? (
-          <p className="text-xs text-gray-400 pl-8">Empty section</p>
-        ) : (
+        {expanded && (
           <div className="pl-6 border-l-2 border-gray-100">
-            <SortableBlockList containerId={node.id} nodes={node.children} depth={depth + 1} />
+            {node.children.length === 0 ? (
+              <p className="text-xs text-gray-400 mb-2">Empty section</p>
+            ) : (
+              <SortableBlockList containerId={node.id} nodes={node.children} depth={depth + 1} />
+            )}
+            <select
+              aria-label="Add block to this section"
+              value=""
+              onChange={(e) => {
+                const type = e.target.value as BlockType | "";
+                if (type) appendBlockToSection(node.id, type);
+                e.target.value = "";
+              }}
+              className={`${inputBase} py-1.5 text-xs cursor-pointer text-gray-600`}
+            >
+              <option value="" disabled>
+                + Add block…
+              </option>
+              {BLOCK_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
         )}
       </div>
