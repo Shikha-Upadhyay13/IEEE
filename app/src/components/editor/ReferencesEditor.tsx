@@ -18,10 +18,8 @@ export function ReferencesEditor() {
   const removeReference = useDocumentStore((s) => s.removeReference);
 
   return (
-    <div className="mt-6">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-        References
-      </h3>
+    <div className={`${cardBase} p-5`}>
+      <h2 className="text-base font-semibold text-gray-900 mb-4">References</h2>
 
       {references.length === 0 && (
         <p className="text-xs text-gray-400 mb-2">
@@ -33,7 +31,7 @@ export function ReferencesEditor() {
         {references.map((ref, index) => {
           const fields = { ...emptyReferenceFields, ...(ref.fields as ReferenceFields) };
           return (
-            <div key={ref.id} className={`${cardBase} p-3`}>
+            <div key={ref.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-xs font-semibold text-gray-400">[{index + 1}]</span>
                 <button

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { resolveNumbering } from "../lib/numbering";
 import { useDocumentStore } from "../store/documentStore";
@@ -135,31 +135,22 @@ export function EditorPage() {
   const debouncedForPreview = useDebouncedValue(document, 250);
   const resolvedDoc = useMemo(() => resolveNumbering(debouncedForPreview), [debouncedForPreview]);
 
-  // Browser fullscreen (edge-to-edge, hides the browser's own chrome) and
-  // focus mode (hides just the side panel, in-app) are independent toggles —
-  // tracked separately since a user can want either without the other, and
-  // `isFullscreen` mirrors the actual document.fullscreenElement state rather
-  // than assuming the request succeeded, since the browser can reject/exit
-  // fullscreen outside our control (e.g. the user hits Esc).
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [focusMode, setFocusMode] = useState(false);
+  // In-app overlay rather than the browser Fullscreen API: clicking the
+  // document should feel like FlowCV's "click to preview" — instant, no OS
+  // permission dance, works the same in every browser. PagedPreview stays
+  // mounted in the same JSX position in both states (only the wrapping
+  // classNames change) so toggling this never remounts it and re-triggers
+  // Paged.js pagination.
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
-    function handleFullscreenChange() {
-      setIsFullscreen(window.document.fullscreenElement === rootRef.current);
+    if (!previewOpen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setPreviewOpen(false);
     }
-    window.document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => window.document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  }, []);
-
-  const toggleFullscreen = useCallback(() => {
-    if (window.document.fullscreenElement) {
-      window.document.exitFullscreen();
-    } else {
-      rootRef.current?.requestFullscreen();
-    }
-  }, []);
+    window.document.addEventListener("keydown", handleKeyDown);
+    return () => window.document.removeEventListener("keydown", handleKeyDown);
+  }, [previewOpen]);
 
   if (loadState === "loading") {
     return <p className="p-6 text-sm text-gray-500">Loading paper…</p>;
@@ -178,50 +169,63 @@ export function EditorPage() {
     saveState === "error" ? "text-red-600" : saveState === "saving" ? "text-gray-400" : "text-emerald-600";
 
   return (
-    <div ref={rootRef} className="flex h-screen bg-gray-500">
-      {!focusMode && (
-        <div className="w-[460px] flex-shrink-0 h-screen flex flex-col border-r border-gray-200 bg-white">
-          <div className="flex justify-between items-center px-4 py-2.5 border-b border-gray-100">
-            <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
-              ← Dashboard
-            </Link>
-            <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
-          </div>
+    <div className="h-screen flex flex-col">
+      {/* Top bar spans both panes — mirrors the reference layout's header:
+          navigation/status on the left, the primary action (export) on the
+          right, both reachable regardless of what's happening below. */}
+      <div className="flex-none flex justify-between items-center px-6 py-3 border-b border-gray-200 bg-white z-20">
+        <div className="flex items-center gap-3">
+          <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
+            ← Dashboard
+          </Link>
+          <span className="text-gray-300">|</span>
+          <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
+        </div>
+        {documentId && <ExportButton documentId={documentId} compact />}
+      </div>
+
+      <div className="flex-1 min-h-0 flex">
+        <div className="w-[460px] flex-shrink-0 h-full overflow-hidden border-r border-gray-200 bg-white">
           <EditorPanel />
-          {documentId && <ExportButton documentId={documentId} />}
         </div>
-      )}
-      <div className="flex-1 relative overflow-y-auto bg-gray-500 py-6">
-        {/* Floating rather than in a header bar: focus mode removes the only
-            other place these controls could live (the side panel), and they
-            need to stay reachable in both modes. */}
-        <div className="fixed top-3 right-3 z-10 flex gap-2">
-          {focusMode && (
-            <Link
-              to="/dashboard"
-              className={`${btnGhost} bg-white/90 backdrop-blur shadow-sm w-auto px-3 gap-1.5 text-xs font-medium`}
+
+        {/* Light neutral backdrop (not the sidebar's white, not a heavy dark
+            gray) so the white page reads as the clear focal point — same
+            contrast relationship as the reference's page-on-canvas layout. */}
+        <div
+          className={
+            previewOpen
+              ? "fixed inset-0 z-50 bg-gray-100 overflow-y-auto py-10"
+              : "flex-1 relative overflow-y-auto bg-gray-100 py-10"
+          }
+        >
+          {previewOpen && (
+            <button
+              onClick={() => setPreviewOpen(false)}
+              aria-label="Close preview"
+              className={`${btnGhost} fixed top-4 right-4 z-[60] bg-white shadow-md w-auto px-3 gap-1.5 text-xs font-medium`}
             >
-              ← Dashboard
-            </Link>
+              ✕ Close preview
+            </button>
           )}
-          <button
-            onClick={() => setFocusMode((v) => !v)}
-            aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
-            title={focusMode ? "Exit focus mode" : "Focus mode (hide side panel)"}
-            className={`${btnGhost} bg-white/90 backdrop-blur shadow-sm w-auto px-3 gap-1.5 text-xs font-medium`}
+
+          {/* group/onClick live on this wrapper, not on PagedPreview itself,
+              so the hover affordance and click target cover the whole page
+              (including its margins) rather than just its text content. */}
+          <div
+            className={`group relative mx-auto w-fit ${previewOpen ? "" : "cursor-zoom-in"}`}
+            onClick={() => !previewOpen && setPreviewOpen(true)}
           >
-            {focusMode ? "Show panel" : "Focus mode"}
-          </button>
-          <button
-            onClick={toggleFullscreen}
-            aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
-            title={isFullscreen ? "Exit full screen" : "Full screen"}
-            className={`${btnGhost} bg-white/90 backdrop-blur shadow-sm w-auto px-3 gap-1.5 text-xs font-medium`}
-          >
-            {isFullscreen ? "⤡ Exit full screen" : "⤢ Full screen"}
-          </button>
+            {!previewOpen && (
+              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded bg-gray-900/0 opacity-0 transition-all group-hover:bg-gray-900/10 group-hover:opacity-100">
+                <span className="inline-flex items-center gap-2 rounded-full bg-gray-900/85 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur">
+                  🔍 Click to preview full screen
+                </span>
+              </div>
+            )}
+            <PagedPreview document={resolvedDoc} />
+          </div>
         </div>
-        <PagedPreview document={resolvedDoc} />
       </div>
     </div>
   );

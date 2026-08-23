@@ -114,7 +114,7 @@ function SortableBlockItem({
         ref={setNodeRef}
         data-block-id={node.id}
         style={{ ...wrapperStyle, marginLeft: depth * 16 }}
-        className={`${wrapperClass} ${cardBase} p-3`}
+        className={`${wrapperClass} rounded-lg border border-gray-200 bg-gray-50 p-3`}
       >
         <div className="flex gap-2 items-center mb-2">
           {dragHandle}
@@ -164,7 +164,7 @@ function SortableBlockItem({
         ref={setNodeRef}
         data-block-id={node.id}
         style={{ ...wrapperStyle, marginLeft: depth * 16 }}
-        className={`${wrapperClass} ${cardBase} p-3`}
+        className={`${wrapperClass} rounded-lg border border-gray-200 bg-gray-50 p-3`}
       >
         <div className="flex gap-2 items-start">
           {dragHandle}
@@ -183,7 +183,7 @@ function SortableBlockItem({
         ref={setNodeRef}
         data-block-id={node.id}
         style={{ ...wrapperStyle, marginLeft: depth * 16 }}
-        className={`${wrapperClass} ${cardBase} p-3`}
+        className={`${wrapperClass} rounded-lg border border-gray-200 bg-gray-50 p-3`}
       >
         <div className="flex gap-2 items-start">
           {dragHandle}
@@ -202,7 +202,7 @@ function SortableBlockItem({
       ref={setNodeRef}
       data-block-id={node.id}
       style={{ ...wrapperStyle, marginLeft: depth * 16 }}
-      className={`${wrapperClass} ${cardBase} p-3`}
+      className={`${wrapperClass} rounded-lg border border-gray-200 bg-gray-50 p-3`}
     >
       <div className="flex gap-2 items-start">
         {dragHandle}
@@ -307,59 +307,57 @@ export function EditorPanel() {
   const abstractOverLimit = abstractWordCount > 150;
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5">
-      <div className="mb-4">
-        <label htmlFor="paper-title" className={labelBase}>
-          Title
-        </label>
-        <textarea
-          id="paper-title"
-          value={titleText}
-          onChange={(e) => setTitle(e.target.value)}
-          rows={2}
-          placeholder="e.g., A Novel Approach to Efficient Edge Computing"
-          className={`${inputBase} resize-none`}
-        />
-      </div>
+    <div className="flex-1 min-h-0 overflow-y-auto bg-gray-50 px-6 py-6">
+      <div className={`${cardBase} p-5 mb-5`}>
+        <h2 className="text-base font-semibold text-gray-900 mb-4">Paper Details</h2>
 
-      <div className="mb-4">
-        <div className="flex justify-between items-baseline">
-          <label htmlFor="paper-abstract" className={labelBase}>
-            Abstract
+        <div className="mb-4">
+          <label htmlFor="paper-title" className={labelBase}>
+            Title
           </label>
-          <span className={`text-xs ${abstractOverLimit ? "text-amber-600" : "text-gray-400"}`}>
-            {abstractWordCount} / 150 words
-          </span>
+          <textarea
+            id="paper-title"
+            value={titleText}
+            onChange={(e) => setTitle(e.target.value)}
+            rows={2}
+            placeholder="e.g., A Novel Approach to Efficient Edge Computing"
+            className={`${inputBase} resize-none`}
+          />
         </div>
-        <textarea
-          id="paper-abstract"
-          value={document.abstract.text}
-          onChange={(e) => setAbstract(e.target.value)}
-          rows={4}
-          placeholder="Summarize the problem, your approach, and key results in about 150 words."
-          className={`${inputBase} resize-none`}
-        />
+
+        <div className="mb-4">
+          <div className="flex justify-between items-baseline">
+            <label htmlFor="paper-abstract" className={labelBase}>
+              Abstract
+            </label>
+            <span className={`text-xs ${abstractOverLimit ? "text-amber-600" : "text-gray-400"}`}>
+              {abstractWordCount} / 150 words
+            </span>
+          </div>
+          <textarea
+            id="paper-abstract"
+            value={document.abstract.text}
+            onChange={(e) => setAbstract(e.target.value)}
+            rows={4}
+            placeholder="Summarize the problem, your approach, and key results in about 150 words."
+            className={`${inputBase} resize-none`}
+          />
+        </div>
+
+        <KeywordsInput keywords={document.keywords} onChange={setKeywords} />
       </div>
 
-      <KeywordsInput keywords={document.keywords} onChange={setKeywords} />
+      <div className={`${cardBase} p-5 mb-5`}>
+        <h2 className="text-base font-semibold text-gray-900 mb-4">Body Content</h2>
 
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2 mt-6">
-        Body
-      </h3>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={collisionDetectionWithinContainer}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableBlockList containerId={null} nodes={document.body} depth={0} />
-      </DndContext>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={collisionDetectionWithinContainer}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableBlockList containerId={null} nodes={document.body} depth={0} />
+        </DndContext>
 
-      {/* Sticky rather than inline: this is used constantly while writing,
-          so — unlike Export PDF, which is rare enough to only need to live at
-          the very bottom of the panel — it shouldn't require scrolling to the
-          end of a growing block list to reach. A single dropdown replaces
-          what used to be five separate buttons crowding onto one row. */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-100 pt-3 pb-1 mt-3">
         <select
           aria-label="Add block"
           value=""
@@ -372,7 +370,7 @@ export function EditorPanel() {
             else if (type === "equation") appendEquation();
             e.target.value = "";
           }}
-          className={`${inputBase} py-2.5 cursor-pointer font-medium text-gray-700`}
+          className={`${inputBase} mt-3 py-2.5 cursor-pointer font-medium text-gray-700`}
         >
           <option value="" disabled>
             + Add block…

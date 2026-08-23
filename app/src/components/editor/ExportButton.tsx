@@ -4,7 +4,16 @@ import { btnPrimary } from "../../lib/uiClasses";
 
 const PDF_SERVICE_URL = import.meta.env.VITE_PDF_SERVICE_URL ?? "http://localhost:3001";
 
-export function ExportButton({ documentId }: { documentId: string }) {
+export function ExportButton({
+  documentId,
+  compact = false,
+}: {
+  documentId: string;
+  /** Renders as an inline button with no wrapping border/padding — used in
+   *  the editor's top bar, where the sidebar's stacked full-width treatment
+   *  below would look out of place. */
+  compact?: boolean;
+}) {
   const [status, setStatus] = useState<"idle" | "exporting" | "error">("idle");
 
   async function handleExport() {
@@ -38,6 +47,17 @@ export function ExportButton({ documentId }: { documentId: string }) {
       console.error("Export failed:", err);
       setStatus("error");
     }
+  }
+
+  if (compact) {
+    return (
+      <div className="flex flex-col items-end">
+        <button onClick={handleExport} disabled={status === "exporting"} className={`${btnPrimary} px-4 py-2`}>
+          {status === "exporting" ? "Exporting…" : "⬇ Download PDF"}
+        </button>
+        {status === "error" && <p className="text-xs text-red-600 mt-1">Export failed</p>}
+      </div>
+    );
   }
 
   return (
