@@ -3,3 +3,8 @@ node_modules
 
 # Generated PDF export output — never a source artifact.
 *.pdf
+
+# Service credentials (e.g. ai-service/.env holding GROQ_API_KEY) — never
+# committed, same rationale as app/.gitignore's Supabase key exclusion.
+.env
+.env.*
