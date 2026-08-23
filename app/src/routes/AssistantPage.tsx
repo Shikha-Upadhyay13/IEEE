@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { btnPrimary } from "../lib/uiClasses";
+import { supabase } from "../supabaseClient";
+import { summarizeDocumentForContext } from "../lib/summarizeDocument";
+import type { Document } from "../types/document";
+import { btnPrimary, inputBase } from "../lib/uiClasses";
 
 const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL ?? "http://localhost:3002";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
+type DocumentOption = { id: string; title: string | null };
 
 const STARTER_PROMPTS = [
   "Help me write my abstract from a rough description of my project",
@@ -31,6 +35,44 @@ export function AssistantPage() {
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // "Share their documents": pulling one paper's content in as context is
+  // opt-in and visible (the chip below), not silently applied — the user
+  // should always know whether the assistant can see their paper right now.
+  const [documentOptions, setDocumentOptions] = useState<DocumentOption[]>([]);
+  const [selectedDoc, setSelectedDoc] = useState<DocumentOption | null>(null);
+  const [documentContext, setDocumentContext] = useState<string | null>(null);
+  const [contextLoading, setContextLoading] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("documents")
+      .select("id, title, updated_at")
+      .order("updated_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) console.error("Failed to load documents for context picker:", error);
+        setDocumentOptions(data ?? []);
+      });
+  }, []);
+
+  async function selectContextDocument(id: string) {
+    if (!id) {
+      setSelectedDoc(null);
+      setDocumentContext(null);
+      return;
+    }
+    const option = documentOptions.find((d) => d.id === id) ?? null;
+    setSelectedDoc(option);
+    setContextLoading(true);
+    const { data, error } = await supabase.from("documents").select("content").eq("id", id).single();
+    setContextLoading(false);
+    if (error || !data) {
+      console.error("Failed to load document for context:", error);
+      setDocumentContext(null);
+      return;
+    }
+    setDocumentContext(summarizeDocumentForContext(data.content as Document));
+  }
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
@@ -49,7 +91,7 @@ export function AssistantPage() {
       const response = await fetch(`${AI_SERVICE_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages }),
+        body: JSON.stringify({ messages: nextMessages, documentContext }),
       });
       if (!response.ok || !response.body) throw new Error(`Assistant request failed (${response.status})`);
 
@@ -110,8 +152,37 @@ export function AssistantPage() {
         </Link>
         <span className="text-gray-300">|</span>
         <span className="text-sm font-semibold text-gray-900">AI Assistant</span>
-        <span className="text-xs text-gray-400 ml-auto">Content only — formatting stays automatic</span>
+
+        <select
+          value={selectedDoc?.id ?? ""}
+          onChange={(e) => selectContextDocument(e.target.value)}
+          disabled={contextLoading}
+          className={`${inputBase} w-auto max-w-[220px] py-1.5 text-xs ml-auto`}
+        >
+          <option value="">No paper context</option>
+          {documentOptions.map((doc) => (
+            <option key={doc.id} value={doc.id}>
+              {doc.title || "Untitled paper"}
+            </option>
+          ))}
+        </select>
       </div>
+
+      {selectedDoc && (
+        <div className="flex-none flex items-center gap-2 px-6 py-1.5 bg-indigo-50 border-b border-indigo-100 text-xs text-indigo-700">
+          <span>
+            📄 Using context from <strong>{selectedDoc.title || "Untitled paper"}</strong>
+            {contextLoading && "…"}
+          </span>
+          <button
+            onClick={() => selectContextDocument("")}
+            className="text-indigo-400 hover:text-indigo-700 ml-auto"
+            aria-label="Clear paper context"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-3xl mx-auto px-4 py-8 flex flex-col gap-4">
