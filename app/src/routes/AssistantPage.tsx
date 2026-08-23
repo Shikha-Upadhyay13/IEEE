@@ -205,7 +205,7 @@ export function AssistantPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 leading-none">AI Assistant</p>
-            <p className="text-[11px] text-gray-400 leading-none mt-0.5">Groq · Llama 3.3 70B</p>
+            <p className="text-[11px] text-gray-400 leading-none mt-0.5">Groq · GPT-OSS 120B</p>
           </div>
         </div>
 

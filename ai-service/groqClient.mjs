@@ -1,7 +1,7 @@
 import { Readable } from "node:stream";
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const MODEL = process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile";
+const MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
 
 const SYSTEM_PROMPT = `You are a writing assistant embedded in an IEEE conference paper builder. You help students and researchers draft, expand, and refine the *content* of their paper (abstracts, technical sections, explanations of their methodology/results, wording, clarity) in plain prose.
 
