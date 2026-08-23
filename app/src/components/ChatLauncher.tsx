@@ -1,9 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 
 // Hidden on the pages where it either doesn't apply (pre-auth landing/login,
-// the headless /print export route) or would be redundant (the assistant
-// page itself doesn't need a button to open... itself).
-const HIDDEN_PREFIXES = ["/login", "/print", "/assistant"];
+// the headless /print export route) or would be redundant (the AI section's
+// own pages already have the assistant one click away via their sidebar).
+const HIDDEN_PREFIXES = ["/login", "/print", "/assistant", "/images"];
 
 export function ChatLauncher() {
   const location = useLocation();
