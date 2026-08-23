@@ -135,3 +135,71 @@ $$;
 
 grant execute on function create_export_token(uuid) to authenticated;
 grant execute on function get_document_by_export_token(uuid) to anon, authenticated;
+
+-- ── AI Assistant: projects + conversations ───────────────────────
+-- "Projects" here are a lightweight folder a user can file chats under —
+-- unrelated to the `documents` table (an IEEE paper); a project has no
+-- content of its own beyond a name, it just groups conversations.
+create table if not exists projects (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid references auth.users(id) not null,
+  name text not null,
+  created_at timestamptz default now()
+);
+
+alter table projects enable row level security;
+
+create policy "select own projects"
+  on projects for select
+  using (auth.uid() = owner_id);
+
+create policy "insert own projects"
+  on projects for insert
+  with check (auth.uid() = owner_id);
+
+create policy "update own projects"
+  on projects for update
+  using (auth.uid() = owner_id);
+
+create policy "delete own projects"
+  on projects for delete
+  using (auth.uid() = owner_id);
+
+create table if not exists conversations (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid references auth.users(id) not null,
+  -- Deleting a project keeps its conversations (moved to "no project"),
+  -- rather than cascading — losing chat history as a side effect of
+  -- deleting a folder would be a nasty surprise.
+  project_id uuid references projects(id) on delete set null,
+  title text not null default 'New chat',
+  -- Full message history as a JSON array of {role, content} — same
+  -- "just store the JSON, derive nothing else persistently" shape as
+  -- documents.content, for the same reason (no migration on schema tweaks).
+  messages jsonb not null default '[]'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table conversations enable row level security;
+
+create policy "select own conversations"
+  on conversations for select
+  using (auth.uid() = owner_id);
+
+create policy "insert own conversations"
+  on conversations for insert
+  with check (auth.uid() = owner_id);
+
+create policy "update own conversations"
+  on conversations for update
+  using (auth.uid() = owner_id);
+
+create policy "delete own conversations"
+  on conversations for delete
+  using (auth.uid() = owner_id);
+
+create trigger conversations_set_updated_at
+before update on conversations
+for each row
+execute function set_updated_at();
