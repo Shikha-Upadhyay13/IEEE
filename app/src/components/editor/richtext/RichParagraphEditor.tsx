@@ -1,6 +1,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Superscript from "@tiptap/extension-superscript";
+import Placeholder from "@tiptap/extension-placeholder";
 import { CiteRefExtension } from "./citeRefExtension";
 import { XrefExtension } from "./xrefExtension";
 import { inlineNodesToTipTapDoc, tipTapDocToInlineNodes } from "../../../lib/richtext/inlineNodeConversion";
@@ -36,6 +37,10 @@ export function RichParagraphEditor({
       Superscript,
       CiteRefExtension,
       XrefExtension,
+      // Matches the Title/Abstract fields' hint-text treatment instead of
+      // seeding new paragraphs with real placeholder text the user has to
+      // notice and delete before writing their own content.
+      Placeholder.configure({ placeholder: "Write your paragraph here…" }),
     ],
     // `content` here only seeds the editor once (useEditor's default deps are
     // []) — this component only ever writes to the store, never the reverse,
@@ -76,7 +81,7 @@ export function RichParagraphEditor({
       active ? "bg-indigo-100 text-indigo-700" : "text-gray-500 hover:bg-gray-100"
     }`;
   const toolbarSelect =
-    "h-7 rounded border border-gray-200 bg-white px-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500";
+    "h-7 rounded border border-gray-200 bg-white px-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50";
 
   return (
     <div
@@ -105,6 +110,7 @@ export function RichParagraphEditor({
           value=""
           onChange={(e) => insertCitation(e.target.value)}
           disabled={references.length === 0}
+          title={references.length === 0 ? "Add a reference below first" : "Insert a citation"}
           className={toolbarSelect}
         >
           <option value="">+ Citation…</option>
@@ -118,6 +124,7 @@ export function RichParagraphEditor({
           value=""
           onChange={(e) => insertXref(e.target.value)}
           disabled={xrefTargets.length === 0}
+          title={xrefTargets.length === 0 ? "Add a figure or table first" : "Insert a cross-reference"}
           className={toolbarSelect}
         >
           <option value="">+ Cross-ref…</option>

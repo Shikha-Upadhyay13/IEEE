@@ -185,7 +185,7 @@ export function EditorPage() {
       </div>
 
       <div className="flex-1 min-h-0 flex">
-        <div className="w-1/2 min-w-0 h-full overflow-hidden border-r border-gray-200 bg-white">
+        <div className="w-1/2 min-w-0 h-full flex flex-col border-r border-gray-200 bg-white">
           <EditorPanel />
         </div>
 

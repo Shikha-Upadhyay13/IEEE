@@ -137,7 +137,7 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
           {
             type: "paragraph",
             id: generateId("p"),
-            content: [{ type: "text", text: "New paragraph — click to edit." }],
+            content: [],
           },
         ],
       },

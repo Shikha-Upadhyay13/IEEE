@@ -22,3 +22,14 @@ body {
 .animate-fade-in-up {
   animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* @tiptap/extension-placeholder marks an empty paragraph with this class and
+   data attribute — it ships no CSS of its own, so without this rule the hint
+   text (e.g. "Write your paragraph here…") never actually renders. */
+.ProseMirror p.is-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: #9ca3af;
+}
