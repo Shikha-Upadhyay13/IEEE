@@ -427,7 +427,7 @@ export function AssistantPage() {
   }
 
   return (
-    <div className="h-screen flex bg-gradient-to-b from-indigo-50/40 via-white to-white">
+    <div className="h-screen flex bg-gradient-to-b from-indigo-50/40 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950">
       <ConversationSidebar
         conversations={conversations}
         projects={projects}
@@ -445,18 +445,21 @@ export function AssistantPage() {
       />
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="flex-none flex items-center gap-3 px-6 py-3 border-b border-gray-200 bg-white/80 backdrop-blur">
-          <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
+        <div className="flex-none flex items-center gap-3 px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur">
+          <Link
+            to="/dashboard"
+            className="text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+          >
             ← Dashboard
           </Link>
-          <span className="text-gray-300">|</span>
+          <span className="text-gray-300 dark:text-gray-700">|</span>
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[11px]">
               ✨
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900 leading-none">AI Assistant</p>
-              <p className="text-[11px] text-gray-400 leading-none mt-0.5">Groq · GPT-OSS 120B</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-none">AI Assistant</p>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-none mt-0.5">Groq · GPT-OSS 120B</p>
             </div>
           </div>
         </div>
@@ -468,8 +471,10 @@ export function AssistantPage() {
                 <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl shadow-md shadow-indigo-200">
                   ✨
                 </div>
-                <p className="text-lg font-semibold text-gray-900 mb-1">What are you writing today?</p>
-                <p className="text-sm text-gray-500 mb-6">
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                  What are you writing today?
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
                   Ask for help drafting or refining any part of your paper's content.
                 </p>
                 <div className="grid sm:grid-cols-2 gap-2.5 max-w-lg mx-auto">
@@ -477,7 +482,7 @@ export function AssistantPage() {
                     <button
                       key={text}
                       onClick={() => sendMessage(text)}
-                      className="flex items-start gap-2.5 text-left text-sm text-gray-700 bg-white border border-gray-200 rounded-xl px-4 py-3 hover:border-indigo-300 hover:shadow-sm hover:-translate-y-0.5 transition-all"
+                      className="flex items-start gap-2.5 text-left text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm hover:-translate-y-0.5 transition-all"
                     >
                       <span className="text-base">{icon}</span>
                       <span>{text}</span>
@@ -502,7 +507,7 @@ export function AssistantPage() {
                       className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
                         message.role === "user"
                           ? "bg-indigo-600 text-white rounded-br-sm"
-                          : "bg-white border border-gray-200 text-gray-800 shadow-sm rounded-bl-sm"
+                          : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 shadow-sm rounded-bl-sm"
                       }`}
                     >
                       {isEmptyStreamingReply ? <TypingDots /> : message.content}
@@ -511,7 +516,7 @@ export function AssistantPage() {
                       <button
                         onClick={() => handleInsertIntoPaper(i, message.content)}
                         disabled={insertingIndex === i || insertedIndices.has(i)}
-                        className="text-[11px] text-gray-400 hover:text-indigo-600 disabled:hover:text-gray-400 transition-colors px-1"
+                        className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500 transition-colors px-1"
                       >
                         {insertedIndices.has(i)
                           ? `✓ Added to ${selectedDoc.title || "paper"}`
@@ -532,34 +537,34 @@ export function AssistantPage() {
         <form onSubmit={handleSubmit} className="flex-none px-4 pb-5 pt-2">
           {selectedDoc && (
             <div className="max-w-3xl mx-auto mb-2">
-              <span className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs rounded-full pl-2.5 pr-1.5 py-1">
+              <span className="inline-flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs rounded-full pl-2.5 pr-1.5 py-1">
                 📄 {selectedDoc.title || "Untitled paper"}
                 {contextLoading && "…"}
                 <button
                   onClick={() => selectContextDocument("")}
                   aria-label="Detach paper"
-                  className="text-indigo-400 hover:text-indigo-700"
+                  className="text-indigo-400 hover:text-indigo-700 dark:text-indigo-500 dark:hover:text-indigo-300"
                 >
                   ✕
                 </button>
               </span>
             </div>
           )}
-          <div className="max-w-3xl mx-auto flex gap-2 items-end bg-white border border-gray-200 rounded-2xl shadow-sm px-3 py-2 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400 transition-colors">
+          <div className="max-w-3xl mx-auto flex gap-2 items-end bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm px-3 py-2 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400 transition-colors">
             <div ref={attachMenuRef} className="relative flex-none">
               {attachMenuOpen && (
-                <div className="absolute bottom-full left-0 mb-2 w-60 bg-white border border-gray-200 rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto z-10">
+                <div className="absolute bottom-full left-0 mb-2 w-60 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto z-10">
                   <button
                     onClick={() => {
                       selectContextDocument("");
                       setAttachMenuOpen(false);
                     }}
-                    className="w-full text-left text-sm px-3 py-1.5 text-gray-500 hover:bg-gray-50"
+                    className="w-full text-left text-sm px-3 py-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
                     No paper attached
                   </button>
                   {documentOptions.length === 0 && (
-                    <p className="text-xs text-gray-400 px-3 py-1.5">No papers yet.</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-600 px-3 py-1.5">No papers yet.</p>
                   )}
                   {documentOptions.map((doc) => (
                     <button
@@ -568,8 +573,10 @@ export function AssistantPage() {
                         selectContextDocument(doc.id);
                         setAttachMenuOpen(false);
                       }}
-                      className={`w-full text-left text-sm px-3 py-1.5 truncate hover:bg-gray-50 ${
-                        selectedDoc?.id === doc.id ? "text-indigo-700 font-medium" : "text-gray-700"
+                      className={`w-full text-left text-sm px-3 py-1.5 truncate hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                        selectedDoc?.id === doc.id
+                          ? "text-indigo-700 dark:text-indigo-400 font-medium"
+                          : "text-gray-700 dark:text-gray-300"
                       }`}
                     >
                       {doc.title || "Untitled paper"}
@@ -583,7 +590,9 @@ export function AssistantPage() {
                 aria-label="Attach a paper for context"
                 title="Attach a paper for context"
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-                  selectedDoc ? "text-indigo-600 bg-indigo-50" : "text-gray-400 hover:bg-gray-100"
+                  selectedDoc
+                    ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50"
+                    : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}
               >
                 📎
@@ -601,7 +610,7 @@ export function AssistantPage() {
               }}
               rows={1}
               placeholder="Ask for help with your paper's content…"
-              className="flex-1 resize-none bg-transparent text-sm leading-relaxed py-1.5 focus:outline-none placeholder:text-gray-400"
+              className="flex-1 resize-none bg-transparent text-sm leading-relaxed py-1.5 focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600 text-gray-900 dark:text-gray-100"
             />
             <button
               type="submit"
@@ -616,7 +625,7 @@ export function AssistantPage() {
               )}
             </button>
           </div>
-          <p className="text-center text-[11px] text-gray-400 mt-2">
+          <p className="text-center text-[11px] text-gray-400 dark:text-gray-600 mt-2">
             AI can be wrong — review anything you paste into your paper.
           </p>
         </form>

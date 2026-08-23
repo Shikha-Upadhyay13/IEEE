@@ -104,18 +104,23 @@ export function ImagesPage() {
   }
 
   return (
-    <div className="h-screen flex bg-gradient-to-b from-indigo-50/40 via-white to-white">
+    <div className="h-screen flex bg-gradient-to-b from-indigo-50/40 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950">
       <ImagesSidebar userEmail={user?.email ?? null} onSignOut={handleSignOut} />
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="flex-none flex items-center gap-3 px-6 py-3 border-b border-gray-200 bg-white/80 backdrop-blur">
-          <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
+        <div className="flex-none flex items-center gap-3 px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur">
+          <Link
+            to="/dashboard"
+            className="text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+          >
             ← Dashboard
           </Link>
-          <span className="text-gray-300">|</span>
+          <span className="text-gray-300 dark:text-gray-700">|</span>
           <div>
-            <p className="text-sm font-semibold text-gray-900 leading-none">Images</p>
-            <p className="text-[11px] text-gray-400 leading-none mt-0.5">Pollinations.ai · free, no limits</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-none">Images</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-none mt-0.5">
+              Pollinations.ai · free, no limits
+            </p>
           </div>
         </div>
 
@@ -125,34 +130,36 @@ export function ImagesPage() {
               e.preventDefault();
               handleGenerate(prompt);
             }}
-            className="max-w-2xl mx-auto flex gap-2 items-center bg-white border border-gray-200 rounded-2xl shadow-sm px-3 py-2 mb-8 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400 transition-colors"
+            className="max-w-2xl mx-auto flex gap-2 items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm px-3 py-2 mb-8 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400 transition-colors"
           >
             <input
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe an image to generate…"
-              className="flex-1 bg-transparent text-sm py-1.5 focus:outline-none placeholder:text-gray-400"
+              className="flex-1 bg-transparent text-sm py-1.5 focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600 text-gray-900 dark:text-gray-100"
             />
             <button type="submit" disabled={!!pendingUrl || !prompt.trim()} className={btnPrimary}>
               {pendingUrl ? "Generating…" : "Generate"}
             </button>
           </form>
 
-          {error && <p className="text-sm text-red-600 text-center mb-4">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400 text-center mb-4">{error}</p>}
 
           {images.length === 0 && !pendingUrl && (
             <div className="text-center py-8 animate-fade-in-up">
               <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl shadow-md shadow-indigo-200">
                 🖼️
               </div>
-              <p className="text-lg font-semibold text-gray-900 mb-1">Generate your first image</p>
-              <p className="text-sm text-gray-500 mb-6">Describe anything — illustrations, icons, backgrounds.</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Generate your first image</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                Describe anything — illustrations, icons, backgrounds.
+              </p>
               <div className="grid sm:grid-cols-2 gap-2.5 max-w-lg mx-auto">
                 {STARTER_PROMPTS.map((p) => (
                   <button
                     key={p}
                     onClick={() => handleGenerate(p)}
-                    className="text-left text-sm text-gray-700 bg-white border border-gray-200 rounded-xl px-4 py-3 hover:border-indigo-300 hover:shadow-sm hover:-translate-y-0.5 transition-all"
+                    className="text-left text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm hover:-translate-y-0.5 transition-all"
                   >
                     {p}
                   </button>
@@ -163,10 +170,10 @@ export function ImagesPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
             {pendingUrl && (
-              <div className="aspect-square rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden relative">
+              <div className="aspect-square rounded-xl bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center overflow-hidden relative">
                 <img src={pendingUrl} onLoad={handleImageLoaded} onError={handleImageFailed} className="hidden" />
-                <div className="flex flex-col items-center gap-2 text-gray-400">
-                  <div className="w-6 h-6 border-2 border-gray-300 border-t-indigo-500 rounded-full animate-spin" />
+                <div className="flex flex-col items-center gap-2 text-gray-400 dark:text-gray-600">
+                  <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-indigo-500 rounded-full animate-spin" />
                   <span className="text-xs px-3 text-center line-clamp-2">{pendingPrompt}</span>
                 </div>
               </div>
@@ -175,7 +182,7 @@ export function ImagesPage() {
             {images.map((img) => (
               <div
                 key={img.id}
-                className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm cursor-pointer"
+                className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm cursor-pointer"
                 onClick={() => setPreview(img)}
               >
                 <img src={img.image_url} alt={img.prompt} className="w-full h-full object-cover" />
