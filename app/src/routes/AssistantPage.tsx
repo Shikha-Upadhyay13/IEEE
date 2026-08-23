@@ -4,6 +4,7 @@ import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
 import { summarizeDocumentForContext } from "../lib/summarizeDocument";
+import { generateId } from "../lib/id";
 import type { Document } from "../types/document";
 import {
   ConversationSidebar,
@@ -90,6 +91,16 @@ export function AssistantPage() {
   const [selectedDoc, setSelectedDoc] = useState<DocumentOption | null>(null);
   const [documentContext, setDocumentContext] = useState<string | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
+  const [attachMenuOpen, setAttachMenuOpen] = useState(false);
+  const attachMenuRef = useRef<HTMLDivElement>(null);
+
+  // "Add anything [an AI reply] to the paper": tracked by message index since
+  // messages don't have stable ids — insertingIndex covers the async gap
+  // between clicking and the Supabase round-trip finishing, insertedIndices
+  // is permanent (until a new message list replaces it) so re-clicking after
+  // success isn't offered.
+  const [insertingIndex, setInsertingIndex] = useState<number | null>(null);
+  const [insertedIndices, setInsertedIndices] = useState<Set<number>>(new Set());
 
   // Conversation history + projects (sidebar). `pendingProjectId` is the
   // project a *new* (not-yet-saved) chat will be filed under — it tracks
@@ -157,6 +168,41 @@ export function AssistantPage() {
       return;
     }
     setDocumentContext(summarizeDocumentForContext(data.content as Document));
+  }
+
+  useEffect(() => {
+    if (!attachMenuOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) setAttachMenuOpen(false);
+    }
+    window.document.addEventListener("mousedown", handleClickOutside);
+    return () => window.document.removeEventListener("mousedown", handleClickOutside);
+  }, [attachMenuOpen]);
+
+  async function handleInsertIntoPaper(index: number, content: string) {
+    if (!selectedDoc) return;
+    setInsertingIndex(index);
+    const { data, error } = await supabase.from("documents").select("content").eq("id", selectedDoc.id).single();
+    if (error || !data) {
+      console.error("Failed to load paper to insert into:", error);
+      setInsertingIndex(null);
+      return;
+    }
+    const doc = data.content as Document;
+    const updatedDoc: Document = {
+      ...doc,
+      body: [...doc.body, { type: "paragraph", id: generateId("p"), content: [{ type: "text", text: content }] }],
+    };
+    const { error: updateError } = await supabase
+      .from("documents")
+      .update({ content: updatedDoc })
+      .eq("id", selectedDoc.id);
+    setInsertingIndex(null);
+    if (updateError) {
+      console.error("Failed to insert reply into paper:", updateError);
+      return;
+    }
+    setInsertedIndices((prev) => new Set(prev).add(index));
   }
 
   useEffect(() => {
@@ -302,6 +348,8 @@ export function AssistantPage() {
     setActiveConversationId(null);
     setSelectedDoc(null);
     setDocumentContext(null);
+    setInsertedIndices(new Set());
+    setInsertingIndex(null);
     lastSavedMessagesRef.current = null;
     setPendingProjectId(activeProjectId);
     // Explicit rather than relying solely on the focus effect above: that
@@ -321,6 +369,8 @@ export function AssistantPage() {
     setMessages(data.messages as ChatMessage[]);
     lastSavedMessagesRef.current = data.messages as ChatMessage[];
     setError(null);
+    setInsertedIndices(new Set());
+    setInsertingIndex(null);
   }
 
   async function handleRenameConversation(id: string, title: string) {
@@ -409,40 +459,7 @@ export function AssistantPage() {
               <p className="text-[11px] text-gray-400 leading-none mt-0.5">Groq · GPT-OSS 120B</p>
             </div>
           </div>
-
-          <div className="ml-auto flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-full pl-2.5 pr-1 py-1">
-            <span className="text-xs">📄</span>
-            <select
-              value={selectedDoc?.id ?? ""}
-              onChange={(e) => selectContextDocument(e.target.value)}
-              disabled={contextLoading}
-              className="bg-transparent text-xs text-gray-600 max-w-[160px] focus:outline-none cursor-pointer"
-            >
-              <option value="">No paper context</option>
-              {documentOptions.map((doc) => (
-                <option key={doc.id} value={doc.id}>
-                  {doc.title || "Untitled paper"}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
-
-        {selectedDoc && (
-          <div className="flex-none flex items-center gap-2 px-6 py-1.5 bg-indigo-50 border-b border-indigo-100 text-xs text-indigo-700">
-            <span>
-              Using context from <strong>{selectedDoc.title || "Untitled paper"}</strong>
-              {contextLoading && "…"}
-            </span>
-            <button
-              onClick={() => selectContextDocument("")}
-              className="text-indigo-400 hover:text-indigo-700 ml-auto"
-              aria-label="Clear paper context"
-            >
-              ✕
-            </button>
-          </div>
-        )}
 
         <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
           <div className="max-w-3xl mx-auto px-4 py-8 flex flex-col gap-5">
@@ -473,20 +490,36 @@ export function AssistantPage() {
             {messages.map((message, i) => {
               const isEmptyStreamingReply =
                 message.role === "assistant" && !message.content && isStreaming && i === messages.length - 1;
+              const canInsert = message.role === "assistant" && message.content && selectedDoc && !isStreaming;
               return (
                 <div
                   key={i}
                   className={`flex gap-3 animate-fade-in-up ${message.role === "user" ? "flex-row-reverse" : ""}`}
                 >
                   <Avatar role={message.role} />
-                  <div
-                    className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
-                      message.role === "user"
-                        ? "bg-indigo-600 text-white rounded-br-sm"
-                        : "bg-white border border-gray-200 text-gray-800 shadow-sm rounded-bl-sm"
-                    }`}
-                  >
-                    {isEmptyStreamingReply ? <TypingDots /> : message.content}
+                  <div className={`flex flex-col gap-1 max-w-[75%] ${message.role === "user" ? "items-end" : "items-start"}`}>
+                    <div
+                      className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                        message.role === "user"
+                          ? "bg-indigo-600 text-white rounded-br-sm"
+                          : "bg-white border border-gray-200 text-gray-800 shadow-sm rounded-bl-sm"
+                      }`}
+                    >
+                      {isEmptyStreamingReply ? <TypingDots /> : message.content}
+                    </div>
+                    {canInsert && (
+                      <button
+                        onClick={() => handleInsertIntoPaper(i, message.content)}
+                        disabled={insertingIndex === i || insertedIndices.has(i)}
+                        className="text-[11px] text-gray-400 hover:text-indigo-600 disabled:hover:text-gray-400 transition-colors px-1"
+                      >
+                        {insertedIndices.has(i)
+                          ? `✓ Added to ${selectedDoc.title || "paper"}`
+                          : insertingIndex === i
+                            ? "Adding…"
+                            : `+ Add to ${selectedDoc.title || "paper"}`}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -497,7 +530,65 @@ export function AssistantPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex-none px-4 pb-5 pt-2">
+          {selectedDoc && (
+            <div className="max-w-3xl mx-auto mb-2">
+              <span className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs rounded-full pl-2.5 pr-1.5 py-1">
+                📄 {selectedDoc.title || "Untitled paper"}
+                {contextLoading && "…"}
+                <button
+                  onClick={() => selectContextDocument("")}
+                  aria-label="Detach paper"
+                  className="text-indigo-400 hover:text-indigo-700"
+                >
+                  ✕
+                </button>
+              </span>
+            </div>
+          )}
           <div className="max-w-3xl mx-auto flex gap-2 items-end bg-white border border-gray-200 rounded-2xl shadow-sm px-3 py-2 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400 transition-colors">
+            <div ref={attachMenuRef} className="relative flex-none">
+              {attachMenuOpen && (
+                <div className="absolute bottom-full left-0 mb-2 w-60 bg-white border border-gray-200 rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto z-10">
+                  <button
+                    onClick={() => {
+                      selectContextDocument("");
+                      setAttachMenuOpen(false);
+                    }}
+                    className="w-full text-left text-sm px-3 py-1.5 text-gray-500 hover:bg-gray-50"
+                  >
+                    No paper attached
+                  </button>
+                  {documentOptions.length === 0 && (
+                    <p className="text-xs text-gray-400 px-3 py-1.5">No papers yet.</p>
+                  )}
+                  {documentOptions.map((doc) => (
+                    <button
+                      key={doc.id}
+                      onClick={() => {
+                        selectContextDocument(doc.id);
+                        setAttachMenuOpen(false);
+                      }}
+                      className={`w-full text-left text-sm px-3 py-1.5 truncate hover:bg-gray-50 ${
+                        selectedDoc?.id === doc.id ? "text-indigo-700 font-medium" : "text-gray-700"
+                      }`}
+                    >
+                      {doc.title || "Untitled paper"}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => setAttachMenuOpen((v) => !v)}
+                aria-label="Attach a paper for context"
+                title="Attach a paper for context"
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                  selectedDoc ? "text-indigo-600 bg-indigo-50" : "text-gray-400 hover:bg-gray-100"
+                }`}
+              >
+                📎
+              </button>
+            </div>
             <textarea
               ref={textareaRef}
               value={input}
