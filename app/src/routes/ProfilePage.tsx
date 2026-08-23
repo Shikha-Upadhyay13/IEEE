@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/useAuth";
 import { supabase } from "../supabaseClient";
 import { btnSecondary } from "../lib/uiClasses";
@@ -10,9 +10,11 @@ function formatJoinDate(iso: string | undefined): string {
 
 export function ProfilePage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   async function handleSignOut() {
     await supabase.auth.signOut();
+    navigate("/login");
   }
 
   return (

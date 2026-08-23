@@ -210,6 +210,9 @@ export function Dashboard() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
+    // Explicit navigation rather than relying on RequireAuth's reactive
+    // redirect — deterministic regardless of any auth-listener timing.
+    navigate("/login");
   }
 
   return (

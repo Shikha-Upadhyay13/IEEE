@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { ImagesSidebar } from "../components/assistant/ImagesSidebar";
@@ -25,6 +25,7 @@ function buildImageUrl(prompt: string, seed: number): string {
 
 export function ImagesPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
@@ -99,6 +100,7 @@ export function ImagesPage() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
+    navigate("/login");
   }
 
   return (

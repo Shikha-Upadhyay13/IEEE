@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
@@ -75,6 +75,7 @@ function TypingDots() {
 
 export function AssistantPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -161,6 +162,14 @@ export function AssistantPage() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  // Keep the composer focused by default — on first load, after a reply
+  // finishes streaming (the disabled-during-streaming send button can steal
+  // focus away when it re-enables), and whenever the active conversation
+  // changes, so typing never requires clicking into the box first.
+  useEffect(() => {
+    if (!isStreaming) textareaRef.current?.focus();
+  }, [isStreaming, activeConversationId]);
 
   // Auto-grow the textarea with content (up to a cap) instead of either a
   // fixed one-line box that hides what you just typed, or a native resize
@@ -291,8 +300,14 @@ export function AssistantPage() {
     setMessages([]);
     setError(null);
     setActiveConversationId(null);
+    setSelectedDoc(null);
+    setDocumentContext(null);
     lastSavedMessagesRef.current = null;
     setPendingProjectId(activeProjectId);
+    // Explicit rather than relying solely on the focus effect above: that
+    // effect only re-fires when activeConversationId actually *changes* to a
+    // different value, which starting a second new chat in a row wouldn't do.
+    textareaRef.current?.focus();
   }
 
   async function handleSelectConversation(id: string) {
@@ -358,6 +373,7 @@ export function AssistantPage() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
+    navigate("/login");
   }
 
   return (
