@@ -185,7 +185,7 @@ export function EditorPage() {
       </div>
 
       <div className="flex-1 min-h-0 flex">
-        <div className="w-[460px] flex-shrink-0 h-full overflow-hidden border-r border-gray-200 bg-white">
+        <div className="w-1/2 min-w-0 h-full overflow-hidden border-r border-gray-200 bg-white">
           <EditorPanel />
         </div>
 
@@ -196,7 +196,7 @@ export function EditorPage() {
           className={
             previewOpen
               ? "fixed inset-0 z-50 bg-gray-100 overflow-y-auto py-10"
-              : "flex-1 relative overflow-y-auto bg-gray-100 py-10"
+              : "w-1/2 min-w-0 relative overflow-y-auto bg-gray-100 py-10"
           }
         >
           {previewOpen && (
