@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { useAuth } from "../lib/useAuth";
+import { useDebouncedValue } from "../lib/useDebouncedValue";
 import { summarizeDocumentForContext } from "../lib/summarizeDocument";
 import type { Document } from "../types/document";
+import {
+  ConversationSidebar,
+  type ConversationRow,
+  type ProjectRow,
+} from "../components/assistant/ConversationSidebar";
 
 const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL ?? "http://localhost:3002";
 
@@ -19,6 +26,12 @@ const STARTER_PROMPTS = [
 // Max height (px) the input grows to before it starts scrolling internally
 // instead of pushing the send button further down the page.
 const INPUT_MAX_HEIGHT = 160;
+
+function deriveTitle(messages: ChatMessage[]): string {
+  const firstUser = messages.find((m) => m.role === "user")?.content.trim();
+  if (!firstUser) return "New chat";
+  return firstUser.length > 48 ? `${firstUser.slice(0, 48)}…` : firstUser;
+}
 
 // Groq's API is OpenAI-compatible SSE: newline-delimited `data: {...}` frames,
 // terminated by a literal `data: [DONE]` — this walks the raw decoded text
@@ -61,6 +74,7 @@ function TypingDots() {
 }
 
 export function AssistantPage() {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -76,6 +90,17 @@ export function AssistantPage() {
   const [documentContext, setDocumentContext] = useState<string | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
 
+  // Conversation history + projects (sidebar). `pendingProjectId` is the
+  // project a *new* (not-yet-saved) chat will be filed under — it tracks
+  // whichever project filter was active when "New chat" was clicked, so
+  // starting a chat from inside a project keeps it there once it's saved.
+  const [conversations, setConversations] = useState<ConversationRow[]>([]);
+  const [projects, setProjects] = useState<ProjectRow[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [pendingProjectId, setPendingProjectId] = useState<string | null>(null);
+  const lastSavedMessagesRef = useRef<ChatMessage[] | null>(null);
+
   useEffect(() => {
     supabase
       .from("documents")
@@ -85,6 +110,33 @@ export function AssistantPage() {
         if (error) console.error("Failed to load documents for context picker:", error);
         setDocumentOptions(data ?? []);
       });
+  }, []);
+
+  function refreshConversations() {
+    supabase
+      .from("conversations")
+      .select("id, title, project_id, updated_at")
+      .order("updated_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) console.error("Failed to load conversations:", error);
+        setConversations(data ?? []);
+      });
+  }
+
+  function refreshProjects() {
+    supabase
+      .from("projects")
+      .select("id, name")
+      .order("created_at", { ascending: true })
+      .then(({ data, error }) => {
+        if (error) console.error("Failed to load projects:", error);
+        setProjects(data ?? []);
+      });
+  }
+
+  useEffect(() => {
+    refreshConversations();
+    refreshProjects();
   }, []);
 
   async function selectContextDocument(id: string) {
@@ -119,6 +171,54 @@ export function AssistantPage() {
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, INPUT_MAX_HEIGHT)}px`;
   }, [input]);
+
+  // Autosave: same debounce-then-persist shape as the paper editor's
+  // autosave (see EditorPage.tsx) — waits for the conversation to pause
+  // (including mid-stream token bursts, which keep resetting the timer)
+  // before writing, and compares against the last-saved reference so an
+  // untouched conversation never re-saves itself.
+  const debouncedMessages = useDebouncedValue(messages, 1200);
+  useEffect(() => {
+    if (!user || debouncedMessages.length === 0) return;
+    if (debouncedMessages === lastSavedMessagesRef.current) return;
+    const title = deriveTitle(debouncedMessages);
+
+    if (activeConversationId) {
+      supabase
+        .from("conversations")
+        .update({ title, messages: debouncedMessages })
+        .eq("id", activeConversationId)
+        .then(({ error }) => {
+          if (error) {
+            console.error("Failed to save conversation:", error);
+            return;
+          }
+          lastSavedMessagesRef.current = debouncedMessages;
+          const now = new Date().toISOString();
+          setConversations((prev) =>
+            [...prev]
+              .map((c) => (c.id === activeConversationId ? { ...c, title, updated_at: now } : c))
+              .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+          );
+        });
+    } else {
+      supabase
+        .from("conversations")
+        .insert({ owner_id: user.id, project_id: pendingProjectId, title, messages: debouncedMessages })
+        .select("id, title, project_id, updated_at")
+        .single()
+        .then(({ data, error }) => {
+          if (error || !data) {
+            console.error("Failed to create conversation:", error);
+            return;
+          }
+          lastSavedMessagesRef.current = debouncedMessages;
+          setActiveConversationId(data.id);
+          setConversations((prev) => [data, ...prev]);
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedMessages, user]);
 
   async function sendMessage(text: string) {
     const trimmed = text.trim();
@@ -190,35 +290,111 @@ export function AssistantPage() {
   function handleNewChat() {
     setMessages([]);
     setError(null);
+    setActiveConversationId(null);
+    lastSavedMessagesRef.current = null;
+    setPendingProjectId(activeProjectId);
+  }
+
+  async function handleSelectConversation(id: string) {
+    if (id === activeConversationId) return;
+    const { data, error } = await supabase.from("conversations").select("messages").eq("id", id).single();
+    if (error || !data) {
+      console.error("Failed to load conversation:", error);
+      return;
+    }
+    setActiveConversationId(id);
+    setMessages(data.messages as ChatMessage[]);
+    lastSavedMessagesRef.current = data.messages as ChatMessage[];
+    setError(null);
+  }
+
+  async function handleRenameConversation(id: string, title: string) {
+    setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
+    const { error } = await supabase.from("conversations").update({ title }).eq("id", id);
+    if (error) console.error("Failed to rename conversation:", error);
+  }
+
+  async function handleDeleteConversation(id: string) {
+    const previous = conversations;
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+    if (id === activeConversationId) handleNewChat();
+    const { error } = await supabase.from("conversations").delete().eq("id", id);
+    if (error) {
+      console.error("Failed to delete conversation:", error);
+      setConversations(previous);
+    }
+  }
+
+  async function handleCreateProject(name: string) {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("projects")
+      .insert({ owner_id: user.id, name })
+      .select("id, name")
+      .single();
+    if (error || !data) {
+      console.error("Failed to create project:", error);
+      return;
+    }
+    setProjects((prev) => [...prev, data]);
+  }
+
+  async function handleDeleteProject(id: string) {
+    const previousProjects = projects;
+    const previousConversations = conversations;
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+    // The DB's ON DELETE SET NULL handles the FK; mirror that locally so the
+    // sidebar doesn't show orphaned conversations still tagged with a
+    // project that no longer exists until the next full refresh.
+    setConversations((prev) => prev.map((c) => (c.project_id === id ? { ...c, project_id: null } : c)));
+    if (activeProjectId === id) setActiveProjectId(null);
+    const { error } = await supabase.from("projects").delete().eq("id", id);
+    if (error) {
+      console.error("Failed to delete project:", error);
+      setProjects(previousProjects);
+      setConversations(previousConversations);
+    }
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-b from-indigo-50/40 via-white to-white">
-      <div className="flex-none flex items-center gap-3 px-6 py-3 border-b border-gray-200 bg-white/80 backdrop-blur">
-        <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
-          ← Dashboard
-        </Link>
-        <span className="text-gray-300">|</span>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[11px]">
-            ✨
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-900 leading-none">AI Assistant</p>
-            <p className="text-[11px] text-gray-400 leading-none mt-0.5">Groq · GPT-OSS 120B</p>
-          </div>
-        </div>
+    <div className="h-screen flex bg-gradient-to-b from-indigo-50/40 via-white to-white">
+      <ConversationSidebar
+        conversations={conversations}
+        projects={projects}
+        activeConversationId={activeConversationId}
+        activeProjectId={activeProjectId}
+        userEmail={user?.email ?? null}
+        onNewChat={handleNewChat}
+        onSelectConversation={handleSelectConversation}
+        onRenameConversation={handleRenameConversation}
+        onDeleteConversation={handleDeleteConversation}
+        onSelectProject={setActiveProjectId}
+        onCreateProject={handleCreateProject}
+        onDeleteProject={handleDeleteProject}
+        onSignOut={handleSignOut}
+      />
 
-        <div className="ml-auto flex items-center gap-2">
-          {messages.length > 0 && (
-            <button
-              onClick={handleNewChat}
-              className="text-xs text-gray-500 hover:text-gray-800 border border-gray-200 rounded-full px-3 py-1.5 transition-colors"
-            >
-              + New chat
-            </button>
-          )}
-          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-full pl-2.5 pr-1 py-1">
+      <div className="flex-1 min-w-0 flex flex-col">
+        <div className="flex-none flex items-center gap-3 px-6 py-3 border-b border-gray-200 bg-white/80 backdrop-blur">
+          <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
+            ← Dashboard
+          </Link>
+          <span className="text-gray-300">|</span>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[11px]">
+              ✨
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900 leading-none">AI Assistant</p>
+              <p className="text-[11px] text-gray-400 leading-none mt-0.5">Groq · GPT-OSS 120B</p>
+            </div>
+          </div>
+
+          <div className="ml-auto flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-full pl-2.5 pr-1 py-1">
             <span className="text-xs">📄</span>
             <select
               value={selectedDoc?.id ?? ""}
@@ -235,109 +411,109 @@ export function AssistantPage() {
             </select>
           </div>
         </div>
-      </div>
 
-      {selectedDoc && (
-        <div className="flex-none flex items-center gap-2 px-6 py-1.5 bg-indigo-50 border-b border-indigo-100 text-xs text-indigo-700">
-          <span>
-            Using context from <strong>{selectedDoc.title || "Untitled paper"}</strong>
-            {contextLoading && "…"}
-          </span>
-          <button
-            onClick={() => selectContextDocument("")}
-            className="text-indigo-400 hover:text-indigo-700 ml-auto"
-            aria-label="Clear paper context"
-          >
-            ✕
-          </button>
-        </div>
-      )}
+        {selectedDoc && (
+          <div className="flex-none flex items-center gap-2 px-6 py-1.5 bg-indigo-50 border-b border-indigo-100 text-xs text-indigo-700">
+            <span>
+              Using context from <strong>{selectedDoc.title || "Untitled paper"}</strong>
+              {contextLoading && "…"}
+            </span>
+            <button
+              onClick={() => selectContextDocument("")}
+              className="text-indigo-400 hover:text-indigo-700 ml-auto"
+              aria-label="Clear paper context"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 py-8 flex flex-col gap-5">
-          {messages.length === 0 && (
-            <div className="text-center py-12 animate-fade-in-up">
-              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl shadow-md shadow-indigo-200">
-                ✨
-              </div>
-              <p className="text-lg font-semibold text-gray-900 mb-1">What are you writing today?</p>
-              <p className="text-sm text-gray-500 mb-6">
-                Ask for help drafting or refining any part of your paper's content.
-              </p>
-              <div className="grid sm:grid-cols-2 gap-2.5 max-w-lg mx-auto">
-                {STARTER_PROMPTS.map(({ icon, text }) => (
-                  <button
-                    key={text}
-                    onClick={() => sendMessage(text)}
-                    className="flex items-start gap-2.5 text-left text-sm text-gray-700 bg-white border border-gray-200 rounded-xl px-4 py-3 hover:border-indigo-300 hover:shadow-sm hover:-translate-y-0.5 transition-all"
-                  >
-                    <span className="text-base">{icon}</span>
-                    <span>{text}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {messages.map((message, i) => {
-            const isEmptyStreamingReply =
-              message.role === "assistant" && !message.content && isStreaming && i === messages.length - 1;
-            return (
-              <div
-                key={i}
-                className={`flex gap-3 animate-fade-in-up ${message.role === "user" ? "flex-row-reverse" : ""}`}
-              >
-                <Avatar role={message.role} />
-                <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
-                    message.role === "user"
-                      ? "bg-indigo-600 text-white rounded-br-sm"
-                      : "bg-white border border-gray-200 text-gray-800 shadow-sm rounded-bl-sm"
-                  }`}
-                >
-                  {isEmptyStreamingReply ? <TypingDots /> : message.content}
+        <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+          <div className="max-w-3xl mx-auto px-4 py-8 flex flex-col gap-5">
+            {messages.length === 0 && (
+              <div className="text-center py-12 animate-fade-in-up">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl shadow-md shadow-indigo-200">
+                  ✨
+                </div>
+                <p className="text-lg font-semibold text-gray-900 mb-1">What are you writing today?</p>
+                <p className="text-sm text-gray-500 mb-6">
+                  Ask for help drafting or refining any part of your paper's content.
+                </p>
+                <div className="grid sm:grid-cols-2 gap-2.5 max-w-lg mx-auto">
+                  {STARTER_PROMPTS.map(({ icon, text }) => (
+                    <button
+                      key={text}
+                      onClick={() => sendMessage(text)}
+                      className="flex items-start gap-2.5 text-left text-sm text-gray-700 bg-white border border-gray-200 rounded-xl px-4 py-3 hover:border-indigo-300 hover:shadow-sm hover:-translate-y-0.5 transition-all"
+                    >
+                      <span className="text-base">{icon}</span>
+                      <span>{text}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
-            );
-          })}
-
-          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="flex-none px-4 pb-5 pt-2">
-        <div className="max-w-3xl mx-auto flex gap-2 items-end bg-white border border-gray-200 rounded-2xl shadow-sm px-3 py-2 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400 transition-colors">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage(input);
-              }
-            }}
-            rows={1}
-            placeholder="Ask for help with your paper's content…"
-            className="flex-1 resize-none bg-transparent text-sm leading-relaxed py-1.5 focus:outline-none placeholder:text-gray-400"
-          />
-          <button
-            type="submit"
-            disabled={isStreaming || !input.trim()}
-            aria-label="Send message"
-            className="flex-none w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 transition-colors"
-          >
-            {isStreaming ? (
-              <span className="w-3.5 h-3.5 rounded-sm bg-white" />
-            ) : (
-              <span className="text-base leading-none -mt-0.5">↑</span>
             )}
-          </button>
+
+            {messages.map((message, i) => {
+              const isEmptyStreamingReply =
+                message.role === "assistant" && !message.content && isStreaming && i === messages.length - 1;
+              return (
+                <div
+                  key={i}
+                  className={`flex gap-3 animate-fade-in-up ${message.role === "user" ? "flex-row-reverse" : ""}`}
+                >
+                  <Avatar role={message.role} />
+                  <div
+                    className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                      message.role === "user"
+                        ? "bg-indigo-600 text-white rounded-br-sm"
+                        : "bg-white border border-gray-200 text-gray-800 shadow-sm rounded-bl-sm"
+                    }`}
+                  >
+                    {isEmptyStreamingReply ? <TypingDots /> : message.content}
+                  </div>
+                </div>
+              );
+            })}
+
+            {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+          </div>
         </div>
-        <p className="text-center text-[11px] text-gray-400 mt-2">
-          AI can be wrong — review anything you paste into your paper.
-        </p>
-      </form>
+
+        <form onSubmit={handleSubmit} className="flex-none px-4 pb-5 pt-2">
+          <div className="max-w-3xl mx-auto flex gap-2 items-end bg-white border border-gray-200 rounded-2xl shadow-sm px-3 py-2 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400 transition-colors">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage(input);
+                }
+              }}
+              rows={1}
+              placeholder="Ask for help with your paper's content…"
+              className="flex-1 resize-none bg-transparent text-sm leading-relaxed py-1.5 focus:outline-none placeholder:text-gray-400"
+            />
+            <button
+              type="submit"
+              disabled={isStreaming || !input.trim()}
+              aria-label="Send message"
+              className="flex-none w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 transition-colors"
+            >
+              {isStreaming ? (
+                <span className="w-3.5 h-3.5 rounded-sm bg-white" />
+              ) : (
+                <span className="text-base leading-none -mt-0.5">↑</span>
+              )}
+            </button>
+          </div>
+          <p className="text-center text-[11px] text-gray-400 mt-2">
+            AI can be wrong — review anything you paste into your paper.
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
