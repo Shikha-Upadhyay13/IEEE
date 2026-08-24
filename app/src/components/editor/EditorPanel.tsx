@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useDocumentStore } from "../../store/documentStore";
+import { useDocumentStore, collectSectionOptions, collectSectionDescendantIds } from "../../store/documentStore";
 import type { BodyNode, FontFamily } from "../../types/document";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 import { FigureEditor } from "./FigureEditor";
@@ -66,8 +66,10 @@ const collisionDetectionWithinContainer: CollisionDetection = (args) => {
 
 // `containerId` is the id of the sibling list this node lives in (null for the
 // document's top-level body, or the parent section's id) — dnd-kit needs this
-// on each draggable so reorderBlocks knows which list to reorder within, and
-// so a drag can't (yet) reorder across two different containers.
+// on each draggable so reorderBlocks knows which list to reorder within.
+// Drag itself only ever reorders within one list; moving a block into a
+// *different* section (or back out to the top level) goes through the
+// explicit "Move to…" control below instead — see its own comment for why.
 function SortableBlockItem({
   node,
   containerId,
@@ -81,6 +83,8 @@ function SortableBlockItem({
   const updateSectionHeading = useDocumentStore((s) => s.updateSectionHeading);
   const updateEquationLatex = useDocumentStore((s) => s.updateEquationLatex);
   const appendBlockToSection = useDocumentStore((s) => s.appendBlockToSection);
+  const moveBlockToSection = useDocumentStore((s) => s.moveBlockToSection);
+  const body = useDocumentStore((s) => s.document.body);
   const removeBlock = useDocumentStore((s) => s.removeBlock);
   // Collapsed by default — a paper with several sections showed every
   // paragraph/figure/table of all of them at once, which was the actual
@@ -123,6 +127,40 @@ function SortableBlockItem({
     </button>
   );
 
+  // Explicit alternative to cross-container drag (which dnd-kit's own setup
+  // here only ever supported within one already-visible list) — reorganizing
+  // the document's hierarchy this way is reliable regardless of how deep the
+  // nesting or whether a target section happens to be collapsed right now.
+  // A section can't be moved into itself or into its own descendant — either
+  // would orphan it — so both are filtered out of the options.
+  const invalidTargetIds = node.type === "section" ? collectSectionDescendantIds(node) : new Set<string>();
+  const moveTargets = collectSectionOptions(body).filter(
+    (opt) => opt.id !== node.id && !invalidTargetIds.has(opt.id)
+  );
+  const moveToControl = (
+    <select
+      aria-label="Move to section"
+      value=""
+      onChange={(e) => {
+        const value = e.target.value;
+        if (value) moveBlockToSection(node.id, value === "__top__" ? null : value);
+        e.target.value = "";
+      }}
+      title="Move to…"
+      className="flex-none w-6 h-6 text-[10px] text-gray-300 hover:text-gray-500 bg-transparent border-none cursor-pointer focus:outline-none"
+    >
+      <option value="" disabled>
+        ⇥
+      </option>
+      {containerId !== null && <option value="__top__">Top level</option>}
+      {moveTargets.map((opt) => (
+        <option key={opt.id} value={opt.id}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  );
+
   if (node.type === "section") {
     return (
       <div
@@ -150,6 +188,7 @@ function SortableBlockItem({
           {node.children.length > 0 && (
             <span className="flex-none text-[11px] text-gray-400 px-1.5">{node.children.length}</span>
           )}
+          {moveToControl}
           {deleteButton}
         </div>
         {expanded && (
@@ -200,6 +239,7 @@ function SortableBlockItem({
               onChange={(content) => updateParagraphContent(node.id, content)}
             />
           </div>
+          {moveToControl}
           {deleteButton}
         </div>
       </div>
@@ -219,6 +259,7 @@ function SortableBlockItem({
           <div className="flex-1 min-w-0">
             <FigureEditor node={node} />
           </div>
+          {moveToControl}
           {deleteButton}
         </div>
       </div>
@@ -238,6 +279,7 @@ function SortableBlockItem({
           <div className="flex-1 min-w-0">
             <TableEditor node={node} />
           </div>
+          {moveToControl}
           {deleteButton}
         </div>
       </div>
@@ -257,6 +299,7 @@ function SortableBlockItem({
         <div className="flex-1 min-w-0">
           <EquationEditor latex={node.latex} onChange={(latex) => updateEquationLatex(node.id, latex)} />
         </div>
+        {moveToControl}
         {deleteButton}
       </div>
     </div>

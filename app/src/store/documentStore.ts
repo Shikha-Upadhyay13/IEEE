@@ -29,6 +29,63 @@ function removeNodeById(nodes: BodyNode[], id: string): BodyNode[] {
     );
 }
 
+// Finds `id` anywhere in the tree, removes it, and hands it back so the
+// caller can re-insert it elsewhere — the "move" half of moveBlockToSection.
+// Unlike removeNodeById, this needs the removed node itself, not just the
+// tree without it.
+function extractNodeById(
+  nodes: BodyNode[],
+  id: string
+): { remaining: BodyNode[]; extracted: BodyNode | null } {
+  let extracted: BodyNode | null = null;
+  const remaining: BodyNode[] = [];
+  for (const node of nodes) {
+    if (node.id === id) {
+      extracted = node;
+      continue;
+    }
+    if (!extracted && node.type === "section") {
+      const result = extractNodeById(node.children, id);
+      if (result.extracted) {
+        extracted = result.extracted;
+        remaining.push({ ...node, children: result.remaining });
+        continue;
+      }
+    }
+    remaining.push(node);
+  }
+  return { remaining, extracted };
+}
+
+// Every id nested anywhere inside a section — moving that section into one
+// of its own descendants would orphan it (the section would contain itself),
+// so callers use this to filter those out as invalid drop targets.
+export function collectSectionDescendantIds(node: BodyNode): Set<string> {
+  const ids = new Set<string>();
+  if (node.type !== "section") return ids;
+  function walk(children: BodyNode[]) {
+    for (const child of children) {
+      ids.add(child.id);
+      if (child.type === "section") walk(child.children);
+    }
+  }
+  walk(node.children);
+  return ids;
+}
+
+// Flat, indented list of every section in the document — powers the "Move
+// to…" dropdown's options (plain paragraphs/figures/tables/equations can't
+// contain other blocks, so they're never valid move targets).
+export function collectSectionOptions(nodes: BodyNode[], depth = 0): { id: string; label: string }[] {
+  const options: { id: string; label: string }[] = [];
+  for (const node of nodes) {
+    if (node.type !== "section") continue;
+    options.push({ id: node.id, label: `${"— ".repeat(depth)}${node.heading || "Untitled section"}` });
+    options.push(...collectSectionOptions(node.children, depth + 1));
+  }
+  return options;
+}
+
 // Shared by the top-level append* actions and appendBlockToSection below —
 // one definition of "what a fresh block of type X looks like" rather than
 // two copies that could drift out of sync.
@@ -116,6 +173,7 @@ type DocumentStore = {
   appendTable: () => void;
   appendEquation: () => void;
   appendBlockToSection: (sectionId: string, type: BodyNode["type"]) => void;
+  moveBlockToSection: (blockId: string, targetSectionId: string | null) => void;
   updateParagraphContent: (id: string, content: InlineNode[]) => void;
   updateSectionHeading: (id: string, heading: string) => void;
   addFigureImage: (id: string, image: FigureImage) => void;
@@ -197,6 +255,31 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         ),
       },
     })),
+
+  // Explicit "Move to…" control rather than pixel-level cross-container
+  // drag: the existing dnd-kit setup only ever reordered within one already-
+  // visible list, and extending it to drop *into* a (possibly collapsed)
+  // section reliably is a much harder interaction to get right blind.
+  moveBlockToSection: (blockId, targetSectionId) =>
+    set((state) => {
+      if (blockId === targetSectionId) return {};
+      const { remaining, extracted } = extractNodeById(state.document.body, blockId);
+      if (!extracted) return {};
+      if (targetSectionId && extracted.type === "section") {
+        if (collectSectionDescendantIds(extracted).has(targetSectionId)) return {};
+      }
+      if (targetSectionId === null) {
+        return { document: { ...state.document, body: [...remaining, extracted] } };
+      }
+      return {
+        document: {
+          ...state.document,
+          body: updateNodeById(remaining, targetSectionId, (node) =>
+            node.type === "section" ? { ...node, children: [...node.children, extracted] } : node
+          ),
+        },
+      };
+    }),
 
   // Full inline-content replacement, preserving any citeRef/xref nodes the
   // rich-text editor (TipTap) round-trips — unlike Milestone 2's plain-text
