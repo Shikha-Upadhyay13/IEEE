@@ -19,6 +19,28 @@ const FONT_STACKS: Record<string, string> = {
   calibri: "Calibri, 'Segoe UI', sans-serif",
 };
 
+// IEEE's own conference template text (verified directly against the
+// official IEEE-EIT-Paper_template.pdf — see ARCHITECTURE.md) gives exact
+// A4 margins distinct from the Letter defaults already baked into
+// ieee-template.css's base @page rule: top 19mm, bottom 40mm, side 15mm
+// (column width/gutter are unchanged between sizes). Declared as a second
+// @page rule rather than edited into the CSS file directly — the file's own
+// @page stays the permanent, always-compliant Letter default; this only
+// ever *overrides* it for a document that opted into A4, so nothing here
+// risks the guaranteed-format promise for the common case.
+const A4_PAGE_CSS = `@page { size: A4; margin-top: 19mm; margin-bottom: 40mm; margin-left: 15mm; margin-right: 15mm; }`;
+
+// The official template's own text says explicitly "Do not add page
+// numbers" — see the research behind this feature — so this is opt-in only
+// (Document.meta.showPageNumbers), never part of the base stylesheet.
+// counter(page) is standard CSS Paged Media; Paged.js (which does the
+// actual pagination here, in both the live preview and the PDF export path
+// — see PagedPreview.tsx) resolves it into real page-number text per page,
+// the same way it resolves everything else in an @page margin box.
+function buildPageNumberCss(fontFamily: string): string {
+  return `@page { @bottom-center { content: counter(page); font-family: ${fontFamily}; font-size: 8pt; } }`;
+}
+
 // Real math rendering (KaTeX) rather than displaying the stored LaTeX as
 // literal text. throwOnError: false so a mid-edit/incomplete expression
 // degrades to KaTeX's own inline error rendering instead of crashing the
@@ -146,8 +168,16 @@ function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
 
 export function IEEEConferenceTemplate({ document }: { document: ResolvedDocument }) {
   const fontOverride = FONT_STACKS[document.meta.fontFamily ?? "times"];
+  const pageCssOverrides = [
+    document.meta.paperSize === "a4" ? A4_PAGE_CSS : "",
+    document.meta.showPageNumbers ? buildPageNumberCss(fontOverride ?? "'Times New Roman', Times, serif") : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
   return (
     <div className="ieee-paper" style={fontOverride ? { fontFamily: fontOverride } : undefined}>
+      {pageCssOverrides && <style>{pageCssOverrides}</style>}
       <h1 className="ieee-title">
         <InlineContent nodes={document.titleBlock.title as ResolvedInlineNode[]} />
       </h1>

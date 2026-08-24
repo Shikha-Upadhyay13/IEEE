@@ -25,11 +25,19 @@ export async function renderPdf({ documentId, token }) {
 
     await page.emulateMedia({ media: "print" });
 
-    // Zero Chromium-applied margin: ieee-template.css's @page rule already
-    // encodes the true IEEE margins (0.75in/1in/0.625in) — a second margin
+    // Zero Chromium-applied margin: the rendered page's own @page rule
+    // already encodes the true IEEE margins (Letter 0.75in/1in/0.625in, or
+    // the A4 override — see IEEEConferenceTemplate.tsx) — a second margin
     // here would double up on top of that.
+    //
+    // preferCSSPageSize is what actually makes A4 export correctly:
+    // Playwright's page.pdf() defaults to Letter regardless of any @page
+    // size CSS unless this is set — without it, an A4 document would still
+    // export at Letter dimensions even though the on-screen preview (which
+    // isn't subject to this Playwright-specific default) shows A4 correctly.
     return await page.pdf({
       printBackground: true,
+      preferCSSPageSize: true,
       margin: { top: 0, bottom: 0, left: 0, right: 0 },
     });
   } finally {

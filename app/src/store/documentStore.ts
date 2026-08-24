@@ -5,6 +5,7 @@ import { generateId } from "../lib/id";
 import { emptyReferenceFields, generateReferenceText, type ReferenceFields } from "../lib/generateReferenceText";
 
 type BlockWidth = Extract<BodyNode, { type: "figure" }>["width"];
+type PaperSize = Document["meta"]["paperSize"];
 
 // Recursively find `id` among a section's children too, not just its direct siblings.
 function updateNodeById(
@@ -167,6 +168,8 @@ type DocumentStore = {
   setAbstract: (text: string) => void;
   setKeywords: (commaSeparated: string) => void;
   setFontFamily: (fontFamily: FontFamily) => void;
+  setPaperSize: (paperSize: PaperSize) => void;
+  setShowPageNumbers: (showPageNumbers: boolean) => void;
   appendParagraph: () => void;
   appendSection: () => void;
   appendFigure: () => void;
@@ -226,6 +229,12 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   setFontFamily: (fontFamily) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, fontFamily } } })),
+
+  setPaperSize: (paperSize) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, paperSize } } })),
+
+  setShowPageNumbers: (showPageNumbers) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, showPageNumbers } } })),
 
   appendParagraph: () =>
     set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("paragraph")] } })),

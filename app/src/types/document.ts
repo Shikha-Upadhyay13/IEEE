@@ -142,6 +142,12 @@ export const DocumentSchema = z.object({
     paperSize: z.enum(["letter", "a4"]),
     pageLimit: z.number().int().positive().nullable(),
     fontFamily: FontFamilySchema.optional(),
+    // IEEE's own template text says explicitly "Do not add page numbers" —
+    // most conferences add them during publication, not on the submitted
+    // manuscript. Optional and defaulted to false so the guaranteed-
+    // compliant default never includes them; this is a deliberate opt-out
+    // of that guidance for venues that do want them.
+    showPageNumbers: z.boolean().optional(),
   }),
   titleBlock: z.object({
     title: z.array(InlineNodeSchema),

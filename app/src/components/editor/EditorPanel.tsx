@@ -364,6 +364,8 @@ export function EditorPanel() {
   const setAbstract = useDocumentStore((s) => s.setAbstract);
   const setKeywords = useDocumentStore((s) => s.setKeywords);
   const setFontFamily = useDocumentStore((s) => s.setFontFamily);
+  const setPaperSize = useDocumentStore((s) => s.setPaperSize);
+  const setShowPageNumbers = useDocumentStore((s) => s.setShowPageNumbers);
   const appendParagraph = useDocumentStore((s) => s.appendParagraph);
   const appendSection = useDocumentStore((s) => s.appendSection);
   const appendFigure = useDocumentStore((s) => s.appendFigure);
@@ -460,6 +462,41 @@ export function EditorPanel() {
               submission-compliant.
             </p>
           )}
+        </div>
+
+        <div className="mt-4">
+          <label htmlFor="paper-size" className={labelBase}>
+            Paper size
+          </label>
+          <select
+            id="paper-size"
+            value={document.meta.paperSize}
+            onChange={(e) => setPaperSize(e.target.value as "letter" | "a4")}
+            className={`${inputBase} cursor-pointer`}
+          >
+            <option value="letter">US Letter (8.5 × 11 in)</option>
+            <option value="a4">A4 (210 × 297 mm)</option>
+          </select>
+          <p className="text-xs text-gray-400 mt-1.5">
+            Both are official IEEE conference sizes — Letter for US/Canada, A4 for most other regions.
+          </p>
+        </div>
+
+        <div className="mt-4 flex items-start gap-2">
+          <input
+            id="show-page-numbers"
+            type="checkbox"
+            checked={document.meta.showPageNumbers ?? false}
+            onChange={(e) => setShowPageNumbers(e.target.checked)}
+            className="mt-0.5 flex-none"
+          />
+          <label htmlFor="show-page-numbers" className="text-sm text-gray-700 cursor-pointer">
+            Show page numbers
+            <span className="block text-xs text-gray-400 mt-0.5">
+              Off by default — IEEE's own conference template says "do not add page numbers"; most venues
+              add them during publication. Turn this on only if your specific conference asks for them.
+            </span>
+          </label>
         </div>
       </div>
 
