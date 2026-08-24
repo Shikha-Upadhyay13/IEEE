@@ -1,0 +1,39 @@
+# Render Blueprint — deploys the two backend services that need a real,
+# persistent Node process (not serverless): pdf-service (Playwright +
+# Chromium) and ai-service (long-lived SSE streaming for chat). The frontend
+# is deployed separately on Vercel, which is a much better fit for a static
+# Vite build — see README.md.
+#
+# Usage: connect this repo in the Render dashboard ("New" -> "Blueprint"),
+# fill in the `sync: false` env vars when prompted (or afterwards, per
+# service, in Environment settings), then deploy.
+services:
+  - name: ieee-paper-builder-pdf-service
+    type: web
+    runtime: docker
+    dockerfilePath: ./pdf-service/Dockerfile
+    dockerContext: ./pdf-service
+    healthCheckPath: /health
+    envVars:
+      # The deployed Vercel frontend's URL — pdf-service navigates a headless
+      # browser to {FRONTEND_URL}/print/:documentId to render each export.
+      - key: FRONTEND_URL
+        sync: false
+      # Same URL again, used only for the Access-Control-Allow-Origin header
+      # on pdf-service's own /export endpoint (the browser calls this
+      # service directly, not through the print route).
+      - key: FRONTEND_ORIGIN
+        sync: false
+
+  - name: ieee-paper-builder-ai-service
+    type: web
+    runtime: node
+    buildCommand: cd ai-service && npm install
+    startCommand: cd ai-service && node server.mjs
+    healthCheckPath: /health
+    envVars:
+      # Free at console.groq.com — API Keys -> Create API Key.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
