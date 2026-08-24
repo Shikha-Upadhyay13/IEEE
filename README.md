@@ -1,6 +1,16 @@
 # IEEE Paper Builder
 
-Formatting an IEEE conference paper by hand in Word or LaTeX is tedious and error-prone, especially without LaTeX experience — the same margin/font/column rules get re-applied from scratch every time, and it's easy to get something subtly wrong. This project replaces that with a FlowCV-style drag-and-drop editor: you build the paper from content blocks (title, abstract, sections, figures, tables, equations, references), and a live, paginated two-column preview stays byte-accurate to IEEE's conference format automatically as you edit — no manual formatting, no LaTeX to learn.
+## The problem
+
+Students, researchers, and professors publishing an IEEE conference paper have to manually apply IEEE's exacting format rules — fonts, margins, two-column layout, figure/table placement, citation numbering — by hand in Word or LaTeX, for every single paper. In practice this is:
+
+- **Tedious and repetitive** — the same formatting rules get re-applied from scratch each time.
+- **Error-prone** — it's easy to get spacing, font sizes, or caption placement subtly wrong, risking rejection or professor pushback.
+- **A barrier for non-technical users** — LaTeX requires learning a markup language; Word's IEEE template is fragile and breaks on paste.
+
+## How we solve it
+
+A FlowCV-style drag-and-drop editor: you build the paper from content blocks (title, abstract, sections, figures, tables, equations, references), and a live, paginated two-column preview stays byte-accurate to IEEE's conference format automatically as you edit — no manual formatting, no LaTeX to learn. What you see in the preview is exactly what gets exported to PDF, from the same rendering pipeline, not a separate conversion step.
 
 ## What it does
 
