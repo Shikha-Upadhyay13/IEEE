@@ -231,3 +231,61 @@ create policy "insert own generated images"
 create policy "delete own generated images"
   on generated_images for delete
   using (auth.uid() = owner_id);
+
+-- ── Downloads: persisted copies of every PDF export ──────────────
+-- Exporting still triggers an immediate browser download as before — this
+-- additionally keeps a copy in Storage so past exports live somewhere
+-- durable, not just "wherever your OS Downloads folder put it". title is
+-- denormalized (copied at export time) so a later paper rename/deletion
+-- doesn't change or break what this row shows.
+create table if not exists exports (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid references auth.users(id) not null,
+  document_id uuid references documents(id) on delete set null,
+  title text not null,
+  storage_path text not null,
+  created_at timestamptz default now()
+);
+
+alter table exports enable row level security;
+
+create policy "select own exports"
+  on exports for select
+  using (auth.uid() = owner_id);
+
+create policy "insert own exports"
+  on exports for insert
+  with check (auth.uid() = owner_id);
+
+create policy "delete own exports"
+  on exports for delete
+  using (auth.uid() = owner_id);
+
+-- Private (not public like the figures bucket) — a paper's full exported
+-- text is more sensitive than a figure image, so downloads go through a
+-- short-lived signed URL (mirroring the existing export_tokens pattern)
+-- rather than being world-readable by URL.
+insert into storage.buckets (id, name, public)
+values ('exports', 'exports', false)
+on conflict (id) do nothing;
+
+create policy "users read their own exported pdfs"
+on storage.objects for select
+using (
+  bucket_id = 'exports'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+create policy "users upload their own exported pdfs"
+on storage.objects for insert
+with check (
+  bucket_id = 'exports'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+create policy "users delete their own exported pdfs"
+on storage.objects for delete
+using (
+  bucket_id = 'exports'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
