@@ -7,6 +7,7 @@ import { relativeTime } from "../lib/relativeTime";
 import { inputBase } from "../lib/uiClasses";
 import { DashboardSidebar } from "../components/dashboard/DashboardSidebar";
 import { PaperThumbnail } from "../components/dashboard/PaperThumbnail";
+import { useConfirm } from "../components/ConfirmDialog";
 
 type DocumentRow = { id: string; title: string | null; updated_at: string };
 
@@ -155,6 +156,7 @@ export function Dashboard() {
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   useEffect(() => {
     let cancelled = false;
@@ -232,7 +234,12 @@ export function Dashboard() {
   }
 
   async function handleDelete(id: string, title: string | null) {
-    if (!window.confirm(`Delete "${title || "Untitled paper"}"? This can't be undone.`)) return;
+    const ok = await confirm({
+      title: "Delete this paper?",
+      message: `Delete "${title || "Untitled paper"}"? This can't be undone.`,
+      confirmLabel: "Delete",
+    });
+    if (!ok) return;
     const previous = documents;
     setDocuments((docs) => docs.filter((d) => d.id !== id)); // optimistic
     const { error } = await supabase.from("documents").delete().eq("id", id);
@@ -293,6 +300,7 @@ export function Dashboard() {
           {duplicatingId && <p className="text-xs text-gray-400 mt-4">Duplicating…</p>}
         </div>
       </div>
+      {ConfirmDialog}
     </div>
   );
 }

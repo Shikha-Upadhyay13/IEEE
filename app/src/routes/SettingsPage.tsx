@@ -4,6 +4,7 @@ import { useAuth } from "../lib/useAuth";
 import { useTheme, type ThemeSetting } from "../lib/useTheme";
 import { supabase } from "../supabaseClient";
 import { btnDanger } from "../lib/uiClasses";
+import { useConfirm } from "../components/ConfirmDialog";
 
 const THEME_OPTIONS: { value: ThemeSetting; label: string; icon: string }[] = [
   { value: "light", label: "Light", icon: "☀️" },
@@ -16,10 +17,16 @@ export function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [clearing, setClearing] = useState(false);
   const [cleared, setCleared] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   async function handleClearConversations() {
     if (!user) return;
-    if (!window.confirm("Delete all AI Assistant conversations? This can't be undone.")) return;
+    const ok = await confirm({
+      title: "Clear all conversations?",
+      message: "Delete all AI Assistant conversations? This can't be undone.",
+      confirmLabel: "Clear all",
+    });
+    if (!ok) return;
     setClearing(true);
     setCleared(false);
     const { error } = await supabase.from("conversations").delete().eq("owner_id", user.id);
@@ -89,6 +96,7 @@ export function SettingsPage() {
           {cleared && <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">All conversations cleared.</p>}
         </div>
       </div>
+      {ConfirmDialog}
     </div>
   );
 }
