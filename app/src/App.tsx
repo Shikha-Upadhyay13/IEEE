@@ -8,6 +8,7 @@ import { AssistantPage } from "./routes/AssistantPage";
 import { ImagesPage } from "./routes/ImagesPage";
 import { ProfilePage } from "./routes/ProfilePage";
 import { SettingsPage } from "./routes/SettingsPage";
+import { DownloadsPage } from "./routes/DownloadsPage";
 import { RequireAuth } from "./components/RequireAuth";
 import { ChatLauncher } from "./components/ChatLauncher";
 import { useAuth } from "./lib/useAuth";
@@ -33,6 +34,7 @@ function App() {
         <Route path="/images" element={<RequireAuth><ImagesPage /></RequireAuth>} />
         <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
         <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
+        <Route path="/downloads" element={<RequireAuth><DownloadsPage /></RequireAuth>} />
         {/* Not behind RequireAuth: the headless PDF export path has no user
             session at all (see PrintView's own token-vs-session handling). */}
         <Route path="/print/:documentId" element={<PrintView />} />

@@ -181,7 +181,7 @@ export function EditorPage() {
           <span className="text-gray-300">|</span>
           <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
         </div>
-        {documentId && <ExportButton documentId={documentId} compact />}
+        {documentId && <ExportButton documentId={documentId} title={extractTitleText(document)} compact />}
       </div>
 
       <div className="flex-1 min-h-0 flex">

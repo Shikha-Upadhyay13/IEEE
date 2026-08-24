@@ -4,11 +4,42 @@ import { btnPrimary } from "../../lib/uiClasses";
 
 const PDF_SERVICE_URL = import.meta.env.VITE_PDF_SERVICE_URL ?? "http://localhost:3001";
 
+// Best-effort: a failure here shouldn't undo the export the user already
+// got (the browser download already happened by the time this runs) — it
+// only means this copy won't show up on the Downloads page later.
+async function persistExportCopy(documentId: string, title: string, blob: Blob) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const path = `${user.id}/${documentId}/${generateFileTimestamp()}.pdf`;
+  const { error: uploadError } = await supabase.storage.from("exports").upload(path, blob, {
+    contentType: "application/pdf",
+  });
+  if (uploadError) {
+    console.error("Failed to save export copy:", uploadError);
+    return;
+  }
+  const { error: insertError } = await supabase
+    .from("exports")
+    .insert({ owner_id: user.id, document_id: documentId, title, storage_path: path });
+  if (insertError) console.error("Failed to record export:", insertError);
+}
+
+// A storage path segment, not a display timestamp — doesn't need to be
+// human-readable, just unique-enough per user per document.
+function generateFileTimestamp(): string {
+  return new Date().toISOString().replace(/[:.]/g, "-");
+}
+
 export function ExportButton({
   documentId,
+  title,
   compact = false,
 }: {
   documentId: string;
+  title: string;
   /** Renders as an inline button with no wrapping border/padding — used in
    *  the editor's top bar, where the sidebar's stacked full-width treatment
    *  below would look out of place. */
@@ -43,6 +74,8 @@ export function ExportButton({
       a.click();
       URL.revokeObjectURL(url);
       setStatus("idle");
+
+      persistExportCopy(documentId, title, blob);
     } catch (err) {
       console.error("Export failed:", err);
       setStatus("error");

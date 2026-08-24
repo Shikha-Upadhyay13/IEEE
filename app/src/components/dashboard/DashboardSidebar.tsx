@@ -4,6 +4,7 @@ const NAV_ITEMS = [
   { to: "/dashboard", icon: "📄", label: "My Papers" },
   { to: "/assistant", icon: "✨", label: "AI Assistant" },
   { to: "/images", icon: "🖼️", label: "Images" },
+  { to: "/downloads", icon: "📥", label: "Downloads" },
 ];
 
 export function DashboardSidebar({ onSignOut }: { onSignOut: () => void }) {
