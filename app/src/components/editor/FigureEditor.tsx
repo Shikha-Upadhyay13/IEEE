@@ -8,12 +8,6 @@ import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 
 type Figure = Extract<BodyNode, { type: "figure" }>;
 
-const SCALE_PRESETS: { label: string; value: number }[] = [
-  { label: "Small", value: 40 },
-  { label: "Medium", value: 70 },
-  { label: "Large", value: 100 },
-];
-
 export function FigureEditor({ node }: { node: Figure }) {
   const addFigureImage = useDocumentStore((s) => s.addFigureImage);
   const removeFigureImageAt = useDocumentStore((s) => s.removeFigureImageAt);
@@ -72,29 +66,16 @@ export function FigureEditor({ node }: { node: Figure }) {
         </label>
         <label className="flex items-center gap-1.5">
           Size
-          <select
-            value={SCALE_PRESETS.find((p) => p.value === (node.scale ?? 100)) ? node.scale ?? 100 : 100}
+          <input
+            type="range"
+            min={10}
+            max={100}
+            step={1}
+            value={node.scale ?? 100}
             onChange={(e) => updateFigureScale(node.id, Number(e.target.value))}
-            className="rounded border-gray-200 px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
-          >
-            {SCALE_PRESETS.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex items-center gap-1.5">
-          Align
-          <select
-            value={node.align ?? "center"}
-            onChange={(e) => updateFigureAlign(node.id, e.target.value as FigureAlign)}
-            className="rounded border-gray-200 px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
-          >
-            <option value="left">Left</option>
-            <option value="center">Center</option>
-            <option value="right">Right</option>
-          </select>
+            className="w-24 accent-indigo-600"
+          />
+          <span className="w-10 text-right tabular-nums text-gray-500">{node.scale ?? 100}%</span>
         </label>
       </div>
 
@@ -102,29 +83,45 @@ export function FigureEditor({ node }: { node: Figure }) {
       {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
 
       {images.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          {images.map((img, i) => (
-            <div key={img.url + i} className="relative">
-              <img
-                src={img.url}
-                alt={img.alt}
-                className="max-w-[140px] max-h-[100px] rounded border border-gray-200"
-              />
-              {images.length > 1 && (
-                <span className="absolute bottom-0.5 left-0.5 text-[10px] bg-white/80 px-1 rounded">
-                  ({String.fromCharCode(97 + i)})
-                </span>
-              )}
-              <button
-                onClick={() => removeFigureImageAt(node.id, i)}
-                aria-label="Remove image"
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-gray-300 text-gray-500 hover:text-red-600 hover:border-red-300 text-xs flex items-center justify-center"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
+        <>
+          {/* Right above the image it affects, not lumped in with unrelated
+              width/size controls — "align what?" was the actual confusion. */}
+          <label className="flex items-center gap-1.5 text-xs text-gray-600">
+            Align this image on the page:
+            <select
+              value={node.align ?? "center"}
+              onChange={(e) => updateFigureAlign(node.id, e.target.value as FigureAlign)}
+              className="rounded border-gray-200 px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+            >
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
+          <div className="flex gap-2 flex-wrap">
+            {images.map((img, i) => (
+              <div key={img.url + i} className="relative">
+                <img
+                  src={img.url}
+                  alt={img.alt}
+                  className="max-w-[140px] max-h-[100px] rounded border border-gray-200"
+                />
+                {images.length > 1 && (
+                  <span className="absolute bottom-0.5 left-0.5 text-[10px] bg-white/80 px-1 rounded">
+                    ({String.fromCharCode(97 + i)})
+                  </span>
+                )}
+                <button
+                  onClick={() => removeFigureImageAt(node.id, i)}
+                  aria-label="Remove image"
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-gray-300 text-gray-500 hover:text-red-600 hover:border-red-300 text-xs flex items-center justify-center"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
       )}
       {images.length === 0 && <p className="text-xs text-gray-400">No images uploaded yet.</p>}
 
