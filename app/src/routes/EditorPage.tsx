@@ -7,7 +7,8 @@ import { PagedPreview } from "../components/renderer/PagedPreview";
 import { EditorPanel } from "../components/editor/EditorPanel";
 import { ExportButton } from "../components/editor/ExportButton";
 import { supabase } from "../supabaseClient";
-import { btnGhost } from "../lib/uiClasses";
+import { btnGhost, btnPrimary } from "../lib/uiClasses";
+import { LoadingScreen } from "../components/LoadingScreen";
 import type { Document } from "../types/document";
 
 function extractTitleText(doc: Document): string {
@@ -153,13 +154,21 @@ export function EditorPage() {
   }, [previewOpen]);
 
   if (loadState === "loading") {
-    return <p className="p-6 text-sm text-gray-500">Loading paper…</p>;
+    return <LoadingScreen label="Loading paper…" />;
   }
   if (loadState === "error") {
     return (
-      <p className="p-6 text-sm text-gray-500">
-        Couldn't load that paper — it may not exist, or you may not have access.
-      </p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-[#f7f6f3] px-6 text-center">
+        <div className="w-10 h-10 rounded-lg bg-gray-300 text-white flex items-center justify-center font-serif text-xl">
+          §
+        </div>
+        <p className="text-sm text-gray-600 max-w-sm">
+          Couldn't load that paper — it may not exist, or you may not have access.
+        </p>
+        <Link to="/dashboard" className={btnPrimary}>
+          ← Back to Dashboard
+        </Link>
+      </div>
     );
   }
 

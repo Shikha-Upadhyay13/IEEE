@@ -279,7 +279,17 @@ export function Dashboard() {
           )}
 
           {loading ? (
-            <p className="text-sm text-gray-500">Loading…</p>
+            // Skeleton grid shaped like the real card layout, not a bare
+            // "Loading…" line — the sidebar/header are already rendered by
+            // this point, so a full-page spinner would be a step backwards.
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex flex-col gap-2">
+                  <div className="aspect-[8.5/11] w-full rounded-xl bg-gray-200 animate-pulse" />
+                  <div className="h-3.5 w-2/3 rounded bg-gray-200 animate-pulse" />
+                </div>
+              ))}
+            </div>
           ) : filteredDocuments.length === 0 && search ? (
             <p className="text-sm text-gray-400">No papers match "{search}".</p>
           ) : (
