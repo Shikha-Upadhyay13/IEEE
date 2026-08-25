@@ -17,11 +17,14 @@ const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL ?? "http://localhost:
 type ChatMessage = { role: "user" | "assistant"; content: string };
 type DocumentOption = { id: string; title: string | null };
 
+// Roman numerals rather than emoji icons — a small, deliberate nod to how
+// this same app numbers IEEE sections, so even the empty state reads as
+// "part of this specific product" instead of a generic AI-chat template.
 const STARTER_PROMPTS = [
-  { icon: "📝", text: "Help me write my abstract from a rough description of my project" },
-  { icon: "🔬", text: "Expand my methodology section with more technical detail" },
-  { icon: "📊", text: "Explain my results in clearer, more formal language" },
-  { icon: "📚", text: "Suggest a related-work paragraph for my topic" },
+  { numeral: "I", text: "Help me write my abstract from a rough description of my project" },
+  { numeral: "II", text: "Expand my methodology section with more technical detail" },
+  { numeral: "III", text: "Explain my results in clearer, more formal language" },
+  { numeral: "IV", text: "Suggest a related-work paragraph for my topic" },
 ];
 
 // Max height (px) the input grows to before it starts scrolling internally
@@ -45,17 +48,22 @@ function extractSseFrames(buffer: string): { frames: string[]; rest: string } {
   return { frames: parts, rest };
 }
 
+// "§" is this app's own mark (same one on the Dashboard sidebar and login
+// screen) — used here instead of a sparkle-in-a-gradient-circle, which is
+// the single most recognizable "generic AI chatbot" visual cliché. Reusing
+// the real brand mark makes the assistant read as part of this specific
+// product rather than a bolted-on template.
 function Avatar({ role }: { role: "user" | "assistant" }) {
   if (role === "user") {
     return (
-      <div className="flex-none w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center text-xs font-semibold">
+      <div className="flex-none w-7 h-7 rounded-md bg-gray-800 dark:bg-gray-700 text-white flex items-center justify-center text-[11px] font-semibold">
         You
       </div>
     );
   }
   return (
-    <div className="flex-none w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white flex items-center justify-center text-sm shadow-sm">
-      ✨
+    <div className="flex-none w-7 h-7 rounded-md bg-indigo-600 text-white flex items-center justify-center font-serif text-sm">
+      §
     </div>
   );
 }
@@ -427,7 +435,7 @@ export function AssistantPage() {
   }
 
   return (
-    <div className="h-screen flex bg-gradient-to-b from-indigo-50/40 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950">
+    <div className="h-screen flex bg-[#f7f6f3] dark:bg-gray-950">
       <ConversationSidebar
         conversations={conversations}
         projects={projects}
@@ -453,12 +461,14 @@ export function AssistantPage() {
             ← Dashboard
           </Link>
           <span className="text-gray-300 dark:text-gray-700">|</span>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[11px]">
-              ✨
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-md bg-indigo-600 text-white flex items-center justify-center font-serif text-xs">
+              §
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-none">AI Assistant</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-none tracking-tight">
+                AI Assistant
+              </p>
               <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-none mt-0.5">Groq · GPT-OSS 120B</p>
             </div>
           </div>
@@ -468,24 +478,32 @@ export function AssistantPage() {
           <div className="max-w-3xl mx-auto px-4 py-8 flex flex-col gap-5">
             {messages.length === 0 && (
               <div className="text-center py-12 animate-fade-in-up">
-                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl shadow-md shadow-indigo-200">
-                  ✨
+                <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-serif text-3xl">
+                  §
                 </div>
-                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                <p className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1 tracking-tight">
                   What are you writing today?
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
                   Ask for help drafting or refining any part of your paper's content.
                 </p>
-                <div className="grid sm:grid-cols-2 gap-2.5 max-w-lg mx-auto">
-                  {STARTER_PROMPTS.map(({ icon, text }) => (
+                {/* Roman numerals + hairline dividers, styled like the paper's
+                    own table of contents, instead of an icon-per-card grid —
+                    the empty state should feel like it belongs to this app
+                    specifically, not a generic prompt-suggestion widget. */}
+                <div className="max-w-md mx-auto text-left border-t border-gray-200 dark:border-gray-800">
+                  {STARTER_PROMPTS.map(({ numeral, text }) => (
                     <button
                       key={text}
                       onClick={() => sendMessage(text)}
-                      className="flex items-start gap-2.5 text-left text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm hover:-translate-y-0.5 transition-all"
+                      className="group w-full flex items-baseline gap-4 py-3.5 border-b border-gray-200 dark:border-gray-800 text-left transition-colors"
                     >
-                      <span className="text-base">{icon}</span>
-                      <span>{text}</span>
+                      <span className="flex-none font-serif text-sm text-indigo-400 dark:text-indigo-500 w-5">
+                        {numeral}
+                      </span>
+                      <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-indigo-700 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all">
+                        {text}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -496,19 +514,26 @@ export function AssistantPage() {
               const isEmptyStreamingReply =
                 message.role === "assistant" && !message.content && isStreaming && i === messages.length - 1;
               const canInsert = message.role === "assistant" && message.content && selectedDoc && !isStreaming;
+              // User turns stay a clear solid pill (an unambiguous "this is
+              // what you typed" marker); assistant replies deliberately
+              // don't get the matching bubble treatment — a bordered card
+              // repeated down the page is the most generic part of a
+              // ChatGPT-style layout. Instead they read as plain, spacious
+              // serif prose with a thin rule on the left, closer to an
+              // annotated manuscript margin note than a chat widget.
               return (
                 <div
                   key={i}
                   className={`flex gap-3 animate-fade-in-up ${message.role === "user" ? "flex-row-reverse" : ""}`}
                 >
                   <Avatar role={message.role} />
-                  <div className={`flex flex-col gap-1 max-w-[75%] ${message.role === "user" ? "items-end" : "items-start"}`}>
+                  <div className={`flex flex-col gap-1.5 max-w-[85%] ${message.role === "user" ? "items-end" : "items-start"}`}>
                     <div
-                      className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                      className={
                         message.role === "user"
-                          ? "bg-indigo-600 text-white rounded-br-sm"
-                          : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200 shadow-sm rounded-bl-sm"
-                      }`}
+                          ? "rounded-2xl rounded-br-sm px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap bg-indigo-600 text-white"
+                          : "pl-4 py-0.5 border-l-2 border-indigo-100 dark:border-indigo-900 font-serif text-[15px] leading-relaxed whitespace-pre-wrap text-gray-800 dark:text-gray-200"
+                      }
                     >
                       {isEmptyStreamingReply ? <TypingDots /> : message.content}
                     </div>

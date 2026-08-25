@@ -104,7 +104,7 @@ export function ImagesPage() {
   }
 
   return (
-    <div className="h-screen flex bg-gradient-to-b from-indigo-50/40 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950">
+    <div className="h-screen flex bg-[#f7f6f3] dark:bg-gray-950">
       <ImagesSidebar userEmail={user?.email ?? null} onSignOut={handleSignOut} />
 
       <div className="flex-1 min-w-0 flex flex-col">
@@ -147,7 +147,7 @@ export function ImagesPage() {
 
           {images.length === 0 && !pendingUrl && (
             <div className="text-center py-8 animate-fade-in-up">
-              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl shadow-md shadow-indigo-200">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-2xl">
                 🖼️
               </div>
               <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Generate your first image</p>
