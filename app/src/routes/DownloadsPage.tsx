@@ -78,7 +78,7 @@ export function DownloadsPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#f7f6f3]">
+    <div className="min-h-screen flex bg-[#f7f6f3] dark:bg-gray-950">
       <DashboardSidebar
         onSignOut={async () => {
           await supabase.auth.signOut();
@@ -88,31 +88,36 @@ export function DownloadsPage() {
 
       <div className="flex-1 min-w-0 px-8 py-10">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">Downloads</h1>
-          <p className="text-sm text-gray-500 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight mb-1">Downloads</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
             Every PDF you've exported, kept in one place — export again from a paper's editor to add another.
           </p>
 
           {loading ? (
-            <p className="text-sm text-gray-500">Loading…</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Loading…</p>
           ) : exports.length === 0 ? (
-            <p className="text-sm text-gray-400">No exports yet — open a paper and export it to PDF.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
+              No exports yet — open a paper and export it to PDF.
+            </p>
           ) : (
             <div className="flex flex-col gap-2">
               {exports.map((row) => (
                 <div
                   key={row.id}
-                  className="flex items-center gap-3 bg-white rounded-lg border border-gray-200 shadow-sm px-4 py-3"
+                  className="flex items-center gap-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm px-4 py-3"
                 >
                   <span className="text-xl flex-none">📄</span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-800 truncate">{row.title}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{row.title}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       Exported {relativeTime(row.created_at)}
                       {row.document_id && (
                         <>
                           {" · "}
-                          <Link to={`/editor/${row.document_id}`} className="text-indigo-600 hover:text-indigo-700">
+                          <Link
+                            to={`/editor/${row.document_id}`}
+                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                          >
                             Open paper
                           </Link>
                         </>
@@ -129,7 +134,7 @@ export function DownloadsPage() {
                   <button
                     onClick={() => handleDelete(row)}
                     aria-label="Delete download"
-                    className="w-8 h-8 flex-none flex items-center justify-center rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    className="w-8 h-8 flex-none flex items-center justify-center rounded-md text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
                   >
                     ✕
                   </button>
