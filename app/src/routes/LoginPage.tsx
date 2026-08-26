@@ -96,19 +96,19 @@ export function LoginPage() {
       </div>
 
       {/* Form panel */}
-      <div className="flex items-center justify-center px-6 py-12 bg-gray-50">
+      <div className="flex items-center justify-center px-6 py-12 bg-gray-50 dark:bg-gray-950">
         <div className="w-full max-w-sm">
           <div className="lg:hidden mb-8 flex items-center gap-2">
             <div className="w-8 h-8 rounded-md bg-indigo-600 text-white flex items-center justify-center font-serif text-sm">
               §
             </div>
-            <span className="font-semibold text-gray-900 tracking-tight">IEEE Paper Builder</span>
+            <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">IEEE Paper Builder</span>
           </div>
 
-          <h2 className="text-2xl font-semibold text-gray-900 tracking-tight mb-1">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight mb-1">
             {mode === "signin" ? "Welcome back" : "Create your account"}
           </h2>
-          <p className="text-sm text-gray-500 mb-8">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
             {mode === "signin"
               ? "Sign in to continue working on your papers."
               : "Start writing — no credit card, no LaTeX."}
@@ -150,22 +150,22 @@ export function LoginPage() {
           </form>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2 mt-4">
+            <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900 rounded-md px-3 py-2 mt-4">
               {error}
             </p>
           )}
           {message && (
-            <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-md px-3 py-2 mt-4">
+            <p className="text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 rounded-md px-3 py-2 mt-4">
               {message}
             </p>
           )}
 
-          <p className="mt-6 text-sm text-gray-500">
+          <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
             {mode === "signin" ? "Need an account?" : "Already have an account?"}{" "}
             <button
               type="button"
               onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="text-indigo-600 hover:text-indigo-700 font-medium hover:underline"
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium hover:underline"
             >
               {mode === "signin" ? "Sign up" : "Sign in"}
             </button>
