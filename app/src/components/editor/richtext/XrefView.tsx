@@ -10,7 +10,7 @@ export function XrefView({ node }: NodeViewProps) {
       <span
         contentEditable={false}
         title={`Cross-reference to ${targetType} ${targetId}`}
-        className="rounded px-1 text-[0.85em] bg-emerald-100 text-emerald-800"
+        className="rounded px-1 text-[0.85em] bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300"
       >
         {label}
       </span>
