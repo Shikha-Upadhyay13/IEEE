@@ -32,19 +32,19 @@ function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete
           setOpen((v) => !v);
         }}
         aria-label="More actions"
-        className="w-7 h-7 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition-colors"
+        className="w-7 h-7 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex items-center justify-center transition-colors"
       >
         ⋮
       </button>
       {open && (
-        <div className="absolute right-0 bottom-full mb-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 text-sm">
+        <div className="absolute right-0 bottom-full mb-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg py-1 z-10 text-sm">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onDuplicate();
               setOpen(false);
             }}
-            className="w-full text-left px-3 py-1.5 hover:bg-gray-50 text-gray-700"
+            className="w-full text-left px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
           >
             ⎘ Duplicate
           </button>
@@ -54,7 +54,7 @@ function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete
               onDelete();
               setOpen(false);
             }}
-            className="w-full text-left px-3 py-1.5 hover:bg-red-50 text-red-600"
+            className="w-full text-left px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400"
           >
             ✕ Delete
           </button>
@@ -69,7 +69,7 @@ function NewPaperCard({ creating, onClick }: { creating: boolean; onClick: () =>
     <button
       onClick={onClick}
       disabled={creating}
-      className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/30 transition-colors"
+      className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 transition-colors"
     >
       <span className="text-3xl leading-none">+</span>
       <span className="text-sm font-medium">{creating ? "Creating…" : "New paper"}</span>
@@ -104,7 +104,7 @@ function PaperCard({
     <div className="flex flex-col">
       <button
         onClick={onOpen}
-        className="group relative aspect-[8.5/11] w-full rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all overflow-hidden bg-white"
+        className="group relative aspect-[8.5/11] w-full rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 transition-all overflow-hidden bg-white dark:bg-gray-900"
       >
         <PaperThumbnail documentId={doc.id} />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-colors flex items-center justify-center">
@@ -129,18 +129,18 @@ function PaperCard({
                   setEditing(false);
                 }
               }}
-              className="w-full text-sm font-medium text-gray-800 border border-indigo-300 rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-sm font-medium text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 border border-indigo-300 dark:border-indigo-700 rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           ) : (
             <button
               onClick={() => setEditing(true)}
-              className="text-sm font-medium text-gray-800 hover:text-indigo-600 text-left truncate block w-full"
+              className="text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 text-left truncate block w-full"
               title={`${doc.title || "Untitled paper"} (click to rename)`}
             >
               {doc.title || "Untitled paper"}
             </button>
           )}
-          <p className="text-xs text-gray-400 mt-0.5">edited {relativeTime(doc.updated_at)}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">edited {relativeTime(doc.updated_at)}</p>
         </div>
         <CardMenu onDuplicate={onDuplicate} onDelete={onDelete} />
       </div>
@@ -257,15 +257,15 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#f7f6f3]">
+    <div className="min-h-screen flex bg-[#f7f6f3] dark:bg-gray-950">
       <DashboardSidebar onSignOut={handleSignOut} />
 
       <div className="flex-1 min-w-0 px-8 py-10">
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-end mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Papers</h1>
-              <p className="text-sm text-gray-500">Your first paper is free forever.</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">My Papers</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Your first paper is free forever.</p>
             </div>
           </div>
 
@@ -285,13 +285,13 @@ export function Dashboard() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex flex-col gap-2">
-                  <div className="aspect-[8.5/11] w-full rounded-xl bg-gray-200 animate-pulse" />
-                  <div className="h-3.5 w-2/3 rounded bg-gray-200 animate-pulse" />
+                  <div className="aspect-[8.5/11] w-full rounded-xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
+                  <div className="h-3.5 w-2/3 rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
                 </div>
               ))}
             </div>
           ) : filteredDocuments.length === 0 && search ? (
-            <p className="text-sm text-gray-400">No papers match "{search}".</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">No papers match "{search}".</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
               <NewPaperCard creating={creating} onClick={handleCreate} />
@@ -307,7 +307,7 @@ export function Dashboard() {
               ))}
             </div>
           )}
-          {duplicatingId && <p className="text-xs text-gray-400 mt-4">Duplicating…</p>}
+          {duplicatingId && <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">Duplicating…</p>}
         </div>
       </div>
       {ConfirmDialog}

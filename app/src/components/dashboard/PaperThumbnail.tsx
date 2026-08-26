@@ -68,15 +68,18 @@ export function PaperThumbnail({ documentId }: { documentId: string }) {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full overflow-hidden bg-gray-100 flex justify-center pointer-events-none select-none"
+      className="w-full h-full overflow-hidden bg-gray-100 dark:bg-gray-800 flex justify-center pointer-events-none select-none"
       style={{ paddingTop: "7%" }}
     >
       {resolved && zoom ? (
+        // The rendered page itself deliberately stays white always, in both
+        // themes — it represents literal paper (same reasoning as the live
+        // editor's own preview, which never darkens the document either).
         <div className="flex-none bg-white shadow-sm" style={{ width: NATURAL_WIDTH_PX, zoom }}>
           <IEEEConferenceTemplate document={resolved} />
         </div>
       ) : (
-        <div className="w-[86%] h-[80%] bg-gray-200 rounded-sm animate-pulse" />
+        <div className="w-[86%] h-[80%] bg-gray-200 dark:bg-gray-700 rounded-sm animate-pulse" />
       )}
     </div>
   );
