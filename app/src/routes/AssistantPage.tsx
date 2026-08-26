@@ -48,38 +48,25 @@ function extractSseFrames(buffer: string): { frames: string[]; rest: string } {
   return { frames: parts, rest };
 }
 
-// "§" is this app's own mark (same one on the Dashboard sidebar and login
-// screen) — used here instead of a sparkle-in-a-gradient-circle, which is
-// the single most recognizable "generic AI chatbot" visual cliché. Reusing
-// the real brand mark makes the assistant read as part of this specific
-// product rather than a bolted-on template.
-function Avatar({ role }: { role: "user" | "assistant" }) {
-  if (role === "user") {
-    return (
-      <div className="flex-none w-7 h-7 rounded-md bg-gray-800 dark:bg-gray-700 text-white flex items-center justify-center text-[11px] font-semibold">
-        You
-      </div>
-    );
-  }
+// Small-caps role labels above each turn, not per-message avatar icons —
+// a row of circular avatars down the page is one of the clearest "this is
+// a chat-app template" tells (ChatGPT, Claude, every clone of both). This
+// reads closer to a transcript or an editor's marked-up manuscript than a
+// messaging widget.
+function RoleLabel({ role }: { role: "user" | "assistant" }) {
   return (
-    <div className="flex-none w-7 h-7 rounded-md bg-indigo-600 text-white flex items-center justify-center font-serif text-sm">
-      §
-    </div>
+    <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-0.5">
+      {role === "user" ? "You" : "Assistant"}
+    </span>
   );
 }
 
-function TypingDots() {
-  return (
-    <div className="flex items-center gap-1 px-1 py-1.5">
-      {[0, 1, 2].map((i) => (
-        <span
-          key={i}
-          className="animate-typing-dot w-1.5 h-1.5 rounded-full bg-gray-400"
-          style={{ animationDelay: `${i * 0.15}s` }}
-        />
-      ))}
-    </div>
-  );
+// A quiet, italicized "Thinking…" in the same serif voice as the reply text
+// that follows it, instead of the three-bouncing-dots indicator — that
+// animation specifically is one of the most recognizable "AI is typing"
+// clichés, on top of already being a chat-bubble idiom.
+function ThinkingIndicator() {
+  return <p className="font-serif text-[15px] italic text-gray-400 dark:text-gray-500 animate-pulse">Thinking…</p>;
 }
 
 export function AssistantPage() {
@@ -467,9 +454,11 @@ export function AssistantPage() {
             </div>
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-none tracking-tight">
-                AI Assistant
+                Assistant
               </p>
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-none mt-0.5">Groq · GPT-OSS 120B</p>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-none mt-0.5">
+                Drafting &amp; revision support
+              </p>
             </div>
           </div>
         </div>
@@ -514,28 +503,27 @@ export function AssistantPage() {
               const isEmptyStreamingReply =
                 message.role === "assistant" && !message.content && isStreaming && i === messages.length - 1;
               const canInsert = message.role === "assistant" && message.content && selectedDoc && !isStreaming;
-              // User turns stay a clear solid pill (an unambiguous "this is
-              // what you typed" marker); assistant replies deliberately
-              // don't get the matching bubble treatment — a bordered card
-              // repeated down the page is the most generic part of a
-              // ChatGPT-style layout. Instead they read as plain, spacious
-              // serif prose with a thin rule on the left, closer to an
-              // annotated manuscript margin note than a chat widget.
+              // A transcript, not a chat log: a small-caps role label above
+              // each turn, then plain content below it — no avatar icons, no
+              // bubble corners. User turns get a soft bordered card (still
+              // sans-serif, still clearly "input"); assistant replies stay
+              // spacious serif prose with a thin rule on the left, closer to
+              // an annotated manuscript margin note than a message widget.
               return (
                 <div
                   key={i}
-                  className={`flex gap-3 animate-fade-in-up ${message.role === "user" ? "flex-row-reverse" : ""}`}
+                  className={`flex flex-col gap-1 animate-fade-in-up ${message.role === "user" ? "items-end" : "items-start"}`}
                 >
-                  <Avatar role={message.role} />
+                  <RoleLabel role={message.role} />
                   <div className={`flex flex-col gap-1.5 max-w-[85%] ${message.role === "user" ? "items-end" : "items-start"}`}>
                     <div
                       className={
                         message.role === "user"
-                          ? "rounded-2xl rounded-br-sm px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap bg-indigo-600 text-white"
+                          ? "rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-gray-900 dark:text-gray-100"
                           : "pl-4 py-0.5 border-l-2 border-indigo-100 dark:border-indigo-900 font-serif text-[15px] leading-relaxed whitespace-pre-wrap text-gray-800 dark:text-gray-200"
                       }
                     >
-                      {isEmptyStreamingReply ? <TypingDots /> : message.content}
+                      {isEmptyStreamingReply ? <ThinkingIndicator /> : message.content}
                     </div>
                     {canInsert && (
                       <button
@@ -560,69 +548,12 @@ export function AssistantPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex-none px-4 pb-5 pt-2">
-          {selectedDoc && (
-            <div className="max-w-3xl mx-auto mb-2">
-              <span className="inline-flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs rounded-full pl-2.5 pr-1.5 py-1">
-                📄 {selectedDoc.title || "Untitled paper"}
-                {contextLoading && "…"}
-                <button
-                  onClick={() => selectContextDocument("")}
-                  aria-label="Detach paper"
-                  className="text-indigo-400 hover:text-indigo-700 dark:text-indigo-500 dark:hover:text-indigo-300"
-                >
-                  ✕
-                </button>
-              </span>
-            </div>
-          )}
-          <div className="max-w-3xl mx-auto flex gap-2 items-end bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm px-3 py-2 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400 transition-colors">
-            <div ref={attachMenuRef} className="relative flex-none">
-              {attachMenuOpen && (
-                <div className="absolute bottom-full left-0 mb-2 w-60 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto z-10">
-                  <button
-                    onClick={() => {
-                      selectContextDocument("");
-                      setAttachMenuOpen(false);
-                    }}
-                    className="w-full text-left text-sm px-3 py-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    No paper attached
-                  </button>
-                  {documentOptions.length === 0 && (
-                    <p className="text-xs text-gray-400 dark:text-gray-600 px-3 py-1.5">No papers yet.</p>
-                  )}
-                  {documentOptions.map((doc) => (
-                    <button
-                      key={doc.id}
-                      onClick={() => {
-                        selectContextDocument(doc.id);
-                        setAttachMenuOpen(false);
-                      }}
-                      className={`w-full text-left text-sm px-3 py-1.5 truncate hover:bg-gray-50 dark:hover:bg-gray-800 ${
-                        selectedDoc?.id === doc.id
-                          ? "text-indigo-700 dark:text-indigo-400 font-medium"
-                          : "text-gray-700 dark:text-gray-300"
-                      }`}
-                    >
-                      {doc.title || "Untitled paper"}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={() => setAttachMenuOpen((v) => !v)}
-                aria-label="Attach a paper for context"
-                title="Attach a paper for context"
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-                  selectedDoc
-                    ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50"
-                    : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
-              >
-                📎
-              </button>
-            </div>
+          {/* A bordered compose block with its own toolbar row, not a
+              rounded-pill input with floating circular icon buttons — the
+              pill-plus-circle composer is the other half (with the avatar
+              thread above) of what makes a page read as an AI-chat-widget
+              clone on sight, independent of color or copy. */}
+          <div className="max-w-3xl mx-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm focus-within:border-indigo-400 dark:focus-within:border-indigo-500 transition-colors">
             <textarea
               ref={textareaRef}
               value={input}
@@ -635,20 +566,68 @@ export function AssistantPage() {
               }}
               rows={1}
               placeholder="Ask for help with your paper's content…"
-              className="flex-1 resize-none bg-transparent text-sm leading-relaxed py-1.5 focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600 text-gray-900 dark:text-gray-100"
+              className="w-full resize-none bg-transparent text-sm leading-relaxed px-4 pt-3 pb-1.5 focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600 text-gray-900 dark:text-gray-100"
             />
-            <button
-              type="submit"
-              disabled={isStreaming || !input.trim()}
-              aria-label="Send message"
-              className="flex-none w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 transition-colors"
-            >
-              {isStreaming ? (
-                <span className="w-3.5 h-3.5 rounded-sm bg-white" />
-              ) : (
-                <span className="text-base leading-none -mt-0.5">↑</span>
-              )}
-            </button>
+            <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 dark:border-gray-800">
+              <div ref={attachMenuRef} className="relative">
+                {attachMenuOpen && (
+                  <div className="absolute bottom-full left-0 mb-2 w-60 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto z-10">
+                    <button
+                      onClick={() => {
+                        selectContextDocument("");
+                        setAttachMenuOpen(false);
+                      }}
+                      className="w-full text-left text-sm px-3 py-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    >
+                      No paper attached
+                    </button>
+                    {documentOptions.length === 0 && (
+                      <p className="text-xs text-gray-400 dark:text-gray-600 px-3 py-1.5">No papers yet.</p>
+                    )}
+                    {documentOptions.map((doc) => (
+                      <button
+                        key={doc.id}
+                        onClick={() => {
+                          selectContextDocument(doc.id);
+                          setAttachMenuOpen(false);
+                        }}
+                        className={`w-full text-left text-sm px-3 py-1.5 truncate hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                          selectedDoc?.id === doc.id
+                            ? "text-indigo-700 dark:text-indigo-400 font-medium"
+                            : "text-gray-700 dark:text-gray-300"
+                        }`}
+                      >
+                        {doc.title || "Untitled paper"}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setAttachMenuOpen((v) => !v)}
+                  title="Attach a paper for context"
+                  className={`inline-flex items-center gap-1.5 max-w-48 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                    selectedDoc
+                      ? "text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50"
+                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
+                >
+                  <span className="flex-none">📎</span>
+                  <span className="truncate">
+                    {selectedDoc ? selectedDoc.title || "Untitled paper" : "Attach paper"}
+                    {contextLoading && "…"}
+                  </span>
+                </button>
+              </div>
+              <button
+                type="submit"
+                disabled={isStreaming || !input.trim()}
+                className="flex-none inline-flex items-center gap-1.5 rounded-md bg-indigo-600 text-white text-xs font-semibold px-3 py-1.5 hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 transition-colors"
+              >
+                {isStreaming ? "Sending…" : "Send"}
+                {!isStreaming && <span className="leading-none">↵</span>}
+              </button>
+            </div>
           </div>
           <p className="text-center text-[11px] text-gray-400 dark:text-gray-600 mt-2">
             AI can be wrong — review anything you paste into your paper.
