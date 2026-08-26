@@ -250,23 +250,27 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   return (
     <div
       className={`rounded-2xl border transition-all ${
-        open ? "border-indigo-200 bg-indigo-50/40 shadow-sm" : "border-gray-200 bg-white hover:border-gray-300"
+        open
+          ? "border-indigo-200 dark:border-indigo-800 bg-indigo-50/40 dark:bg-indigo-950/30 shadow-sm"
+          : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-700"
       }`}
     >
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between gap-4 text-left px-6 py-4"
       >
-        <span className="text-sm font-medium text-gray-900">{q}</span>
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{q}</span>
         <span
           className={`flex-none w-6 h-6 rounded-full flex items-center justify-center text-base leading-none transition-all ${
-            open ? "bg-indigo-600 text-white rotate-45" : "bg-gray-100 text-gray-500"
+            open ? "bg-indigo-600 text-white rotate-45" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
           }`}
         >
           +
         </span>
       </button>
-      {open && <p className="text-sm text-gray-500 leading-relaxed px-6 pb-5 max-w-2xl">{a}</p>}
+      {open && (
+        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed px-6 pb-5 max-w-2xl">{a}</p>
+      )}
     </div>
   );
 }
@@ -319,8 +323,8 @@ function NavBar() {
 
   return (
     <header
-      className={`sticky top-0 z-20 border-b bg-white/70 backdrop-blur-md transition-shadow ${
-        scrolled ? "border-gray-200 shadow-sm" : "border-transparent"
+      className={`sticky top-0 z-20 border-b bg-white/70 dark:bg-gray-950/70 backdrop-blur-md transition-shadow ${
+        scrolled ? "border-gray-200 dark:border-gray-800 shadow-sm" : "border-transparent"
       }`}
     >
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
@@ -328,21 +332,24 @@ function NavBar() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-800 text-white flex items-center justify-center font-serif text-sm shadow-md shadow-indigo-500/30">
             §
           </div>
-          <span className="font-semibold text-gray-900 tracking-tight">IEEE Paper Builder</span>
+          <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">IEEE Paper Builder</span>
         </div>
-        <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-600">
-          <a href="#how-it-works" className="hover:text-gray-900 transition-colors">
+        <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-600 dark:text-gray-400">
+          <a href="#how-it-works" className="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
             How it works
           </a>
-          <a href="#features" className="hover:text-gray-900 transition-colors">
+          <a href="#features" className="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
             Features
           </a>
-          <a href="#faq" className="hover:text-gray-900 transition-colors">
+          <a href="#faq" className="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
             FAQ
           </a>
         </nav>
         <div className="flex items-center gap-3">
-          <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+          <Link
+            to="/login"
+            className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+          >
             Login
           </Link>
           <Link to="/login" className={`${btnPrimary} shadow-sm hover:shadow`}>
@@ -389,7 +396,7 @@ export function LandingPage() {
   const resolvedSample = useMemo(() => resolveNumbering(samplePaper), []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <NavBar />
 
       {/* Hero */}
@@ -409,16 +416,16 @@ export function LandingPage() {
 
         <div className="relative max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-16 grid lg:grid-cols-2 gap-16 items-center">
           <div className="animate-fade-in-up">
-            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1.5 mb-7">
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-800 rounded-full px-3 py-1.5 mb-7">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
               Free IEEE conference paper builder
             </p>
-            <h1 className="text-6xl sm:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.02] mb-6">
+            <h1 className="text-6xl sm:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 leading-[1.02] mb-6">
               Write your paper.
               <br />
-              <span className="text-blue-800">We'll handle the formatting.</span>
+              <span className="text-blue-800 dark:text-blue-400">We'll handle the formatting.</span>
             </h1>
-            <p className="text-lg text-gray-500 leading-relaxed mb-9 max-w-md">
+            <p className="text-lg text-gray-500 dark:text-gray-400 leading-relaxed mb-9 max-w-md">
               Drag, drop, and write your content — margins, two-column layout, fonts, figure
               numbering, and citations are handled automatically, to the real IEEE conference spec.
             </p>
@@ -430,14 +437,17 @@ export function LandingPage() {
                 Get started for free
                 {Icons.arrowRight("w-4 h-4")}
               </Link>
-              <a href="#how-it-works" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+              <a
+                href="#how-it-works"
+                className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+              >
                 See how it works
               </a>
             </div>
             <ul className="flex flex-wrap gap-x-6 gap-y-2">
               {TRUST_ITEMS.map((t) => (
-                <li key={t} className="flex items-center gap-1.5 text-sm text-gray-500">
-                  <span className="text-emerald-600">{Icons.check("w-4 h-4")}</span>
+                <li key={t} className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-emerald-600 dark:text-emerald-400">{Icons.check("w-4 h-4")}</span>
                   {t}
                 </li>
               ))}
@@ -453,7 +463,7 @@ export function LandingPage() {
 
             <TiltCard>
               <div
-                className="relative mx-auto rounded-2xl border border-gray-200 shadow-2xl shadow-indigo-900/20 overflow-hidden bg-gray-500"
+                className="relative mx-auto rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl shadow-indigo-900/20 overflow-hidden bg-gray-500 dark:bg-gray-700"
                 style={{ width: HERO_PAGE_WIDTH, height: HERO_PAGE_HEIGHT }}
               >
                 <div
@@ -471,24 +481,30 @@ export function LandingPage() {
 
             {/* Floating badge — truthful about what the product actually
                 does (real numbering), styled like a live status chip. */}
-            <div className="hidden sm:flex absolute -right-6 -top-6 items-center gap-2 bg-white rounded-xl border border-gray-200 shadow-xl px-3.5 py-2.5">
+            <div className="hidden sm:flex absolute -right-6 -top-6 items-center gap-2 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl px-3.5 py-2.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-medium text-gray-700">Auto-numbered · Fig. 1, Table I, [1]</span>
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                Auto-numbered · Fig. 1, Table I, [1]
+              </span>
             </div>
 
             {/* Floating "your paper" block-list mockup — makes the drag-and-
                 drop editing model concrete instead of only showing the output. */}
-            <div className="hidden lg:block absolute -left-14 -bottom-12 w-60 bg-white rounded-2xl border border-gray-200 shadow-2xl p-3 rotate-[-2deg]">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your paper</p>
+            <div className="hidden lg:block absolute -left-14 -bottom-12 w-60 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl p-3 rotate-[-2deg]">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 px-1 mb-2">
+                Your paper
+              </p>
               <div className="flex flex-col gap-1">
                 {BLOCK_LIST_MOCKUP.map((label, i) => (
                   <div
                     key={label}
                     className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium ${
-                      i === 1 ? "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200" : "text-gray-600"
+                      i === 1
+                        ? "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-200 dark:ring-indigo-800"
+                        : "text-gray-600 dark:text-gray-400"
                     }`}
                   >
-                    <span className="text-gray-300">{Icons.drag("w-3.5 h-3.5")}</span>
+                    <span className="text-gray-300 dark:text-gray-600">{Icons.drag("w-3.5 h-3.5")}</span>
                     {label}
                   </div>
                 ))}
@@ -501,13 +517,13 @@ export function LandingPage() {
             "floating bar" pattern that gives the fold a confident, finished
             edge instead of just trailing off into whitespace. */}
         <div className="relative max-w-4xl mx-auto px-6">
-          <div className="relative z-10 bg-white rounded-3xl border border-gray-200 shadow-2xl shadow-gray-900/10 grid grid-cols-3 divide-x divide-gray-100">
+          <div className="relative z-10 bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl shadow-gray-900/10 grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-800">
             {STATS.map((s) => (
               <div key={s.label} className="px-4 sm:px-8 py-6 text-center">
-                <p className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                <p className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-indigo-600 to-blue-600 dark:from-indigo-400 dark:to-blue-400 bg-clip-text text-transparent">
                   {s.value}
                 </p>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1 leading-snug">{s.label}</p>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 leading-snug">{s.label}</p>
               </div>
             ))}
           </div>
@@ -519,10 +535,10 @@ export function LandingPage() {
         <div className="max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-24">
           <Reveal>
             <div className="text-center mb-14">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-3">
                 From blank page to submission-ready, in three steps
               </h2>
-              <p className="text-sm text-gray-500 max-w-xl mx-auto">
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
                 No setup, no formatting rules to memorize — just write and arrange.
               </p>
             </div>
@@ -531,15 +547,17 @@ export function LandingPage() {
             {STEPS.map((s, i) => (
               <Reveal key={s.title} delay={i * 80}>
                 <div
-                  className={`group relative overflow-hidden bg-white rounded-3xl border border-gray-200 shadow-sm p-8 transition-all hover:shadow-xl hover:-translate-y-1 ${CARD_HOVER_GLOW[s.color]}`}
+                  className={`group relative overflow-hidden bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm p-8 transition-all hover:shadow-xl hover:-translate-y-1 ${CARD_HOVER_GLOW[s.color]}`}
                 >
                   <div
                     aria-hidden="true"
                     className={`pointer-events-none absolute -top-12 -right-12 w-40 h-40 rounded-full blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-br ${CARD_GLOW_WASH[s.color]} to-transparent`}
                   />
                   <IconBadge icon={s.icon} color={s.color} size="lg" />
-                  <h3 className="relative text-base font-semibold text-gray-900 mt-6 mb-2">{s.title}</h3>
-                  <p className="relative text-sm text-gray-500 leading-relaxed">{s.body}</p>
+                  <h3 className="relative text-base font-semibold text-gray-900 dark:text-gray-100 mt-6 mb-2">
+                    {s.title}
+                  </h3>
+                  <p className="relative text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{s.body}</p>
                 </div>
               </Reveal>
             ))}
@@ -548,13 +566,16 @@ export function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="relative bg-gradient-to-b from-[#f7f6f3] to-[#f2f0ec] py-24">
+      <section
+        id="features"
+        className="relative bg-gradient-to-b from-[#f7f6f3] to-[#f2f0ec] dark:from-gray-950 dark:to-gray-900 py-24"
+      >
         <div className="max-w-[1440px] mx-auto px-6 lg:px-10">
           <Reveal>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-3">
               Everything you need for an IEEE paper
             </h2>
-            <p className="text-sm text-gray-500 mb-12 max-w-xl">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-12 max-w-xl">
               One fixed, spec-accurate template — you focus on content, the formatting takes care
               of itself.
             </p>
@@ -563,7 +584,7 @@ export function LandingPage() {
             {FEATURES.map((f, i) => (
               <Reveal key={f.title} delay={(i % 3) * 80}>
                 <div
-                  className={`group relative overflow-hidden bg-white rounded-3xl border border-gray-200 p-7 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 ${CARD_HOVER_GLOW[f.color]}`}
+                  className={`group relative overflow-hidden bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-7 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 ${CARD_HOVER_GLOW[f.color]}`}
                 >
                   <div
                     aria-hidden="true"
@@ -572,8 +593,10 @@ export function LandingPage() {
                   <div className="relative transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 inline-flex">
                     <IconBadge icon={f.icon} color={f.color} />
                   </div>
-                  <h3 className="relative text-sm font-semibold text-gray-900 mt-5 mb-1.5">{f.title}</h3>
-                  <p className="relative text-sm text-gray-500 leading-relaxed">{f.body}</p>
+                  <h3 className="relative text-sm font-semibold text-gray-900 dark:text-gray-100 mt-5 mb-1.5">
+                    {f.title}
+                  </h3>
+                  <p className="relative text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{f.body}</p>
                 </div>
               </Reveal>
             ))}
@@ -586,20 +609,20 @@ export function LandingPage() {
         <div className="grid lg:grid-cols-[minmax(0,340px)_1fr] gap-12">
           <Reveal>
             <div className="lg:sticky lg:top-24">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-3">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-3">
                 Frequently asked questions
               </h2>
-              <p className="text-sm text-gray-500 mb-6 max-w-sm">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
                 Everything worth knowing before you start writing.
               </p>
-              <div className="hidden lg:block bg-gray-50 border border-gray-200 rounded-2xl p-5">
-                <p className="text-sm font-medium text-gray-900 mb-1">Still have a question?</p>
-                <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+              <div className="hidden lg:block bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Still have a question?</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">
                   The fastest way to find out is to try it — it's free to start.
                 </p>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-indigo-700 hover:text-indigo-800"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-indigo-700 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
                 >
                   Get started for free
                   {Icons.arrowRight("w-3.5 h-3.5")}
@@ -641,7 +664,7 @@ export function LandingPage() {
         </Reveal>
       </section>
 
-      <footer className="py-8 text-center text-xs text-gray-400">
+      <footer className="py-8 text-center text-xs text-gray-400 dark:text-gray-600">
         IEEE Paper Builder — built for students and researchers.
       </footer>
     </div>
