@@ -52,7 +52,7 @@ export function FigureEditor({ node }: { node: Figure }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-4 items-center flex-wrap text-xs text-gray-600">
+      <div className="flex gap-4 items-center flex-wrap text-xs text-gray-600 dark:text-gray-400">
         <label className="flex items-center gap-1.5">
           <input
             type="checkbox"
@@ -60,7 +60,7 @@ export function FigureEditor({ node }: { node: Figure }) {
             onChange={(e) =>
               updateFigureWidth(node.id, e.target.checked ? "double-column" : "single-column")
             }
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
           />
           Span both columns
         </label>
@@ -75,23 +75,25 @@ export function FigureEditor({ node }: { node: Figure }) {
             onChange={(e) => updateFigureScale(node.id, Number(e.target.value))}
             className="w-24 accent-indigo-600"
           />
-          <span className="w-10 text-right tabular-nums text-gray-500">{node.scale ?? 100}%</span>
+          <span className="w-10 text-right tabular-nums text-gray-500 dark:text-gray-400">
+            {node.scale ?? 100}%
+          </span>
         </label>
       </div>
 
-      {uploading && <p className="text-xs text-gray-500">Uploading…</p>}
-      {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+      {uploading && <p className="text-xs text-gray-500 dark:text-gray-400">Uploading…</p>}
+      {uploadError && <p className="text-xs text-red-600 dark:text-red-400">{uploadError}</p>}
 
       {images.length > 0 && (
         <>
           {/* Right above the image it affects, not lumped in with unrelated
               width/size controls — "align what?" was the actual confusion. */}
-          <label className="flex items-center gap-1.5 text-xs text-gray-600">
+          <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             Align this image on the page:
             <select
               value={node.align ?? "center"}
               onChange={(e) => updateFigureAlign(node.id, e.target.value as FigureAlign)}
-              className="rounded border-gray-200 px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+              className="rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             >
               <option value="left">Left</option>
               <option value="center">Center</option>
@@ -104,17 +106,17 @@ export function FigureEditor({ node }: { node: Figure }) {
                 <img
                   src={img.url}
                   alt={img.alt}
-                  className="max-w-[140px] max-h-[100px] rounded border border-gray-200"
+                  className="max-w-[140px] max-h-[100px] rounded border border-gray-200 dark:border-gray-700"
                 />
                 {images.length > 1 && (
-                  <span className="absolute bottom-0.5 left-0.5 text-[10px] bg-white/80 px-1 rounded">
+                  <span className="absolute bottom-0.5 left-0.5 text-[10px] bg-white/80 dark:bg-gray-900/80 text-gray-800 dark:text-gray-200 px-1 rounded">
                     ({String.fromCharCode(97 + i)})
                   </span>
                 )}
                 <button
                   onClick={() => removeFigureImageAt(node.id, i)}
                   aria-label="Remove image"
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-gray-300 text-gray-500 hover:text-red-600 hover:border-red-300 text-xs flex items-center justify-center"
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-600 text-xs flex items-center justify-center"
                 >
                   ✕
                 </button>
@@ -123,17 +125,19 @@ export function FigureEditor({ node }: { node: Figure }) {
           </div>
         </>
       )}
-      {images.length === 0 && <p className="text-xs text-gray-400">No images uploaded yet.</p>}
+      {images.length === 0 && (
+        <p className="text-xs text-gray-400 dark:text-gray-500">No images uploaded yet.</p>
+      )}
 
       <input
         type="file"
         accept="image/*"
         onChange={handleFileChange}
         disabled={uploading}
-        className="text-xs text-gray-600 file:mr-2 file:rounded file:border-0 file:bg-gray-100 file:px-2 file:py-1 file:text-xs file:font-medium file:text-gray-700 hover:file:bg-gray-200"
+        className="text-xs text-gray-600 dark:text-gray-400 file:mr-2 file:rounded file:border-0 file:bg-gray-100 dark:file:bg-gray-800 file:px-2 file:py-1 file:text-xs file:font-medium file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-200 dark:hover:file:bg-gray-700"
       />
       {images.length >= 1 && (
-        <p className="text-[11px] text-gray-400">
+        <p className="text-[11px] text-gray-400 dark:text-gray-500">
           Uploading another image adds a subfigure — labeled (a), (b), … automatically.
         </p>
       )}

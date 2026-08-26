@@ -107,7 +107,7 @@ function SortableBlockItem({
       {...listeners}
       data-drag-handle={node.id}
       aria-label="Drag to reorder"
-      className="flex-none w-6 h-6 flex items-center justify-center rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100 cursor-grab active:cursor-grabbing touch-none"
+      className="flex-none w-6 h-6 flex items-center justify-center rounded text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing touch-none"
     >
       ⠿
     </button>
@@ -121,7 +121,7 @@ function SortableBlockItem({
     <button
       onClick={() => removeBlock(node.id)}
       aria-label="Delete block"
-      className="flex-none w-6 h-6 flex items-center justify-center rounded text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors"
+      className="flex-none w-6 h-6 flex items-center justify-center rounded text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
     >
       ✕
     </button>
@@ -147,7 +147,7 @@ function SortableBlockItem({
         e.target.value = "";
       }}
       title="Move to…"
-      className="flex-none w-6 h-6 text-[10px] text-gray-300 hover:text-gray-500 bg-transparent border-none cursor-pointer focus:outline-none"
+      className="flex-none w-6 h-6 text-[10px] text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 bg-transparent border-none cursor-pointer focus:outline-none"
     >
       <option value="" disabled>
         ⇥
@@ -167,7 +167,7 @@ function SortableBlockItem({
         ref={setNodeRef}
         data-block-id={node.id}
         style={{ ...wrapperStyle, marginLeft: depth * 16 }}
-        className={`${wrapperClass} rounded-lg border border-gray-200 bg-gray-50 p-3`}
+        className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
       >
         <div className="flex gap-2 items-center mb-2">
           {dragHandle}
@@ -175,7 +175,7 @@ function SortableBlockItem({
             onClick={() => setExpanded((v) => !v)}
             aria-label={expanded ? "Collapse section" : "Expand section"}
             aria-expanded={expanded}
-            className="flex-none w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-transform"
+            className="flex-none w-5 h-5 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-transform"
             style={{ transform: expanded ? "rotate(90deg)" : "none" }}
           >
             ▸
@@ -186,15 +186,17 @@ function SortableBlockItem({
             className={`${inputBase} font-semibold`}
           />
           {node.children.length > 0 && (
-            <span className="flex-none text-[11px] text-gray-400 px-1.5">{node.children.length}</span>
+            <span className="flex-none text-[11px] text-gray-400 dark:text-gray-500 px-1.5">
+              {node.children.length}
+            </span>
           )}
           {moveToControl}
           {deleteButton}
         </div>
         {expanded && (
-          <div className="pl-6 border-l-2 border-gray-100">
+          <div className="pl-6 border-l-2 border-gray-100 dark:border-gray-800">
             {node.children.length === 0 ? (
-              <p className="text-xs text-gray-400 mb-2">Empty section</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Empty section</p>
             ) : (
               <SortableBlockList containerId={node.id} nodes={node.children} depth={depth + 1} />
             )}
@@ -206,7 +208,7 @@ function SortableBlockItem({
                 if (type) appendBlockToSection(node.id, type);
                 e.target.value = "";
               }}
-              className={`${inputBase} py-1.5 text-xs cursor-pointer text-gray-600`}
+              className={`${inputBase} py-1.5 text-xs cursor-pointer text-gray-600 dark:text-gray-300`}
             >
               <option value="" disabled>
                 + Add block…
@@ -252,7 +254,7 @@ function SortableBlockItem({
         ref={setNodeRef}
         data-block-id={node.id}
         style={{ ...wrapperStyle, marginLeft: depth * 16 }}
-        className={`${wrapperClass} rounded-lg border border-gray-200 bg-gray-50 p-3`}
+        className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
       >
         <div className="flex gap-2 items-start">
           {dragHandle}
@@ -272,7 +274,7 @@ function SortableBlockItem({
         ref={setNodeRef}
         data-block-id={node.id}
         style={{ ...wrapperStyle, marginLeft: depth * 16 }}
-        className={`${wrapperClass} rounded-lg border border-gray-200 bg-gray-50 p-3`}
+        className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
       >
         <div className="flex gap-2 items-start">
           {dragHandle}
@@ -292,7 +294,7 @@ function SortableBlockItem({
       ref={setNodeRef}
       data-block-id={node.id}
       style={{ ...wrapperStyle, marginLeft: depth * 16 }}
-      className={`${wrapperClass} rounded-lg border border-gray-200 bg-gray-50 p-3`}
+      className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
     >
       <div className="flex gap-2 items-start">
         {dragHandle}
@@ -401,9 +403,9 @@ export function EditorPanel() {
   const abstractOverLimit = abstractWordCount > 150;
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto bg-gray-50 px-6 py-6">
+    <div className="flex-1 min-h-0 overflow-y-auto bg-gray-50 dark:bg-gray-950 px-6 py-6">
       <div className={`${cardBase} p-5 mb-5`}>
-        <h2 className="text-base font-semibold text-gray-900 mb-4">Paper Details</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Paper Details</h2>
 
         <div className="mb-4">
           <label htmlFor="paper-title" className={labelBase}>
@@ -424,7 +426,9 @@ export function EditorPanel() {
             <label htmlFor="paper-abstract" className={labelBase}>
               Abstract
             </label>
-            <span className={`text-xs ${abstractOverLimit ? "text-amber-600" : "text-gray-400"}`}>
+            <span
+              className={`text-xs ${abstractOverLimit ? "text-amber-600 dark:text-amber-500" : "text-gray-400 dark:text-gray-500"}`}
+            >
               {abstractWordCount} / 150 words
             </span>
           </div>
@@ -457,7 +461,7 @@ export function EditorPanel() {
             ))}
           </select>
           {document.meta.fontFamily && document.meta.fontFamily !== "times" && (
-            <p className="text-xs text-amber-600 mt-1.5">
+            <p className="text-xs text-amber-600 dark:text-amber-500 mt-1.5">
               IEEE submissions require Times New Roman — this is for draft/preview only and won't be
               submission-compliant.
             </p>
@@ -477,7 +481,7 @@ export function EditorPanel() {
             <option value="letter">US Letter (8.5 × 11 in)</option>
             <option value="a4">A4 (210 × 297 mm)</option>
           </select>
-          <p className="text-xs text-gray-400 mt-1.5">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
             Both are official IEEE conference sizes — Letter for US/Canada, A4 for most other regions.
           </p>
         </div>
@@ -490,9 +494,9 @@ export function EditorPanel() {
             onChange={(e) => setShowPageNumbers(e.target.checked)}
             className="mt-0.5 flex-none"
           />
-          <label htmlFor="show-page-numbers" className="text-sm text-gray-700 cursor-pointer">
+          <label htmlFor="show-page-numbers" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
             Show page numbers
-            <span className="block text-xs text-gray-400 mt-0.5">
+            <span className="block text-xs text-gray-400 dark:text-gray-500 mt-0.5">
               Off by default — IEEE's own conference template says "do not add page numbers"; most venues
               add them during publication. Turn this on only if your specific conference asks for them.
             </span>
@@ -501,7 +505,7 @@ export function EditorPanel() {
       </div>
 
       <div className={`${cardBase} p-5 mb-5`}>
-        <h2 className="text-base font-semibold text-gray-900 mb-4">Body Content</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Body Content</h2>
 
         <DndContext
           sensors={sensors}
@@ -523,7 +527,7 @@ export function EditorPanel() {
             else if (type === "equation") appendEquation();
             e.target.value = "";
           }}
-          className={`${inputBase} mt-3 py-2.5 cursor-pointer font-medium text-gray-700`}
+          className={`${inputBase} mt-3 py-2.5 cursor-pointer font-medium text-gray-700 dark:text-gray-300`}
         >
           <option value="" disabled>
             + Add block…

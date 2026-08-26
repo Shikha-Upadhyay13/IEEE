@@ -38,21 +38,21 @@ export function TableEditor({ node }: { node: Table }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-4 flex-wrap">
-        <label className="flex items-center gap-1.5 text-xs text-gray-600">
+        <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
           <input
             type="checkbox"
             checked={node.width === "double-column"}
             onChange={(e) => updateTableWidth(node.id, e.target.checked ? "double-column" : "single-column")}
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
           />
           Span both columns
         </label>
-        <label className="flex items-center gap-1.5 text-xs text-gray-600">
+        <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
           Spacing
           <select
             value={node.spacing ?? "comfortable"}
             onChange={(e) => updateTableSpacing(node.id, e.target.value as TableSpacing)}
-            className="rounded border-gray-200 text-xs px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+            className="rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
           >
             <option value="compact">Compact</option>
             <option value="comfortable">Comfortable</option>
@@ -66,11 +66,11 @@ export function TableEditor({ node }: { node: Table }) {
           {node.rows.map((row, r) => (
             <tr key={r}>
               {row.map((cell, c) => (
-                <td key={c} className="border border-gray-200 p-0.5">
+                <td key={c} className="border border-gray-200 dark:border-gray-700 p-0.5">
                   <input
                     value={cell}
                     onChange={(e) => setCell(r, c, e.target.value)}
-                    className="w-[70px] text-xs px-1 py-0.5 border-none focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded"
+                    className="w-[70px] text-xs px-1 py-0.5 border-none bg-transparent text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded"
                   />
                 </td>
               ))}

@@ -158,11 +158,11 @@ export function EditorPage() {
   }
   if (loadState === "error") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-[#f7f6f3] px-6 text-center">
-        <div className="w-10 h-10 rounded-lg bg-gray-300 text-white flex items-center justify-center font-serif text-xl">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-[#f7f6f3] dark:bg-gray-950 px-6 text-center">
+        <div className="w-10 h-10 rounded-lg bg-gray-300 dark:bg-gray-700 text-white flex items-center justify-center font-serif text-xl">
           §
         </div>
-        <p className="text-sm text-gray-600 max-w-sm">
+        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm">
           Couldn't load that paper — it may not exist, or you may not have access.
         </p>
         <Link to="/dashboard" className={btnPrimary}>
@@ -182,19 +182,22 @@ export function EditorPage() {
       {/* Top bar spans both panes — mirrors the reference layout's header:
           navigation/status on the left, the primary action (export) on the
           right, both reachable regardless of what's happening below. */}
-      <div className="flex-none flex justify-between items-center px-6 py-3 border-b border-gray-200 bg-white z-20">
+      <div className="flex-none flex justify-between items-center px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 z-20">
         <div className="flex items-center gap-3">
-          <Link to="/dashboard" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
+          <Link
+            to="/dashboard"
+            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+          >
             ← Dashboard
           </Link>
-          <span className="text-gray-300">|</span>
+          <span className="text-gray-300 dark:text-gray-700">|</span>
           <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
         </div>
         {documentId && <ExportButton documentId={documentId} title={extractTitleText(document)} compact />}
       </div>
 
       <div className="flex-1 min-h-0 flex">
-        <div className="w-1/2 min-w-0 h-full flex flex-col border-r border-gray-200 bg-white">
+        <div className="w-1/2 min-w-0 h-full flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <EditorPanel />
         </div>
 
@@ -204,15 +207,15 @@ export function EditorPage() {
         <div
           className={
             previewOpen
-              ? "fixed inset-0 z-50 bg-gray-100 overflow-y-auto py-10"
-              : "w-1/2 min-w-0 relative overflow-y-auto bg-gray-100 py-10"
+              ? "fixed inset-0 z-50 bg-gray-100 dark:bg-gray-950 overflow-y-auto py-10"
+              : "w-1/2 min-w-0 relative overflow-y-auto bg-gray-100 dark:bg-gray-950 py-10"
           }
         >
           {previewOpen && (
             <button
               onClick={() => setPreviewOpen(false)}
               aria-label="Close preview"
-              className={`${btnGhost} fixed top-4 right-4 z-[60] bg-white shadow-md w-auto px-3 gap-1.5 text-xs font-medium`}
+              className={`${btnGhost} fixed top-4 right-4 z-[60] bg-white dark:bg-gray-800 shadow-md w-auto px-3 gap-1.5 text-xs font-medium`}
             >
               ✕ Close preview
             </button>
