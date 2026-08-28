@@ -116,7 +116,7 @@ export function DownloadsPage() {
                           {" · "}
                           <Link
                             to={`/editor/${row.document_id}`}
-                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:underline"
                           >
                             Open paper
                           </Link>

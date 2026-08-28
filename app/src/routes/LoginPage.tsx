@@ -50,7 +50,7 @@ export function LoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Branding panel — hidden on small screens, where the form alone is plenty. */}
-      <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 text-white px-12 py-12 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-slate-950 via-gray-900 to-black text-white px-12 py-12 relative overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
           style={{
@@ -73,15 +73,15 @@ export function LoginPage() {
             <br />
             We'll handle the formatting.
           </h1>
-          <p className="text-indigo-200/80 text-sm leading-relaxed mb-8">
+          <p className="text-gray-300/90 text-sm leading-relaxed mb-8">
             A FlowCV-style builder for IEEE conference papers — built for students
             turning project work into a submission-ready paper without touching
             LaTeX or wrestling with Word styles.
           </p>
           <ul className="flex flex-col gap-3">
             {FEATURES.map((f) => (
-              <li key={f} className="flex items-start gap-2.5 text-sm text-indigo-100/90">
-                <span className="mt-0.5 flex-none w-4 h-4 rounded-full bg-indigo-400/20 border border-indigo-300/40 flex items-center justify-center text-[10px]">
+              <li key={f} className="flex items-start gap-2.5 text-sm text-gray-100/90">
+                <span className="mt-0.5 flex-none w-4 h-4 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-[10px]">
                   ✓
                 </span>
                 {f}
@@ -90,7 +90,7 @@ export function LoginPage() {
           </ul>
         </div>
 
-        <p className="relative text-xs text-indigo-300/50">
+        <p className="relative text-xs text-gray-400/60">
           Real two-column IEEE format — margins, fonts, and citation numbering, exactly to spec.
         </p>
       </div>
@@ -99,7 +99,7 @@ export function LoginPage() {
       <div className="flex items-center justify-center px-6 py-12 bg-gray-50 dark:bg-gray-950">
         <div className="w-full max-w-sm">
           <div className="lg:hidden mb-8 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-indigo-600 text-white flex items-center justify-center font-serif text-sm">
+            <div className="w-8 h-8 rounded-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-serif text-sm">
               §
             </div>
             <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">IEEE Paper Builder</span>
@@ -165,7 +165,7 @@ export function LoginPage() {
             <button
               type="button"
               onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium hover:underline"
+              className="text-gray-900 dark:text-gray-100 font-medium hover:underline"
             >
               {mode === "signin" ? "Sign up" : "Sign in"}
             </button>

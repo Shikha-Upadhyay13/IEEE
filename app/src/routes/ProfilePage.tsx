@@ -29,7 +29,7 @@ export function ProfilePage() {
 
         <div className="bg-white dark:bg-gray-900 dark:border-gray-800 rounded-xl border border-gray-200 shadow-sm p-6 mt-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white flex items-center justify-center text-2xl font-semibold flex-none">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 dark:from-gray-300 dark:to-gray-100 text-white dark:text-gray-900 flex items-center justify-center text-2xl font-semibold flex-none">
               {user?.email?.[0]?.toUpperCase() ?? "?"}
             </div>
             <div>
@@ -52,7 +52,7 @@ export function ProfilePage() {
           <div className="border-t border-gray-100 dark:border-gray-800 mt-6 pt-6 flex justify-between items-center">
             <Link
               to="/settings"
-              className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
+              className="text-sm text-gray-900 dark:text-gray-100 hover:underline font-medium"
             >
               Go to Settings →
             </Link>
