@@ -5,7 +5,6 @@ import { Dashboard } from "./routes/Dashboard";
 import { EditorPage } from "./routes/EditorPage";
 import { PrintView } from "./routes/PrintView";
 import { AssistantPage } from "./routes/AssistantPage";
-import { ImagesPage } from "./routes/ImagesPage";
 import { ProfilePage } from "./routes/ProfilePage";
 import { SettingsPage } from "./routes/SettingsPage";
 import { DownloadsPage } from "./routes/DownloadsPage";
@@ -31,7 +30,6 @@ function App() {
         <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="/editor/:documentId" element={<RequireAuth><EditorPage /></RequireAuth>} />
         <Route path="/assistant" element={<RequireAuth><AssistantPage /></RequireAuth>} />
-        <Route path="/images" element={<RequireAuth><ImagesPage /></RequireAuth>} />
         <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
         <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
         <Route path="/downloads" element={<RequireAuth><DownloadsPage /></RequireAuth>} />

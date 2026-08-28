@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { AiSectionNav } from "./AiSectionNav";
 import { ProfileMenu } from "./ProfileMenu";
 
 export type ConversationRow = { id: string; title: string; project_id: string | null; updated_at: string };
@@ -66,7 +65,12 @@ export function ConversationSidebar({
 
   return (
     <div className="w-64 flex-none h-full flex flex-col bg-gray-900 text-gray-300">
-      <AiSectionNav />
+      <div className="flex items-center gap-2 px-4 pt-4 pb-1">
+        <div className="w-6 h-6 rounded-md bg-gray-100 text-gray-900 flex items-center justify-center font-serif text-xs flex-none">
+          §
+        </div>
+        <span className="text-sm font-medium text-gray-200 tracking-tight">Assistant</span>
+      </div>
       <div className="p-3">
         <button
           onClick={onNewChat}
@@ -135,7 +139,7 @@ export function ConversationSidebar({
                 }
               }}
               placeholder="Project name…"
-              className="w-full mt-0.5 text-sm bg-gray-800 border border-gray-600 rounded-md px-2 py-1.5 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full mt-0.5 text-sm bg-gray-800 border border-gray-600 rounded-md px-2 py-1.5 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
           )}
         </div>

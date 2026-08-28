@@ -69,7 +69,7 @@ function NewPaperCard({ creating, onClick }: { creating: boolean; onClick: () =>
     <button
       onClick={onClick}
       disabled={creating}
-      className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 transition-colors"
+      className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-gray-500 dark:hover:border-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/30 transition-colors"
     >
       <span className="text-3xl leading-none">+</span>
       <span className="text-sm font-medium">{creating ? "Creating…" : "New paper"}</span>
@@ -104,7 +104,7 @@ function PaperCard({
     <div className="flex flex-col">
       <button
         onClick={onOpen}
-        className="group relative aspect-[8.5/11] w-full rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 transition-all overflow-hidden bg-white dark:bg-gray-900"
+        className="group relative aspect-[8.5/11] w-full rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-gray-400 dark:hover:border-gray-600 transition-all overflow-hidden bg-white dark:bg-gray-900"
       >
         <PaperThumbnail documentId={doc.id} />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-colors flex items-center justify-center">
@@ -129,12 +129,12 @@ function PaperCard({
                   setEditing(false);
                 }
               }}
-              className="w-full text-sm font-medium text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 border border-indigo-300 dark:border-indigo-700 rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-sm font-medium text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-gray-400"
             />
           ) : (
             <button
               onClick={() => setEditing(true)}
-              className="text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 text-left truncate block w-full"
+              className="text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-black dark:hover:text-white text-left truncate block w-full"
               title={`${doc.title || "Untitled paper"} (click to rename)`}
             >
               {doc.title || "Untitled paper"}

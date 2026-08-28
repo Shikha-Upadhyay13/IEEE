@@ -14,8 +14,21 @@ import {
 
 const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL ?? "http://localhost:3002";
 
-type ChatMessage = { role: "user" | "assistant"; content: string };
+// imageUrl/imageError turn a turn into an image-generation result instead of
+// text — image generation lives inside this same conversation/composer
+// rather than a separate page, so it's saved and reloaded exactly like any
+// other message.
+type ChatMessage = { role: "user" | "assistant"; content: string; imageUrl?: string; imageError?: boolean };
 type DocumentOption = { id: string; title: string | null };
+
+const IMAGE_SIZE = 1024;
+
+// Pollinations.ai is a free, keyless image API — the prompt is literally the
+// URL path, so requesting the image *is* generating it. A random seed keeps
+// re-running the same prompt from just returning a cached identical image.
+function buildImageUrl(prompt: string, seed: number): string {
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${IMAGE_SIZE}&height=${IMAGE_SIZE}&seed=${seed}&nologo=true`;
+}
 
 // Roman numerals rather than emoji icons — a small, deliberate nod to how
 // this same app numbers IEEE sections, so even the empty state reads as
@@ -88,6 +101,15 @@ export function AssistantPage() {
   const [contextLoading, setContextLoading] = useState(false);
   const [attachMenuOpen, setAttachMenuOpen] = useState(false);
   const attachMenuRef = useRef<HTMLDivElement>(null);
+
+  // Image generation is a mode of this same composer, not a separate page —
+  // toggling it swaps what Send does (generate an image vs. stream a chat
+  // reply) and what the placeholder text asks for. pendingImageIndex tracks
+  // which message's <img> is still loading, the same "index into an array
+  // with no stable ids" pattern insertingIndex uses below.
+  const [imageMode, setImageMode] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [pendingImageIndex, setPendingImageIndex] = useState<number | null>(null);
 
   // "Add anything [an AI reply] to the paper": tracked by message index since
   // messages don't have stable ids — insertingIndex covers the async gap
@@ -332,9 +354,42 @@ export function AssistantPage() {
     }
   }
 
+  function generateImage(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || isGeneratingImage) return;
+
+    setError(null);
+    const seed = Math.floor(Math.random() * 1_000_000_000);
+    const url = buildImageUrl(trimmed, seed);
+    setMessages((prev) => {
+      const next: ChatMessage[] = [
+        ...prev,
+        { role: "user", content: trimmed },
+        { role: "assistant", content: "", imageUrl: url },
+      ];
+      setPendingImageIndex(next.length - 1);
+      return next;
+    });
+    setInput("");
+    setIsGeneratingImage(true);
+  }
+
+  function handleImageLoaded() {
+    setIsGeneratingImage(false);
+    setPendingImageIndex(null);
+  }
+
+  function handleImageFailed(index: number) {
+    setIsGeneratingImage(false);
+    setPendingImageIndex(null);
+    setError("Image generation failed — try a different prompt.");
+    setMessages((prev) => prev.map((m, i) => (i === index ? { ...m, imageError: true } : m)));
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    sendMessage(input);
+    if (imageMode) generateImage(input);
+    else sendMessage(input);
   }
 
   function handleNewChat() {
@@ -345,6 +400,8 @@ export function AssistantPage() {
     setDocumentContext(null);
     setInsertedIndices(new Set());
     setInsertingIndex(null);
+    setPendingImageIndex(null);
+    setIsGeneratingImage(false);
     lastSavedMessagesRef.current = null;
     setPendingProjectId(activeProjectId);
     // Explicit rather than relying solely on the focus effect above: that
@@ -366,6 +423,8 @@ export function AssistantPage() {
     setError(null);
     setInsertedIndices(new Set());
     setInsertingIndex(null);
+    setPendingImageIndex(null);
+    setIsGeneratingImage(false);
   }
 
   async function handleRenameConversation(id: string, title: string) {
@@ -449,7 +508,7 @@ export function AssistantPage() {
           </Link>
           <span className="text-gray-300 dark:text-gray-700">|</span>
           <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-md bg-indigo-600 text-white flex items-center justify-center font-serif text-xs">
+            <div className="w-6 h-6 rounded-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-serif text-xs">
               §
             </div>
             <div>
@@ -467,14 +526,15 @@ export function AssistantPage() {
           <div className="max-w-3xl mx-auto px-4 py-8 flex flex-col gap-5">
             {messages.length === 0 && (
               <div className="text-center py-12 animate-fade-in-up">
-                <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-serif text-3xl">
+                <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-serif text-3xl">
                   §
                 </div>
                 <p className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1 tracking-tight">
                   What are you writing today?
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-                  Ask for help drafting or refining any part of your paper's content.
+                  Ask for help drafting or refining any part of your paper's content — or switch to image mode
+                  below to generate a figure or illustration.
                 </p>
                 {/* Roman numerals + hairline dividers, styled like the paper's
                     own table of contents, instead of an icon-per-card grid —
@@ -487,10 +547,10 @@ export function AssistantPage() {
                       onClick={() => sendMessage(text)}
                       className="group w-full flex items-baseline gap-4 py-3.5 border-b border-gray-200 dark:border-gray-800 text-left transition-colors"
                     >
-                      <span className="flex-none font-serif text-sm text-indigo-400 dark:text-indigo-500 w-5">
+                      <span className="flex-none font-serif text-sm text-gray-400 dark:text-gray-500 w-5">
                         {numeral}
                       </span>
-                      <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-indigo-700 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all">
+                      <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 group-hover:translate-x-0.5 transition-all">
                         {text}
                       </span>
                     </button>
@@ -501,8 +561,13 @@ export function AssistantPage() {
 
             {messages.map((message, i) => {
               const isEmptyStreamingReply =
-                message.role === "assistant" && !message.content && isStreaming && i === messages.length - 1;
-              const canInsert = message.role === "assistant" && message.content && selectedDoc && !isStreaming;
+                message.role === "assistant" &&
+                !message.content &&
+                !message.imageUrl &&
+                isStreaming &&
+                i === messages.length - 1;
+              const canInsert =
+                message.role === "assistant" && message.content && !message.imageUrl && selectedDoc && !isStreaming;
               // A transcript, not a chat log: a small-caps role label above
               // each turn, then plain content below it — no avatar icons, no
               // bubble corners. User turns get a soft bordered card (still
@@ -516,20 +581,53 @@ export function AssistantPage() {
                 >
                   <RoleLabel role={message.role} />
                   <div className={`flex flex-col gap-1.5 max-w-[85%] ${message.role === "user" ? "items-end" : "items-start"}`}>
-                    <div
-                      className={
-                        message.role === "user"
-                          ? "rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-gray-900 dark:text-gray-100"
-                          : "pl-4 py-0.5 border-l-2 border-indigo-100 dark:border-indigo-900 font-serif text-[15px] leading-relaxed whitespace-pre-wrap text-gray-800 dark:text-gray-200"
-                      }
-                    >
-                      {isEmptyStreamingReply ? <ThinkingIndicator /> : message.content}
-                    </div>
+                    {message.imageUrl ? (
+                      <div className="relative w-64 aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800">
+                        {message.imageError ? (
+                          <p className="p-4 text-sm text-red-600 dark:text-red-400">
+                            Image generation failed — try a different prompt.
+                          </p>
+                        ) : (
+                          <img
+                            src={message.imageUrl}
+                            alt={message.content || "Generated image"}
+                            onLoad={i === pendingImageIndex ? handleImageLoaded : undefined}
+                            onError={i === pendingImageIndex ? () => handleImageFailed(i) : undefined}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                        {i === pendingImageIndex && !message.imageError && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-100/90 dark:bg-gray-800/90">
+                            <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-600 border-t-gray-800 dark:border-t-gray-200 rounded-full animate-spin" />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div
+                        className={
+                          message.role === "user"
+                            ? "rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-gray-900 dark:text-gray-100"
+                            : "pl-4 py-0.5 border-l-2 border-gray-200 dark:border-gray-800 font-serif text-[15px] leading-relaxed whitespace-pre-wrap text-gray-800 dark:text-gray-200"
+                        }
+                      >
+                        {isEmptyStreamingReply ? <ThinkingIndicator /> : message.content}
+                      </div>
+                    )}
+                    {message.imageUrl && !message.imageError && i !== pendingImageIndex && (
+                      <a
+                        href={message.imageUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
+                      >
+                        ⬇ Open full size
+                      </a>
+                    )}
                     {canInsert && (
                       <button
                         onClick={() => handleInsertIntoPaper(i, message.content)}
                         disabled={insertingIndex === i || insertedIndices.has(i)}
-                        className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500 transition-colors px-1"
+                        className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500 transition-colors px-1"
                       >
                         {insertedIndices.has(i)
                           ? `✓ Added to ${selectedDoc.title || "paper"}`
@@ -543,7 +641,7 @@ export function AssistantPage() {
               );
             })}
 
-            {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+            {error && <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>}
           </div>
         </div>
 
@@ -553,7 +651,7 @@ export function AssistantPage() {
               pill-plus-circle composer is the other half (with the avatar
               thread above) of what makes a page read as an AI-chat-widget
               clone on sight, independent of color or copy. */}
-          <div className="max-w-3xl mx-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm focus-within:border-indigo-400 dark:focus-within:border-indigo-500 transition-colors">
+          <div className="max-w-3xl mx-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm focus-within:border-gray-400 dark:focus-within:border-gray-600 transition-colors">
             <textarea
               ref={textareaRef}
               value={input}
@@ -561,11 +659,12 @@ export function AssistantPage() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  sendMessage(input);
+                  if (imageMode) generateImage(input);
+                  else sendMessage(input);
                 }
               }}
               rows={1}
-              placeholder="Ask for help with your paper's content…"
+              placeholder={imageMode ? "Describe an image to generate…" : "Ask for help with your paper's content…"}
               className="w-full resize-none bg-transparent text-sm leading-relaxed px-4 pt-3 pb-1.5 focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600 text-gray-900 dark:text-gray-100"
             />
             <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 dark:border-gray-800">
@@ -593,7 +692,7 @@ export function AssistantPage() {
                         }}
                         className={`w-full text-left text-sm px-3 py-1.5 truncate hover:bg-gray-50 dark:hover:bg-gray-800 ${
                           selectedDoc?.id === doc.id
-                            ? "text-indigo-700 dark:text-indigo-400 font-medium"
+                            ? "text-gray-900 dark:text-gray-100 font-medium"
                             : "text-gray-700 dark:text-gray-300"
                         }`}
                       >
@@ -602,30 +701,46 @@ export function AssistantPage() {
                     ))}
                   </div>
                 )}
-                <button
-                  type="button"
-                  onClick={() => setAttachMenuOpen((v) => !v)}
-                  title="Attach a paper for context"
-                  className={`inline-flex items-center gap-1.5 max-w-48 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
-                    selectedDoc
-                      ? "text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50"
-                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  }`}
-                >
-                  <span className="flex-none">📎</span>
-                  <span className="truncate">
-                    {selectedDoc ? selectedDoc.title || "Untitled paper" : "Attach paper"}
-                    {contextLoading && "…"}
-                  </span>
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setAttachMenuOpen((v) => !v)}
+                    title="Attach a paper for context"
+                    className={`inline-flex items-center gap-1.5 max-w-48 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                      selectedDoc
+                        ? "text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800"
+                        : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    <span className="flex-none">📎</span>
+                    <span className="truncate">
+                      {selectedDoc ? selectedDoc.title || "Untitled paper" : "Attach paper"}
+                      {contextLoading && "…"}
+                    </span>
+                  </button>
+                  {/* Image generation as a composer mode, not a separate page
+                      or section — toggling it swaps what Send does. */}
+                  <button
+                    type="button"
+                    onClick={() => setImageMode((v) => !v)}
+                    title={imageMode ? "Switch back to text replies" : "Generate an image instead"}
+                    className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                      imageMode
+                        ? "text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800"
+                        : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    🖼️ Image
+                  </button>
+                </div>
               </div>
               <button
                 type="submit"
-                disabled={isStreaming || !input.trim()}
-                className="flex-none inline-flex items-center gap-1.5 rounded-md bg-indigo-600 text-white text-xs font-semibold px-3 py-1.5 hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 transition-colors"
+                disabled={imageMode ? isGeneratingImage || !input.trim() : isStreaming || !input.trim()}
+                className="flex-none inline-flex items-center gap-1.5 rounded-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-semibold px-3 py-1.5 hover:bg-black dark:hover:bg-white disabled:opacity-40 disabled:hover:bg-gray-900 dark:disabled:hover:bg-gray-100 transition-colors"
               >
-                {isStreaming ? "Sending…" : "Send"}
-                {!isStreaming && <span className="leading-none">↵</span>}
+                {imageMode ? (isGeneratingImage ? "Generating…" : "Generate") : isStreaming ? "Sending…" : "Send"}
+                {!isStreaming && !isGeneratingImage && <span className="leading-none">↵</span>}
               </button>
             </div>
           </div>

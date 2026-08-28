@@ -52,9 +52,7 @@ export function SettingsPage() {
 
         <div className="bg-white dark:bg-gray-900 dark:border-gray-800 rounded-xl border border-gray-200 shadow-sm p-6 mb-4">
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Appearance</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Applies across the AI Assistant, Images, and account pages.
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Applies across the whole app.</p>
           <div className="flex gap-2">
             {THEME_OPTIONS.map((opt) => (
               <button
@@ -62,7 +60,7 @@ export function SettingsPage() {
                 onClick={() => setTheme(opt.value)}
                 className={`flex-1 flex flex-col items-center gap-1 rounded-lg border px-3 py-3 text-sm transition-colors ${
                   theme === opt.value
-                    ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300"
+                    ? "border-gray-400 dark:border-gray-500 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium"
                     : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}
               >
@@ -77,14 +75,16 @@ export function SettingsPage() {
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">AI Assistant</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Chat runs on Groq's <span className="font-mono text-xs">openai/gpt-oss-120b</span>, and image
-            generation runs on Pollinations.ai — both free, no API key required from you.
+            generation (right from the chat composer) runs on Pollinations.ai — both free, no API key required
+            from you.
           </p>
         </div>
 
         <div className="bg-white dark:bg-gray-900 dark:border-gray-800 rounded-xl border border-gray-200 shadow-sm p-6">
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Data</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Remove every saved AI Assistant conversation. Your papers and generated images aren't affected.
+            Remove every saved AI Assistant conversation, including any images generated inside them. Your
+            papers aren't affected.
           </p>
           <button
             onClick={handleClearConversations}
