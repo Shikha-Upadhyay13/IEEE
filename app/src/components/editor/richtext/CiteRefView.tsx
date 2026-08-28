@@ -19,7 +19,7 @@ export function CiteRefView({ node }: NodeViewProps) {
         title={reference?.renderedText ?? "This reference no longer exists"}
         className={`rounded px-1 text-[0.85em] ${
           reference
-            ? "bg-indigo-100 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300"
+            ? "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
             : "bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400"
         }`}
       >

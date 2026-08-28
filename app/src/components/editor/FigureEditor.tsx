@@ -60,7 +60,7 @@ export function FigureEditor({ node }: { node: Figure }) {
             onChange={(e) =>
               updateFigureWidth(node.id, e.target.checked ? "double-column" : "single-column")
             }
-            className="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
+            className="rounded border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-gray-400"
           />
           Span both columns
         </label>
@@ -73,7 +73,7 @@ export function FigureEditor({ node }: { node: Figure }) {
             step={1}
             value={node.scale ?? 100}
             onChange={(e) => updateFigureScale(node.id, Number(e.target.value))}
-            className="w-24 accent-indigo-600"
+            className="w-24 accent-gray-800 dark:accent-gray-300"
           />
           <span className="w-10 text-right tabular-nums text-gray-500 dark:text-gray-400">
             {node.scale ?? 100}%
@@ -93,7 +93,7 @@ export function FigureEditor({ node }: { node: Figure }) {
             <select
               value={node.align ?? "center"}
               onChange={(e) => updateFigureAlign(node.id, e.target.value as FigureAlign)}
-              className="rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+              className="rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
             >
               <option value="left">Left</option>
               <option value="center">Center</option>

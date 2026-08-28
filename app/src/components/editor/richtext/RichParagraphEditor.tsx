@@ -79,16 +79,16 @@ export function RichParagraphEditor({
   const toolbarBtn = (active: boolean) =>
     `w-7 h-7 rounded flex items-center justify-center text-sm font-semibold transition-colors ${
       active
-        ? "bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400"
+        ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
         : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
     }`;
   const toolbarSelect =
-    "h-7 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1.5 text-xs text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800";
+    "h-7 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1.5 text-xs text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800";
 
   return (
     <div
       data-rich-paragraph-editor=""
-      className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400"
+      className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-400"
     >
       <div className="flex gap-1 flex-wrap items-center px-2 py-1.5 border-b border-gray-100 dark:border-gray-800">
         <button
