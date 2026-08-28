@@ -6,6 +6,8 @@ import { emptyReferenceFields, generateReferenceText, type ReferenceFields } fro
 
 type BlockWidth = Extract<BodyNode, { type: "figure" }>["width"];
 type PaperSize = Document["meta"]["paperSize"];
+type AccentTargets = NonNullable<Document["meta"]["accentTargets"]>;
+type LinkStyle = NonNullable<Document["meta"]["linkStyle"]>;
 
 // Recursively find `id` among a section's children too, not just its direct siblings.
 function updateNodeById(
@@ -170,6 +172,9 @@ type DocumentStore = {
   setFontFamily: (fontFamily: FontFamily) => void;
   setPaperSize: (paperSize: PaperSize) => void;
   setShowPageNumbers: (showPageNumbers: boolean) => void;
+  setAccentColor: (accentColor: string | null) => void;
+  setAccentTarget: (target: keyof AccentTargets, value: boolean) => void;
+  setLinkStyle: (key: keyof LinkStyle, value: boolean) => void;
   appendParagraph: () => void;
   appendSection: () => void;
   appendFigure: () => void;
@@ -235,6 +240,42 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   setShowPageNumbers: (showPageNumbers) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, showPageNumbers } } })),
+
+  setAccentColor: (accentColor) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, accentColor } } })),
+
+  setAccentTarget: (target, value) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        meta: {
+          ...state.document.meta,
+          accentTargets: {
+            dragHandles: false,
+            blockBorders: false,
+            citationChips: false,
+            ...state.document.meta.accentTargets,
+            [target]: value,
+          },
+        },
+      },
+    })),
+
+  setLinkStyle: (key, value) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        meta: {
+          ...state.document.meta,
+          linkStyle: {
+            underline: false,
+            colored: false,
+            ...state.document.meta.linkStyle,
+            [key]: value,
+          },
+        },
+      },
+    })),
 
   appendParagraph: () =>
     set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("paragraph")] } })),

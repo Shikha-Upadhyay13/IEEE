@@ -148,6 +148,30 @@ export const DocumentSchema = z.object({
     // compliant default never includes them; this is a deliberate opt-out
     // of that guidance for venues that do want them.
     showPageNumbers: z.boolean().optional(),
+    // Appearance settings. accentColor/accentTargets only ever paint the
+    // *editor's* own chrome (drag handles, block borders, citation chips) —
+    // they never reach ieee-template.css, so they carry zero compliance
+    // risk. linkStyle is the one exception that does reach the exported
+    // PDF: it's layered on top of ieee-template.css's fixed grid (margins/
+    // column width/font size, "never user-editable" per that file's own
+    // header comment) rather than touching it, since citation/cross-
+    // reference decoration is a cosmetic axis IEEE doesn't fix the way it
+    // fixes page geometry. Both default to undefined/off so an untouched
+    // document renders byte-identical to before this feature existed.
+    accentColor: z.string().nullable().optional(),
+    accentTargets: z
+      .object({
+        dragHandles: z.boolean(),
+        blockBorders: z.boolean(),
+        citationChips: z.boolean(),
+      })
+      .optional(),
+    linkStyle: z
+      .object({
+        underline: z.boolean(),
+        colored: z.boolean(),
+      })
+      .optional(),
   }),
   titleBlock: z.object({
     title: z.array(InlineNodeSchema),
