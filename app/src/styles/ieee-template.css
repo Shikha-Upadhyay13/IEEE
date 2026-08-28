@@ -3,6 +3,12 @@
  * Values sourced from official IEEE conference templates (verified against
  * IEEE-EIT-Paper_template.pdf and the IEEE PES sample paper), see
  * ARCHITECTURE.md and PRD.md for citations.
+ *
+ * The one deliberate exception is the citation/cross-reference link
+ * decoration below (--ieee-link-decoration/--ieee-link-color) — that's
+ * cosmetic styling layered on top of this fixed grid via the Appearance
+ * panel's Link Styling toggles, not a change to page geometry, so it
+ * doesn't compromise the guarantee this file otherwise exists to make.
  */
 
 @page {
@@ -263,4 +269,10 @@
 .ieee-cite-ref,
 .ieee-xref {
   cursor: pointer;
+  /* Defaults match the IEEE convention (plain black, no underline) exactly —
+     these two custom properties are only ever set by IEEEConferenceTemplate
+     when a document opts into the Appearance panel's Link Styling toggles,
+     see its own comment. */
+  text-decoration: var(--ieee-link-decoration, none);
+  color: var(--ieee-link-color, inherit);
 }

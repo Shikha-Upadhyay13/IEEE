@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -22,7 +22,9 @@ import { FigureEditor } from "./FigureEditor";
 import { TableEditor } from "./TableEditor";
 import { ReferencesEditor } from "./ReferencesEditor";
 import { EquationEditor } from "./EquationEditor";
+import { AppearancePanel } from "./AppearancePanel";
 import { cardBase, inputBase, labelBase } from "../../lib/uiClasses";
+import { useEditorPreferences } from "../../lib/useEditorPreferences";
 
 type BlockType = "paragraph" | "section" | "figure" | "table" | "equation";
 
@@ -86,6 +88,13 @@ function SortableBlockItem({
   const moveBlockToSection = useDocumentStore((s) => s.moveBlockToSection);
   const body = useDocumentStore((s) => s.document.body);
   const removeBlock = useDocumentStore((s) => s.removeBlock);
+  const accentColor = useDocumentStore((s) => s.document.meta.accentColor);
+  const accentTargets = useDocumentStore((s) => s.document.meta.accentTargets);
+  // Appearance's accent color is editor-chrome-only (see AppearancePanel) —
+  // these two are the only places it actually paints anything, and only
+  // when the matching "Apply accent color to" checkbox is on.
+  const dragHandleAccent = accentTargets?.dragHandles && accentColor ? accentColor : undefined;
+  const borderAccent = accentTargets?.blockBorders && accentColor ? accentColor : undefined;
   // Collapsed by default — a paper with several sections showed every
   // paragraph/figure/table of all of them at once, which was the actual
   // complaint ("I don't want the entire content visible already"). Local
@@ -98,8 +107,16 @@ function SortableBlockItem({
     data: { containerId },
   });
 
-  const wrapperStyle = { transform: CSS.Transform.toString(transform), transition };
-  const wrapperClass = `${isDragging ? "opacity-50" : ""} mb-2`;
+  // marginBottom reads the --block-gap custom property set on the Body
+  // Content card by the Appearance panel's "Space between blocks" slider
+  // (see EditorPanel below) — 8px (Tailwind's old mb-2) is the fallback for
+  // anyone who hasn't touched that control.
+  const wrapperStyle = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    marginBottom: "var(--block-gap, 8px)",
+  };
+  const wrapperClass = isDragging ? "opacity-50" : "";
 
   const dragHandle = (
     <button
@@ -107,6 +124,7 @@ function SortableBlockItem({
       {...listeners}
       data-drag-handle={node.id}
       aria-label="Drag to reorder"
+      style={dragHandleAccent ? { color: dragHandleAccent } : undefined}
       className="flex-none w-6 h-6 flex items-center justify-center rounded text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing touch-none"
     >
       ⠿
@@ -166,7 +184,7 @@ function SortableBlockItem({
       <div
         ref={setNodeRef}
         data-block-id={node.id}
-        style={{ ...wrapperStyle, marginLeft: depth * 16 }}
+        style={{ ...wrapperStyle, marginLeft: depth * 16, ...(borderAccent ? { borderColor: borderAccent } : {}) }}
         className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
       >
         <div className="flex gap-2 items-center mb-2">
@@ -230,7 +248,7 @@ function SortableBlockItem({
       <div
         ref={setNodeRef}
         data-block-id={node.id}
-        style={{ ...wrapperStyle, marginLeft: depth * 16 }}
+        style={{ ...wrapperStyle, marginLeft: depth * 16, ...(borderAccent ? { borderColor: borderAccent } : {}) }}
         className={wrapperClass}
       >
         <div className="flex gap-2 items-start">
@@ -253,7 +271,7 @@ function SortableBlockItem({
       <div
         ref={setNodeRef}
         data-block-id={node.id}
-        style={{ ...wrapperStyle, marginLeft: depth * 16 }}
+        style={{ ...wrapperStyle, marginLeft: depth * 16, ...(borderAccent ? { borderColor: borderAccent } : {}) }}
         className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
       >
         <div className="flex gap-2 items-start">
@@ -273,7 +291,7 @@ function SortableBlockItem({
       <div
         ref={setNodeRef}
         data-block-id={node.id}
-        style={{ ...wrapperStyle, marginLeft: depth * 16 }}
+        style={{ ...wrapperStyle, marginLeft: depth * 16, ...(borderAccent ? { borderColor: borderAccent } : {}) }}
         className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
       >
         <div className="flex gap-2 items-start">
@@ -368,6 +386,7 @@ export function EditorPanel() {
   const setFontFamily = useDocumentStore((s) => s.setFontFamily);
   const setPaperSize = useDocumentStore((s) => s.setPaperSize);
   const setShowPageNumbers = useDocumentStore((s) => s.setShowPageNumbers);
+  const { textScale, blockSpacing } = useEditorPreferences();
   const appendParagraph = useDocumentStore((s) => s.appendParagraph);
   const appendSection = useDocumentStore((s) => s.appendSection);
   const appendFigure = useDocumentStore((s) => s.appendFigure);
@@ -504,16 +523,25 @@ export function EditorPanel() {
         </div>
       </div>
 
+      <AppearancePanel />
+
       <div className={`${cardBase} p-5 mb-5`}>
         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Body Content</h2>
 
-        <DndContext
-          sensors={sensors}
-          collisionDetection={collisionDetectionWithinContainer}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableBlockList containerId={null} nodes={document.body} depth={0} />
-        </DndContext>
+        {/* Appearance panel's "Editing View" sliders only ever touch this
+            wrapper — zoom scales the block list's text/spacing together like
+            a browser zoom, and --block-gap drives each block's own margin
+            (see SortableBlockItem above). Neither reaches the PagedPreview/
+            export path at all. */}
+        <div style={{ zoom: textScale, "--block-gap": `${8 * blockSpacing}px` } as CSSProperties}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={collisionDetectionWithinContainer}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableBlockList containerId={null} nodes={document.body} depth={0} />
+          </DndContext>
+        </div>
 
         <select
           aria-label="Add block"

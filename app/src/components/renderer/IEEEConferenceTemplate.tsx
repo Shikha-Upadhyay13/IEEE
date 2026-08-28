@@ -175,8 +175,22 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
     .filter(Boolean)
     .join("\n");
 
+  // Same "inline override, base CSS file untouched" pattern as fontOverride
+  // above — ieee-template.css's own .ieee-cite-ref/.ieee-xref rule reads
+  // these two custom properties with defaults (none/inherit) that match
+  // today's behavior exactly, so a document with no meta.linkStyle renders
+  // identically to before this feature existed.
+  const linkStyleVars: Record<string, string> = {};
+  if (document.meta.linkStyle?.underline) linkStyleVars["--ieee-link-decoration"] = "underline";
+  if (document.meta.linkStyle?.colored && document.meta.accentColor) {
+    linkStyleVars["--ieee-link-color"] = document.meta.accentColor;
+  }
+
   return (
-    <div className="ieee-paper" style={fontOverride ? { fontFamily: fontOverride } : undefined}>
+    <div
+      className="ieee-paper"
+      style={{ ...(fontOverride ? { fontFamily: fontOverride } : {}), ...linkStyleVars }}
+    >
       {pageCssOverrides && <style>{pageCssOverrides}</style>}
       <h1 className="ieee-title">
         <InlineContent nodes={document.titleBlock.title as ResolvedInlineNode[]} />
