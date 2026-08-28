@@ -172,6 +172,16 @@ export const DocumentSchema = z.object({
         colored: z.boolean(),
       })
       .optional(),
+    // Vertical breathing room around paragraphs/headings/figures/tables/
+    // equations — NOT page geometry. IEEE PDF eXpress/EDAS validation
+    // checks margins, font embedding, and column width; it does not check
+    // inter-paragraph or inter-heading spacing, which the official
+    // templates ship as ordinary Word/LaTeX style defaults rather than an
+    // enforced rule (same reasoning already applied to per-table cell
+    // padding below). "standard" reproduces today's exact fixed values;
+    // optional/undefined falls back to it, so untouched documents are
+    // unaffected.
+    spacingDensity: z.enum(["compact", "standard", "relaxed"]).optional(),
   }),
   titleBlock: z.object({
     title: z.array(InlineNodeSchema),

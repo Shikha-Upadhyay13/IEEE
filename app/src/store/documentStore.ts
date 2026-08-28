@@ -175,6 +175,7 @@ type DocumentStore = {
   setAccentColor: (accentColor: string | null) => void;
   setAccentTarget: (target: keyof AccentTargets, value: boolean) => void;
   setLinkStyle: (key: keyof LinkStyle, value: boolean) => void;
+  setSpacingDensity: (spacingDensity: NonNullable<Document["meta"]["spacingDensity"]>) => void;
   appendParagraph: () => void;
   appendSection: () => void;
   appendFigure: () => void;
@@ -276,6 +277,9 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         },
       },
     })),
+
+  setSpacingDensity: (spacingDensity) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, spacingDensity } } })),
 
   appendParagraph: () =>
     set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("paragraph")] } })),

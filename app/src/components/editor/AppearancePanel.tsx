@@ -6,6 +6,13 @@ import type { Document } from "../../types/document";
 
 type AccentTargetKey = keyof NonNullable<Document["meta"]["accentTargets"]>;
 type LinkStyleKey = keyof NonNullable<Document["meta"]["linkStyle"]>;
+type SpacingDensity = NonNullable<Document["meta"]["spacingDensity"]>;
+
+const SPACING_OPTIONS: { value: SpacingDensity; label: string }[] = [
+  { value: "compact", label: "Compact" },
+  { value: "standard", label: "Standard" },
+  { value: "relaxed", label: "Relaxed" },
+];
 
 // Curated, deliberately not-purple palette (see the app-wide graphite pass) —
 // these are picked for the *paper's own* accent, a per-document choice the
@@ -90,6 +97,7 @@ export function AppearancePanel() {
   const setAccentColor = useDocumentStore((s) => s.setAccentColor);
   const setAccentTarget = useDocumentStore((s) => s.setAccentTarget);
   const setLinkStyle = useDocumentStore((s) => s.setLinkStyle);
+  const setSpacingDensity = useDocumentStore((s) => s.setSpacingDensity);
   const { textScale, blockSpacing, setTextScale, setBlockSpacing } = useEditorPreferences();
 
   const accentColor = meta.accentColor ?? null;
@@ -218,6 +226,36 @@ export function AppearancePanel() {
             )}
           </div>
 
+          {/* Spacing — the other control that reaches the export, bounded to
+              three modest presets rather than a free slider */}
+          <div className="pt-5 border-t border-gray-100 dark:border-gray-800">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Spacing</h3>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
+              Breathing room around paragraphs, headings, figures, tables, and equations in your exported
+              PDF. Margins, fonts, and column width stay fixed to spec regardless of this setting.
+            </p>
+            <div className="inline-flex rounded-md border border-gray-300 dark:border-gray-600 overflow-hidden">
+              {SPACING_OPTIONS.map((opt, i) => {
+                const active = (meta.spacingDensity ?? "standard") === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setSpacingDensity(opt.value)}
+                    aria-pressed={active}
+                    className={`px-3 py-1.5 text-sm transition-colors ${i > 0 ? "border-l border-gray-300 dark:border-gray-600" : ""} ${
+                      active
+                        ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium"
+                        : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Editing view — local to this device, never affects the export */}
           <div className="pt-5 border-t border-gray-100 dark:border-gray-800">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Editing View</h3>
@@ -234,7 +272,7 @@ export function AppearancePanel() {
               onChange={setTextScale}
             />
             <SliderRow
-              label="Space between blocks"
+              label="Space between blocks (this view only)"
               value={blockSpacing}
               min={0.5}
               max={2}

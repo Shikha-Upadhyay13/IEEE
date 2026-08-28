@@ -276,3 +276,42 @@
   text-decoration: var(--ieee-link-decoration, none);
   color: var(--ieee-link-color, inherit);
 }
+
+/* --- Spacing density (Appearance panel) ---
+   Only ever touches margin-bottom/margin around paragraphs, headings,
+   figures, tables, and equations — never page margins, font sizes, or
+   column width, which stay exactly as defined above regardless of this
+   setting. No [data-spacing-density] attribute (or "standard") falls
+   through to the base rules already declared above, unchanged. See
+   spacingDensity's own comment in types/document.ts for why this
+   particular axis is safe to expose. */
+
+.ieee-paper[data-spacing-density="compact"] .ieee-paragraph {
+  margin-bottom: 4pt;
+}
+.ieee-paper[data-spacing-density="compact"] .ieee-heading-1 {
+  margin: 7pt 0 4pt 0;
+}
+.ieee-paper[data-spacing-density="compact"] .ieee-heading-2 {
+  margin: 6pt 0 3pt 0;
+}
+.ieee-paper[data-spacing-density="compact"] .ieee-figure,
+.ieee-paper[data-spacing-density="compact"] .ieee-table-block,
+.ieee-paper[data-spacing-density="compact"] .ieee-equation {
+  margin: 6pt 0;
+}
+
+.ieee-paper[data-spacing-density="relaxed"] .ieee-paragraph {
+  margin-bottom: 8pt;
+}
+.ieee-paper[data-spacing-density="relaxed"] .ieee-heading-1 {
+  margin: 13pt 0 8pt 0;
+}
+.ieee-paper[data-spacing-density="relaxed"] .ieee-heading-2 {
+  margin: 10pt 0 5pt 0;
+}
+.ieee-paper[data-spacing-density="relaxed"] .ieee-figure,
+.ieee-paper[data-spacing-density="relaxed"] .ieee-table-block,
+.ieee-paper[data-spacing-density="relaxed"] .ieee-equation {
+  margin: 11pt 0;
+}
