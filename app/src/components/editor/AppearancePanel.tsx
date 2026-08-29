@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { useDocumentStore } from "../../store/documentStore";
-import { cardBase } from "../../lib/uiClasses";
+import { cardBase, btnSecondary } from "../../lib/uiClasses";
 import { useEditorPreferences } from "../../lib/useEditorPreferences";
+import {
+  getAppearanceDefaults,
+  saveAppearanceDefaults,
+  clearAppearanceDefaults,
+} from "../../lib/paperAppearanceDefaults";
 import type { Document } from "../../types/document";
 
 type AccentTargetKey = keyof NonNullable<Document["meta"]["accentTargets"]>;
@@ -99,8 +104,27 @@ export function AppearancePanel() {
   const setLinkStyle = useDocumentStore((s) => s.setLinkStyle);
   const setSpacingDensity = useDocumentStore((s) => s.setSpacingDensity);
   const { textScale, blockSpacing, setTextScale, setBlockSpacing } = useEditorPreferences();
+  const [hasDefault, setHasDefault] = useState(() => getAppearanceDefaults() !== null);
+  const [justSaved, setJustSaved] = useState(false);
 
   const accentColor = meta.accentColor ?? null;
+
+  function handleSaveDefault() {
+    saveAppearanceDefaults({
+      accentColor: meta.accentColor,
+      accentTargets: meta.accentTargets,
+      linkStyle: meta.linkStyle,
+      spacingDensity: meta.spacingDensity,
+    });
+    setHasDefault(true);
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 2000);
+  }
+
+  function handleClearDefault() {
+    clearAppearanceDefaults();
+    setHasDefault(false);
+  }
 
   return (
     <div className={`${cardBase} p-5 mb-5`}>
@@ -254,6 +278,32 @@ export function AppearancePanel() {
                 );
               })}
             </div>
+          </div>
+
+          {/* Carries Colors/Link Styling/Spacing into new papers — reads at
+              the moment a new paper is created (see blankDocument.ts), never
+              retroactively touches an existing one. */}
+          <div className="pt-5 border-t border-gray-100 dark:border-gray-800">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Defaults</h3>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
+              Carry this paper's Colors, Link Styling, and Spacing choices into every new paper you create
+              on this device.
+            </p>
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={handleSaveDefault} className={btnSecondary}>
+                {hasDefault ? "Update default" : "Set as default for new papers"}
+              </button>
+              {hasDefault && (
+                <button
+                  type="button"
+                  onClick={handleClearDefault}
+                  className="text-xs text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            {justSaved && <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">Saved.</p>}
           </div>
 
           {/* Editing view — local to this device, never affects the export */}

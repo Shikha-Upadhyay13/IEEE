@@ -1,5 +1,6 @@
 import type { Document } from "../types/document";
 import { generateId } from "./id";
+import { getAppearanceDefaults } from "./paperAppearanceDefaults";
 
 // A starter skeleton for a new paper — not a truly empty document, since a
 // first-time user staring at a completely blank editor has no sense of what
@@ -9,9 +10,14 @@ import { generateId } from "./id";
 // elsewhere (appendParagraph/appendFigure/appendTable's placeholder text),
 // so they read as obviously-replace-this, not as accidental leftover content.
 export function createBlankDocument(): Document {
+  // Carries over accent color/link style/spacing from a saved "set as
+  // default for new papers" choice (see AppearancePanel.tsx) — absent for
+  // anyone who's never used that action, in which case this is a no-op and
+  // the document gets the same guaranteed-compliant defaults as always.
+  const appearanceDefaults = getAppearanceDefaults();
   return {
     schemaVersion: 1,
-    meta: { template: "ieee-conference", paperSize: "letter", pageLimit: null },
+    meta: { template: "ieee-conference", paperSize: "letter", pageLimit: null, ...appearanceDefaults },
     titleBlock: {
       title: [{ type: "text", text: "Untitled Paper" }],
       authors: [],
