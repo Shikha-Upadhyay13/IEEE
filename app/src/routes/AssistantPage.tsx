@@ -92,6 +92,8 @@ export function AssistantPage() {
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   // "Share their documents": pulling one paper's content in as context is
   // opt-in and visible (the chip below), not silently applied — the user
@@ -293,21 +295,23 @@ export function AssistantPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedMessages, user]);
 
-  async function sendMessage(text: string) {
-    const trimmed = text.trim();
-    if (!trimmed || isStreaming) return;
-
+  // Shared by sendMessage (appends a new user turn first) and
+  // regenerateLastResponse (reuses the existing history as-is) — both just
+  // need "stream a fresh assistant reply for this message history" with
+  // everything else (abort wiring, error handling) identical.
+  async function streamAssistantReply(nextMessages: ChatMessage[]) {
     setError(null);
-    const nextMessages: ChatMessage[] = [...messages, { role: "user", content: trimmed }];
     setMessages([...nextMessages, { role: "assistant", content: "" }]);
-    setInput("");
     setIsStreaming(true);
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
       const response = await fetch(`${AI_SERVICE_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: nextMessages, documentContext }),
+        signal: controller.signal,
       });
       if (!response.ok || !response.body) throw new Error(`Assistant request failed (${response.status})`);
 
@@ -347,12 +351,47 @@ export function AssistantPage() {
         }
       }
     } catch (err) {
-      console.error("Assistant request failed:", err);
-      setError("Couldn't reach the assistant — is ai-service running?");
-      setMessages((prev) => prev.slice(0, -1)); // drop the empty assistant bubble
+      if (err instanceof DOMException && err.name === "AbortError") {
+        // Stopped intentionally via the Stop button — keep whatever content
+        // streamed in so far rather than treating it as a failure.
+      } else {
+        console.error("Assistant request failed:", err);
+        setError("Couldn't reach the assistant — is ai-service running?");
+        setMessages((prev) => prev.slice(0, -1)); // drop the empty assistant bubble
+      }
     } finally {
       setIsStreaming(false);
+      abortControllerRef.current = null;
     }
+  }
+
+  async function sendMessage(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || isStreaming) return;
+    setInput("");
+    await streamAssistantReply([...messages, { role: "user", content: trimmed }]);
+  }
+
+  function stopGenerating() {
+    abortControllerRef.current?.abort();
+  }
+
+  // Re-runs the assistant's last reply for the same preceding history —
+  // scoped to the most recent turn only (like every mainstream chat
+  // product), not any earlier one, since regenerating a mid-conversation
+  // reply would leave everything after it stale/contradictory anyway.
+  function regenerateLastResponse() {
+    if (isStreaming) return;
+    const lastUserIndex = messages.map((m) => m.role).lastIndexOf("user");
+    if (lastUserIndex === -1) return;
+    streamAssistantReply(messages.slice(0, lastUserIndex + 1));
+  }
+
+  function copyToClipboard(text: string, index: number) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex((cur) => (cur === index ? null : cur)), 1500);
+    });
   }
 
   function generateImage(text: string) {
@@ -567,8 +606,9 @@ export function AssistantPage() {
                 !message.imageUrl &&
                 isStreaming &&
                 i === messages.length - 1;
-              const canInsert =
-                message.role === "assistant" && message.content && !message.imageUrl && selectedDoc && !isStreaming;
+              const isLastMessage = i === messages.length - 1;
+              const showAssistantActions = message.role === "assistant" && message.content && !message.imageUrl;
+              const canInsert = showAssistantActions && selectedDoc && !isStreaming;
               // A transcript, not a chat log: a small-caps role label above
               // each turn, then plain content below it — no avatar icons, no
               // bubble corners. User turns get a soft bordered card (still
@@ -626,18 +666,36 @@ export function AssistantPage() {
                         ⬇ Open full size
                       </a>
                     )}
-                    {canInsert && (
-                      <button
-                        onClick={() => handleInsertIntoPaper(i, message.content)}
-                        disabled={insertingIndex === i || insertedIndices.has(i)}
-                        className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500 transition-colors px-1"
-                      >
-                        {insertedIndices.has(i)
-                          ? `✓ Added to ${selectedDoc.title || "paper"}`
-                          : insertingIndex === i
-                            ? "Adding…"
-                            : `+ Add to ${selectedDoc.title || "paper"}`}
-                      </button>
+                    {showAssistantActions && (
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => copyToClipboard(message.content, i)}
+                          className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
+                        >
+                          {copiedIndex === i ? "✓ Copied" : "⧉ Copy"}
+                        </button>
+                        {isLastMessage && !isStreaming && (
+                          <button
+                            onClick={regenerateLastResponse}
+                            className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
+                          >
+                            ↻ Regenerate
+                          </button>
+                        )}
+                        {canInsert && (
+                          <button
+                            onClick={() => handleInsertIntoPaper(i, message.content)}
+                            disabled={insertingIndex === i || insertedIndices.has(i)}
+                            className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500 transition-colors px-1"
+                          >
+                            {insertedIndices.has(i)
+                              ? `✓ Added to ${selectedDoc.title || "paper"}`
+                              : insertingIndex === i
+                                ? "Adding…"
+                                : `+ Add to ${selectedDoc.title || "paper"}`}
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -737,14 +795,24 @@ export function AssistantPage() {
                   </button>
                 </div>
               </div>
-              <button
-                type="submit"
-                disabled={imageMode ? isGeneratingImage || !input.trim() : isStreaming || !input.trim()}
-                className="flex-none inline-flex items-center gap-1.5 rounded-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-semibold px-3 py-1.5 hover:bg-black dark:hover:bg-white disabled:opacity-40 disabled:hover:bg-gray-900 dark:disabled:hover:bg-gray-100 transition-colors"
-              >
-                {imageMode ? (isGeneratingImage ? "Generating…" : "Generate") : isStreaming ? "Sending…" : "Send"}
-                {!isStreaming && !isGeneratingImage && <span className="leading-none">↵</span>}
-              </button>
+              {!imageMode && isStreaming ? (
+                <button
+                  type="button"
+                  onClick={stopGenerating}
+                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-xs font-semibold px-3 py-1.5 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <span className="w-2 h-2 bg-current" /> Stop
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={imageMode ? isGeneratingImage || !input.trim() : !input.trim()}
+                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-semibold px-3 py-1.5 hover:bg-black dark:hover:bg-white disabled:opacity-40 disabled:hover:bg-gray-900 dark:disabled:hover:bg-gray-100 transition-colors"
+                >
+                  {imageMode ? (isGeneratingImage ? "Generating…" : "Generate") : "Send"}
+                  {!isGeneratingImage && <span className="leading-none">↵</span>}
+                </button>
+              )}
             </div>
           </div>
           <p className="text-center text-[11px] text-gray-400 dark:text-gray-600 mt-2">
