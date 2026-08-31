@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { LandingPage } from "./routes/LandingPage";
 import { LoginPage } from "./routes/LoginPage";
+import { ResetPasswordPage } from "./routes/ResetPasswordPage";
 import { Dashboard } from "./routes/Dashboard";
 import { EditorPage } from "./routes/EditorPage";
 import { PrintView } from "./routes/PrintView";
@@ -28,6 +29,10 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingOrDashboard />} />
         <Route path="/login" element={<LoginPage />} />
+        {/* Reached via the emailed reset link, which carries its own recovery
+            token — not wrapped in RequireAuth so this page can manage that
+            transitional auth state itself (see its own comment). */}
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="/editor/:documentId" element={<RequireAuth><EditorPage /></RequireAuth>} />
         <Route path="/assistant" element={<RequireAuth><AssistantPage /></RequireAuth>} />

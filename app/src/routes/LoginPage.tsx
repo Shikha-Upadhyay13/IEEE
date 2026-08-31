@@ -10,7 +10,7 @@ const FEATURES = [
 ];
 
 export function LoginPage() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,17 @@ export function LoginPage() {
     setMessage(null);
     setBusy(true);
     try {
-      if (mode === "signup") {
+      if (mode === "forgot") {
+        // Supabase emails a link to /reset-password (see ResetPasswordPage)
+        // carrying a recovery token in the URL fragment — its client picks
+        // that up automatically and grants a temporary session there, no
+        // token-handling of our own needed.
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        setMessage("Check your email for a link to reset your password.");
+      } else if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         // With email confirmation disabled, signUp returns an active session
@@ -106,12 +116,14 @@ export function LoginPage() {
           </div>
 
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight mb-1">
-            {mode === "signin" ? "Welcome back" : "Create your account"}
+            {mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
             {mode === "signin"
               ? "Sign in to continue working on your papers."
-              : "Start writing — no credit card, no LaTeX."}
+              : mode === "signup"
+                ? "Start writing — no credit card, no LaTeX."
+                : "Enter your email and we'll send you a reset link."}
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -129,23 +141,46 @@ export function LoginPage() {
                 className={inputBase}
               />
             </div>
-            <div>
-              <label htmlFor="login-password" className={labelBase}>
-                Password
-              </label>
-              <input
-                id="login-password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className={inputBase}
-              />
-            </div>
+            {mode !== "forgot" && (
+              <div>
+                <div className="flex items-baseline justify-between">
+                  <label htmlFor="login-password" className={labelBase}>
+                    Password
+                  </label>
+                  {mode === "signin" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("forgot");
+                        setError(null);
+                        setMessage(null);
+                      }}
+                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:underline mb-1"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <input
+                  id="login-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className={inputBase}
+                />
+              </div>
+            )}
             <button type="submit" disabled={busy} className={`${btnPrimary} mt-2 w-full py-2.5`}>
-              {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+              {busy
+                ? "Please wait…"
+                : mode === "signin"
+                  ? "Sign in"
+                  : mode === "signup"
+                    ? "Create account"
+                    : "Send reset link"}
             </button>
           </form>
 
@@ -161,14 +196,30 @@ export function LoginPage() {
           )}
 
           <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
-            {mode === "signin" ? "Need an account?" : "Already have an account?"}{" "}
-            <button
-              type="button"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="text-gray-900 dark:text-gray-100 font-medium hover:underline"
-            >
-              {mode === "signin" ? "Sign up" : "Sign in"}
-            </button>
+            {mode === "forgot" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signin");
+                  setError(null);
+                  setMessage(null);
+                }}
+                className="text-gray-900 dark:text-gray-100 font-medium hover:underline"
+              >
+                ← Back to sign in
+              </button>
+            ) : (
+              <>
+                {mode === "signin" ? "Need an account?" : "Already have an account?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                  className="text-gray-900 dark:text-gray-100 font-medium hover:underline"
+                >
+                  {mode === "signin" ? "Sign up" : "Sign in"}
+                </button>
+              </>
+            )}
           </p>
         </div>
       </div>
