@@ -272,51 +272,61 @@ export function AssistantPage() {
     el.style.height = `${Math.min(el.scrollHeight, INPUT_MAX_HEIGHT)}px`;
   }, [input]);
 
+  // Shared by the debounced autosave below and by every place that switches
+  // away from the current chat (New chat, selecting a different
+  // conversation) — those need to flush whatever the debounce timer hasn't
+  // gotten to yet *before* messages gets reset, or that content is lost the
+  // instant it's cleared with no save ever having happened for it. Guarded
+  // by the same "already saved" reference check either way, so calling it
+  // when there's nothing pending is a harmless no-op.
+  async function persistConversation(
+    msgs: ChatMessage[],
+    convId: string | null,
+    projId: string | null,
+    updateActiveId: boolean
+  ) {
+    if (!user || msgs.length === 0 || msgs === lastSavedMessagesRef.current) return;
+    const title = deriveTitle(msgs);
+
+    if (convId) {
+      const { error } = await supabase.from("conversations").update({ title, messages: msgs }).eq("id", convId);
+      if (error) {
+        console.error("Failed to save conversation:", error);
+        return;
+      }
+      lastSavedMessagesRef.current = msgs;
+      const now = new Date().toISOString();
+      setConversations((prev) =>
+        [...prev]
+          .map((c) => (c.id === convId ? { ...c, title, updated_at: now } : c))
+          .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+      );
+    } else {
+      const { data, error } = await supabase
+        .from("conversations")
+        .insert({ owner_id: user.id, project_id: projId, title, messages: msgs })
+        .select("id, title, project_id, updated_at")
+        .single();
+      if (error || !data) {
+        console.error("Failed to create conversation:", error);
+        return;
+      }
+      lastSavedMessagesRef.current = msgs;
+      setConversations((prev) => [data, ...prev]);
+      // Only when this is the live autosave for the chat still on screen —
+      // a flush-before-leaving call must never redirect the id back onto a
+      // conversation the user has already navigated away from.
+      if (updateActiveId) setActiveConversationId(data.id);
+    }
+  }
+
   // Autosave: same debounce-then-persist shape as the paper editor's
   // autosave (see EditorPage.tsx) — waits for the conversation to pause
   // (including mid-stream token bursts, which keep resetting the timer)
-  // before writing, and compares against the last-saved reference so an
-  // untouched conversation never re-saves itself.
+  // before writing.
   const debouncedMessages = useDebouncedValue(messages, 1200);
   useEffect(() => {
-    if (!user || debouncedMessages.length === 0) return;
-    if (debouncedMessages === lastSavedMessagesRef.current) return;
-    const title = deriveTitle(debouncedMessages);
-
-    if (activeConversationId) {
-      supabase
-        .from("conversations")
-        .update({ title, messages: debouncedMessages })
-        .eq("id", activeConversationId)
-        .then(({ error }) => {
-          if (error) {
-            console.error("Failed to save conversation:", error);
-            return;
-          }
-          lastSavedMessagesRef.current = debouncedMessages;
-          const now = new Date().toISOString();
-          setConversations((prev) =>
-            [...prev]
-              .map((c) => (c.id === activeConversationId ? { ...c, title, updated_at: now } : c))
-              .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
-          );
-        });
-    } else {
-      supabase
-        .from("conversations")
-        .insert({ owner_id: user.id, project_id: pendingProjectId, title, messages: debouncedMessages })
-        .select("id, title, project_id, updated_at")
-        .single()
-        .then(({ data, error }) => {
-          if (error || !data) {
-            console.error("Failed to create conversation:", error);
-            return;
-          }
-          lastSavedMessagesRef.current = debouncedMessages;
-          setActiveConversationId(data.id);
-          setConversations((prev) => [data, ...prev]);
-        });
-    }
+    persistConversation(debouncedMessages, activeConversationId, pendingProjectId, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedMessages, user]);
 
@@ -461,6 +471,12 @@ export function AssistantPage() {
   // activeProjectId's state update has landed) rather than always reading
   // activeProjectId from closure — defaults to it for every other caller.
   function handleNewChat(projectId: string | null = activeProjectId) {
+    // Flush anything from the chat we're leaving that the debounce timer
+    // hasn't gotten to yet — without this, a brand-new conversation that
+    // was never saved (or one with a very recent turn still pending) is
+    // lost the instant messages is reset below, which read as "New chat
+    // vanishes my current chat" rather than what was actually happening.
+    persistConversation(messages, activeConversationId, pendingProjectId, false);
     setMessages([]);
     setError(null);
     setActiveConversationId(null);
@@ -484,6 +500,9 @@ export function AssistantPage() {
 
   async function handleSelectConversation(id: string) {
     if (id === activeConversationId) return;
+    // Same flush as handleNewChat — switching straight to a different
+    // conversation must not lose whatever hasn't autosaved yet either.
+    persistConversation(messages, activeConversationId, pendingProjectId, false);
     const { data, error } = await supabase.from("conversations").select("messages").eq("id", id).single();
     if (error || !data) {
       console.error("Failed to load conversation:", error);
