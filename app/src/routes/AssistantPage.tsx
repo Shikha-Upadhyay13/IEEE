@@ -53,6 +53,9 @@ const INPUT_MAX_HEIGHT = 160;
 // thing you just wrote" without the user having to restate anything.
 const FOLLOW_UP_SUGGESTIONS = ["Make it shorter", "Make it more formal", "Simplify the language", "Continue"];
 
+const PROJECT_SCHEMA_WARNING =
+  "Project color, default paper, and instructions aren't saving — this database needs the latest migration. Run every block at the bottom of supabase/schema.sql in the Supabase SQL Editor, then reload.";
+
 function deriveTitle(messages: ChatMessage[]): string {
   const firstUser = messages.find((m) => m.role === "user")?.content.trim();
   if (!firstUser) return "New chat";
@@ -136,6 +139,11 @@ export function AssistantPage() {
   // starting a chat from inside a project keeps it there once it's saved.
   const [conversations, setConversations] = useState<ConversationRow[]>([]);
   const [projects, setProjects] = useState<ProjectRow[]>([]);
+  // Set whenever a projects query has to fall back to legacy columns (see
+  // refreshProjects/handleCreateProject) — surfaced as a visible banner
+  // instead of only a console.error, since a silently-dropped color or
+  // default paper just looks like "the feature doesn't work" otherwise.
+  const [projectSchemaWarning, setProjectSchemaWarning] = useState<string | null>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [pendingProjectId, setPendingProjectId] = useState<string | null>(null);
@@ -178,6 +186,7 @@ export function AssistantPage() {
         // back to the columns that always exist so Projects still loads,
         // just without default paper/color/instructions until they're run.
         console.error("Failed to load projects (retrying with legacy columns only):", error);
+        setProjectSchemaWarning(PROJECT_SCHEMA_WARNING);
         supabase
           .from("projects")
           .select("id, name")
@@ -478,6 +487,15 @@ export function AssistantPage() {
   // activeProjectId's state update has landed) rather than always reading
   // activeProjectId from closure — defaults to it for every other caller.
   function handleNewChat(projectId: string | null = activeProjectId) {
+    // Cancel any reply still streaming into *this* chat before switching —
+    // otherwise the fetch reader loop keeps running in the background after
+    // messages is reset below, and its next token tries to update the last
+    // element of what is now an empty array. That doesn't throw (spreading
+    // undefined is legal JS), it just silently no-ops every remaining
+    // token, so the tail of the reply — sometimes the whole reply, if this
+    // fires early enough — vanishes into a state array nothing reads
+    // anymore instead of ending up in the flush below.
+    if (isStreaming) abortControllerRef.current?.abort();
     // Flush anything from the chat we're leaving that the debounce timer
     // hasn't gotten to yet — without this, a brand-new conversation that
     // was never saved (or one with a very recent turn still pending) is
@@ -507,8 +525,9 @@ export function AssistantPage() {
 
   async function handleSelectConversation(id: string) {
     if (id === activeConversationId) return;
-    // Same flush as handleNewChat — switching straight to a different
-    // conversation must not lose whatever hasn't autosaved yet either.
+    // Same "cancel the in-flight stream before it writes into a reset
+    // array" guard as handleNewChat, plus the same flush.
+    if (isStreaming) abortControllerRef.current?.abort();
     persistConversation(messages, activeConversationId, pendingProjectId, false);
     const { data, error } = await supabase.from("conversations").select("messages").eq("id", id).single();
     if (error || !data) {
@@ -557,6 +576,7 @@ export function AssistantPage() {
       // Same fallback as refreshProjects — one of the projects migrations
       // likely hasn't run on this database yet.
       console.error("Failed to create project (retrying with legacy columns only):", rich.error);
+      setProjectSchemaWarning(PROJECT_SCHEMA_WARNING);
       const legacy = await supabase.from("projects").insert({ owner_id: user.id, name }).select("id, name").single();
       if (legacy.error || !legacy.data) {
         console.error("Failed to create project:", legacy.error);
@@ -671,6 +691,20 @@ export function AssistantPage() {
             </div>
           </div>
         </div>
+
+        {projectSchemaWarning && (
+          <div className="flex-none flex items-start gap-2 px-6 py-2.5 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900 text-xs text-amber-800 dark:text-amber-400">
+            <span className="flex-none">⚠️</span>
+            <p className="flex-1">{projectSchemaWarning}</p>
+            <button
+              onClick={() => setProjectSchemaWarning(null)}
+              aria-label="Dismiss"
+              className="flex-none hover:text-amber-950 dark:hover:text-amber-200"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {activeProject && (
           <ProjectBar
