@@ -64,7 +64,7 @@ export function ConversationSidebar({
   }
 
   return (
-    <div className="w-64 flex-none h-full flex flex-col bg-gray-900 text-gray-300">
+    <div className="w-72 flex-none h-full flex flex-col bg-gray-900 text-gray-300">
       <div className="flex items-center gap-2 px-4 pt-4 pb-1">
         <div className="w-6 h-6 rounded-md bg-gray-100 text-gray-900 flex items-center justify-center font-serif text-xs flex-none">
           §
@@ -81,13 +81,14 @@ export function ConversationSidebar({
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">
-        <div className="mb-4">
-          <div className="flex items-center justify-between px-1 mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Projects</span>
+        <div className="mb-5">
+          <div className="flex items-center justify-between px-1 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Projects</span>
             <button
               onClick={() => setCreatingProject(true)}
               aria-label="New project"
-              className="text-gray-500 hover:text-white transition-colors text-sm leading-none"
+              title="New project"
+              className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors text-base leading-none"
             >
               ＋
             </button>
@@ -95,22 +96,28 @@ export function ConversationSidebar({
 
           <button
             onClick={() => onSelectProject(null)}
-            className={`w-full text-left text-sm rounded-md px-2 py-1.5 mb-0.5 transition-colors ${
-              activeProjectId === null ? "bg-gray-800 text-white" : "hover:bg-gray-800/60"
+            className={`w-full text-left text-sm rounded-lg px-2.5 py-2 mb-1 transition-colors ${
+              activeProjectId === null ? "bg-gray-800 text-white font-medium" : "hover:bg-gray-800/60"
             }`}
           >
             All chats
           </button>
 
+          {projects.length === 0 && !creatingProject && (
+            <p className="text-xs text-gray-600 px-2.5 py-1.5 leading-relaxed">
+              No projects yet — group chats around a specific paper.
+            </p>
+          )}
+
           {projects.map((p) => (
             <div
               key={p.id}
-              className={`group flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm cursor-pointer transition-colors ${
-                activeProjectId === p.id ? "bg-gray-800 text-white" : "hover:bg-gray-800/60"
+              className={`group flex items-center gap-2 rounded-lg px-2.5 py-2 mb-1 text-sm cursor-pointer transition-colors ${
+                activeProjectId === p.id ? "bg-gray-800 text-white font-medium" : "hover:bg-gray-800/60"
               }`}
               onClick={() => onSelectProject(p.id)}
             >
-              <span className="text-xs">📁</span>
+              <span className="text-sm flex-none">📁</span>
               <span className="flex-1 truncate">{p.name}</span>
               <button
                 onClick={(e) => {
@@ -118,7 +125,7 @@ export function ConversationSidebar({
                   onDeleteProject(p.id);
                 }}
                 aria-label={`Delete project ${p.name}`}
-                className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all text-xs"
+                className="opacity-0 group-hover:opacity-100 flex-none w-5 h-5 flex items-center justify-center rounded text-gray-500 hover:text-red-400 hover:bg-gray-700 transition-all text-xs"
               >
                 ✕
               </button>
@@ -139,21 +146,21 @@ export function ConversationSidebar({
                 }
               }}
               placeholder="Project name…"
-              className="w-full mt-0.5 text-sm bg-gray-800 border border-gray-600 rounded-md px-2 py-1.5 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="w-full mt-0.5 text-sm bg-gray-800 border border-gray-600 rounded-lg px-2.5 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
           )}
         </div>
 
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 px-1 mb-1.5">Chats</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Chats</p>
           {visibleConversations.length === 0 && (
             <p className="text-xs text-gray-600 px-2 py-1">No conversations yet.</p>
           )}
           {visibleConversations.map((c) => (
             <div
               key={c.id}
-              className={`group flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm cursor-pointer transition-colors ${
-                activeConversationId === c.id ? "bg-gray-800 text-white" : "hover:bg-gray-800/60"
+              className={`group flex items-center gap-2 rounded-lg px-2.5 py-2 mb-1 text-sm cursor-pointer transition-colors ${
+                activeConversationId === c.id ? "bg-gray-800 text-white font-medium" : "hover:bg-gray-800/60"
               }`}
               onClick={() => onSelectConversation(c.id)}
             >

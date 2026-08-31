@@ -168,8 +168,26 @@ export function AssistantPage() {
       .select("id, name, default_document_id")
       .order("created_at", { ascending: true })
       .then(({ data, error }) => {
-        if (error) console.error("Failed to load projects:", error);
-        setProjects(data ?? []);
+        if (!error) {
+          setProjects(data ?? []);
+          return;
+        }
+        // Most likely cause: the default_document_id migration (see
+        // supabase/schema.sql) hasn't been run on this database yet — fall
+        // back to the columns that always exist so Projects still loads,
+        // just without the per-project default paper until it's run.
+        console.error("Failed to load projects (retrying without default_document_id):", error);
+        supabase
+          .from("projects")
+          .select("id, name")
+          .order("created_at", { ascending: true })
+          .then(({ data: legacyData, error: legacyError }) => {
+            if (legacyError) {
+              console.error("Failed to load projects:", legacyError);
+              return;
+            }
+            setProjects((legacyData ?? []).map((p) => ({ ...p, default_document_id: null })));
+          });
       });
   }
 
@@ -439,7 +457,10 @@ export function AssistantPage() {
     else sendMessage(input);
   }
 
-  function handleNewChat() {
+  // Accepts an explicit project id (used right after creating one, before
+  // activeProjectId's state update has landed) rather than always reading
+  // activeProjectId from closure — defaults to it for every other caller.
+  function handleNewChat(projectId: string | null = activeProjectId) {
     setMessages([]);
     setError(null);
     setActiveConversationId(null);
@@ -448,12 +469,12 @@ export function AssistantPage() {
     setPendingImageIndex(null);
     setIsGeneratingImage(false);
     lastSavedMessagesRef.current = null;
-    setPendingProjectId(activeProjectId);
+    setPendingProjectId(projectId);
     // A project's whole point is "this project = this paper" — every new
     // chat started inside one picks up its default paper automatically
     // instead of starting context-less every time. Outside any project (or
     // one with no default set), this just clears context like before.
-    const project = projects.find((p) => p.id === activeProjectId);
+    const project = projects.find((p) => p.id === projectId);
     selectContextDocument(project?.default_document_id ?? "");
     // Explicit rather than relying solely on the focus effect above: that
     // effect only re-fires when activeConversationId actually *changes* to a
@@ -497,16 +518,33 @@ export function AssistantPage() {
 
   async function handleCreateProject(name: string) {
     if (!user) return;
-    const { data, error } = await supabase
+    const rich = await supabase
       .from("projects")
       .insert({ owner_id: user.id, name })
       .select("id, name, default_document_id")
       .single();
-    if (error || !data) {
-      console.error("Failed to create project:", error);
-      return;
+
+    let newProject: ProjectRow | null = null;
+    if (!rich.error && rich.data) {
+      newProject = rich.data;
+    } else {
+      // Same fallback as refreshProjects — the migration adding
+      // default_document_id likely hasn't run on this database yet.
+      console.error("Failed to create project (retrying without default_document_id):", rich.error);
+      const legacy = await supabase.from("projects").insert({ owner_id: user.id, name }).select("id, name").single();
+      if (legacy.error || !legacy.data) {
+        console.error("Failed to create project:", legacy.error);
+        return;
+      }
+      newProject = { ...legacy.data, default_document_id: null };
     }
-    setProjects((prev) => [...prev, data]);
+
+    setProjects((prev) => [...prev, newProject as ProjectRow]);
+    // Land directly in a fresh chat inside the new project — creating one
+    // with no visible reaction was the actual bug report ("did not
+    // redirect"), not just a missing highlight in the sidebar.
+    setActiveProjectId(newProject.id);
+    handleNewChat(newProject.id);
   }
 
   async function handleRenameProject(id: string, name: string) {
@@ -560,7 +598,7 @@ export function AssistantPage() {
         activeConversationId={activeConversationId}
         activeProjectId={activeProjectId}
         userEmail={user?.email ?? null}
-        onNewChat={handleNewChat}
+        onNewChat={() => handleNewChat()}
         onSelectConversation={handleSelectConversation}
         onRenameConversation={handleRenameConversation}
         onDeleteConversation={handleDeleteConversation}

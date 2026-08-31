@@ -34,38 +34,42 @@ export function ProjectBar({
   }
 
   return (
-    <div className="flex-none flex flex-wrap items-center gap-x-3 gap-y-2 px-6 py-2.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-900/40">
-      <span className="text-sm flex-none">📁</span>
-      {editing ? (
-        <input
-          autoFocus
-          value={draftName}
-          onChange={(e) => setDraftName(e.target.value)}
-          onBlur={commitRename}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
-            if (e.key === "Escape") {
-              setDraftName(project.name);
-              setEditing(false);
-            }
-          }}
-          className="text-sm font-semibold text-gray-900 dark:text-gray-100 bg-transparent border-b border-gray-400 dark:border-gray-500 focus:outline-none"
-        />
-      ) : (
-        <button
-          onClick={() => setEditing(true)}
-          title="Click to rename"
-          className="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:underline"
-        >
-          {project.name}
-        </button>
-      )}
-      <span className="text-xs text-gray-400 dark:text-gray-500">
-        {conversationCount} {conversationCount === 1 ? "chat" : "chats"}
-      </span>
+    <div className="flex-none px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/60">
+      <div className="flex items-center gap-3">
+        <span className="flex-none w-9 h-9 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-base">
+          📁
+        </span>
+        {editing ? (
+          <input
+            autoFocus
+            value={draftName}
+            onChange={(e) => setDraftName(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
+              if (e.key === "Escape") {
+                setDraftName(project.name);
+                setEditing(false);
+              }
+            }}
+            className="flex-1 min-w-0 text-base font-semibold text-gray-900 dark:text-gray-100 bg-transparent border-b border-gray-400 dark:border-gray-500 focus:outline-none"
+          />
+        ) : (
+          <button
+            onClick={() => setEditing(true)}
+            title="Click to rename"
+            className="flex-1 min-w-0 text-left text-base font-semibold text-gray-900 dark:text-gray-100 hover:underline truncate"
+          >
+            {project.name}
+          </button>
+        )}
+        <span className="flex-none text-xs text-gray-400 dark:text-gray-500">
+          {conversationCount} {conversationCount === 1 ? "chat" : "chats"}
+        </span>
+      </div>
 
-      <div className="ml-auto flex items-center gap-2">
-        <label htmlFor="project-default-paper" className="text-xs text-gray-400 dark:text-gray-500">
+      <div className="flex flex-wrap items-center gap-3 mt-3 pl-12">
+        <label htmlFor="project-default-paper" className="text-xs text-gray-500 dark:text-gray-400 flex-none">
           Default paper
         </label>
         <select
@@ -73,7 +77,7 @@ export function ProjectBar({
           value={project.default_document_id ?? ""}
           onChange={(e) => onSetDefaultPaper(e.target.value || null)}
           title="Every new chat in this project attaches this paper automatically"
-          className="text-xs rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-2 py-1 cursor-pointer focus:outline-none focus:ring-1 focus:ring-gray-400 max-w-40"
+          className="text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-2.5 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-gray-400 max-w-52"
         >
           <option value="">None</option>
           {documentOptions.map((doc) => (
@@ -84,7 +88,7 @@ export function ProjectBar({
         </select>
         <button
           onClick={onDelete}
-          className="text-xs text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+          className="ml-auto text-xs text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
         >
           Delete project
         </button>
