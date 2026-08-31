@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { useTheme, type ThemeSetting } from "../lib/useTheme";
 import { createBlankDocument } from "../lib/blankDocument";
+import { useDocumentStore } from "../store/documentStore";
+import { extractTitleText } from "../lib/extractTitleText";
+import { exportDocumentPdf } from "../lib/exportPdf";
 
 type PaletteItem = {
   id: string;
@@ -25,8 +28,15 @@ const NEXT_THEME: Record<ThemeSetting, ThemeSetting> = {
 // command without ever touching the mouse or hunting through a sidebar.
 export function CommandPalette() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
+  const document = useDocumentStore((s) => s.document);
+  const appendParagraph = useDocumentStore((s) => s.appendParagraph);
+  const appendSection = useDocumentStore((s) => s.appendSection);
+  const appendFigure = useDocumentStore((s) => s.appendFigure);
+  const appendTable = useDocumentStore((s) => s.appendTable);
+  const appendEquation = useDocumentStore((s) => s.appendEquation);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(0);
@@ -84,6 +94,31 @@ export function CommandPalette() {
     navigate("/login");
   }
 
+  // The palette is mounted once at the App root, outside the /editor/:id
+  // route's own params — pulled from the URL directly instead. Present only
+  // while actually on that page, since useDocumentStore's `document` is a
+  // global singleton that would otherwise hold stale/unrelated content.
+  const editorDocumentId = location.pathname.match(/^\/editor\/([^/]+)/)?.[1] ?? null;
+  const editorItems: PaletteItem[] = editorDocumentId
+    ? [
+        { id: "insert-paragraph", icon: "¶", label: "Add paragraph", run: appendParagraph },
+        { id: "insert-section", icon: "§", label: "Add section", run: appendSection },
+        { id: "insert-figure", icon: "🖼️", label: "Add figure", run: appendFigure },
+        { id: "insert-table", icon: "▦", label: "Add table", run: appendTable },
+        { id: "insert-equation", icon: "∑", label: "Add equation", run: appendEquation },
+        {
+          id: "export-pdf",
+          icon: "⬇",
+          label: "Export PDF",
+          run: () => {
+            exportDocumentPdf(editorDocumentId, extractTitleText(document)).catch((err) =>
+              console.error("Export failed:", err)
+            );
+          },
+        },
+      ]
+    : [];
+
   const themeIcon = theme === "dark" ? "☀️" : theme === "light" ? "🖥️" : "🌙";
   const staticItems: PaletteItem[] = user
     ? [
@@ -121,11 +156,11 @@ export function CommandPalette() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const all = [...staticItems, ...paperItems];
+    const all = [...editorItems, ...staticItems, ...paperItems];
     const matches = q ? all.filter((item) => item.label.toLowerCase().includes(q)) : all;
-    return matches.slice(0, 8);
+    return matches.slice(0, 10);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, papers, user, theme]);
+  }, [query, papers, user, theme, editorDocumentId, document]);
 
   function runItem(item: PaletteItem) {
     setOpen(false);

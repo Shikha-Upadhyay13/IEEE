@@ -9,11 +9,8 @@ import { ExportButton } from "../components/editor/ExportButton";
 import { supabase } from "../supabaseClient";
 import { btnGhost, btnPrimary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
+import { extractTitleText } from "../lib/extractTitleText";
 import type { Document } from "../types/document";
-
-function extractTitleText(doc: Document): string {
-  return doc.titleBlock.title.map((n) => (n.type === "text" ? n.text : "")).join("") || "Untitled paper";
-}
 
 export function EditorPage() {
   const { documentId } = useParams<{ documentId: string }>();
