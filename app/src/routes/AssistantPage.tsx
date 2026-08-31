@@ -11,6 +11,7 @@ import {
   type ConversationRow,
   type ProjectRow,
 } from "../components/assistant/ConversationSidebar";
+import { MarkdownContent } from "../components/assistant/MarkdownContent";
 
 const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL ?? "http://localhost:3002";
 
@@ -602,15 +603,17 @@ export function AssistantPage() {
                           </div>
                         )}
                       </div>
+                    ) : message.role === "user" ? (
+                      <div className="rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-gray-900 dark:text-gray-100">
+                        {message.content}
+                      </div>
                     ) : (
-                      <div
-                        className={
-                          message.role === "user"
-                            ? "rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-gray-900 dark:text-gray-100"
-                            : "pl-4 py-0.5 border-l-2 border-gray-200 dark:border-gray-800 font-serif text-[15px] leading-relaxed whitespace-pre-wrap text-gray-800 dark:text-gray-200"
-                        }
-                      >
-                        {isEmptyStreamingReply ? <ThinkingIndicator /> : message.content}
+                      <div className="pl-4 py-0.5 border-l-2 border-gray-200 dark:border-gray-800 font-serif text-[15px] leading-relaxed text-gray-800 dark:text-gray-200">
+                        {isEmptyStreamingReply ? (
+                          <ThinkingIndicator />
+                        ) : (
+                          <MarkdownContent text={message.content} />
+                        )}
                       </div>
                     )}
                     {message.imageUrl && !message.imageError && i !== pendingImageIndex && (
