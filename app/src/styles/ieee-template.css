@@ -19,6 +19,16 @@
   margin-right: 0.625in;
 }
 
+/* Paged.js ships no CSS of its own — .pagedjs_page (the actual on-screen
+   "sheet of paper" box it renders into) has no background unless we set
+   one, which only ever looked fine by accident because the whole app was
+   light-themed until dark mode existed. The rendered paper must always
+   look like literal white paper, in both themes — see PaperThumbnail.tsx
+   for the same rule applied to dashboard thumbnails. */
+.pagedjs_page {
+  background-color: #fff;
+}
+
 .ieee-paper {
   /* Explicit width = 2 × 88mm columns + 4mm gutter. Without this, the container
      shrink-to-fits to its content's natural width (observed: 5000px+ in testing),
