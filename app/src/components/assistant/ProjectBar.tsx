@@ -36,7 +36,10 @@ export function ProjectBar({
   return (
     <div className="flex-none px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/60">
       <div className="flex items-center gap-3">
-        <span className="flex-none w-9 h-9 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-base">
+        <span
+          className="flex-none w-9 h-9 rounded-lg flex items-center justify-center text-base bg-gray-200 dark:bg-gray-800"
+          style={project.color ? { backgroundColor: `${project.color}26` } : undefined}
+        >
           📁
         </span>
         {editing ? (

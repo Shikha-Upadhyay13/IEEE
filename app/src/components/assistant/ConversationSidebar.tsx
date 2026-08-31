@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { ProfileMenu } from "./ProfileMenu";
+import { CreateProjectModal } from "./CreateProjectModal";
 
 export type ConversationRow = { id: string; title: string; project_id: string | null; updated_at: string };
-export type ProjectRow = { id: string; name: string; default_document_id: string | null };
+export type ProjectRow = {
+  id: string;
+  name: string;
+  default_document_id: string | null;
+  color: string | null;
+  instructions: string | null;
+};
 
 // A left rail styled like ChatGPT's — dark, icon-first, with the running
 // conversation list as the main content — is the most recognizable "this is
@@ -32,25 +39,17 @@ export function ConversationSidebar({
   onRenameConversation: (id: string, title: string) => void;
   onDeleteConversation: (id: string) => void;
   onSelectProject: (id: string | null) => void;
-  onCreateProject: (name: string) => void;
+  onCreateProject: (name: string, color: string) => void;
   onDeleteProject: (id: string) => void;
   onSignOut: () => void;
 }) {
   const [creatingProject, setCreatingProject] = useState(false);
-  const [newProjectName, setNewProjectName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftTitle, setDraftTitle] = useState("");
 
   const visibleConversations = activeProjectId
     ? conversations.filter((c) => c.project_id === activeProjectId)
     : conversations;
-
-  function commitNewProject() {
-    const trimmed = newProjectName.trim();
-    if (trimmed) onCreateProject(trimmed);
-    setNewProjectName("");
-    setCreatingProject(false);
-  }
 
   function startRename(c: ConversationRow) {
     setEditingId(c.id);
@@ -117,6 +116,11 @@ export function ConversationSidebar({
               }`}
               onClick={() => onSelectProject(p.id)}
             >
+              <span
+                className="flex-none w-2 h-2 rounded-full"
+                style={{ backgroundColor: p.color ?? "#6b7280" }}
+                aria-hidden="true"
+              />
               <span className="text-sm flex-none">📁</span>
               <span className="flex-1 truncate">{p.name}</span>
               <button
@@ -131,24 +135,6 @@ export function ConversationSidebar({
               </button>
             </div>
           ))}
-
-          {creatingProject && (
-            <input
-              autoFocus
-              value={newProjectName}
-              onChange={(e) => setNewProjectName(e.target.value)}
-              onBlur={commitNewProject}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") e.currentTarget.blur();
-                if (e.key === "Escape") {
-                  setNewProjectName("");
-                  setCreatingProject(false);
-                }
-              }}
-              placeholder="Project name…"
-              className="w-full mt-0.5 text-sm bg-gray-800 border border-gray-600 rounded-lg px-2.5 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-          )}
         </div>
 
         <div>
@@ -205,6 +191,16 @@ export function ConversationSidebar({
       </div>
 
       <ProfileMenu userEmail={userEmail} onSignOut={onSignOut} />
+
+      {creatingProject && (
+        <CreateProjectModal
+          onCreate={(name, color) => {
+            onCreateProject(name, color);
+            setCreatingProject(false);
+          }}
+          onClose={() => setCreatingProject(false)}
+        />
+      )}
     </div>
   );
 }

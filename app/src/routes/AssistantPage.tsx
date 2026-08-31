@@ -12,6 +12,7 @@ import {
   type ProjectRow,
 } from "../components/assistant/ConversationSidebar";
 import { ProjectBar } from "../components/assistant/ProjectBar";
+import { ProjectHome } from "../components/assistant/ProjectHome";
 import { MarkdownContent } from "../components/assistant/MarkdownContent";
 
 const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL ?? "http://localhost:3002";
@@ -165,18 +166,18 @@ export function AssistantPage() {
   function refreshProjects() {
     supabase
       .from("projects")
-      .select("id, name, default_document_id")
+      .select("id, name, default_document_id, color, instructions")
       .order("created_at", { ascending: true })
       .then(({ data, error }) => {
         if (!error) {
           setProjects(data ?? []);
           return;
         }
-        // Most likely cause: the default_document_id migration (see
-        // supabase/schema.sql) hasn't been run on this database yet — fall
+        // Most likely cause: one or both of the projects migrations (see
+        // supabase/schema.sql) haven't been run on this database yet — fall
         // back to the columns that always exist so Projects still loads,
-        // just without the per-project default paper until it's run.
-        console.error("Failed to load projects (retrying without default_document_id):", error);
+        // just without default paper/color/instructions until they're run.
+        console.error("Failed to load projects (retrying with legacy columns only):", error);
         supabase
           .from("projects")
           .select("id, name")
@@ -186,7 +187,9 @@ export function AssistantPage() {
               console.error("Failed to load projects:", legacyError);
               return;
             }
-            setProjects((legacyData ?? []).map((p) => ({ ...p, default_document_id: null })));
+            setProjects(
+              (legacyData ?? []).map((p) => ({ ...p, default_document_id: null, color: null, instructions: null }))
+            );
           });
       });
   }
@@ -345,7 +348,11 @@ export function AssistantPage() {
       const response = await fetch(`${AI_SERVICE_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages, documentContext }),
+        body: JSON.stringify({
+          messages: nextMessages,
+          documentContext,
+          projectInstructions: activeProject?.instructions || null,
+        }),
         signal: controller.signal,
       });
       if (!response.ok || !response.body) throw new Error(`Assistant request failed (${response.status})`);
@@ -535,41 +542,55 @@ export function AssistantPage() {
     }
   }
 
-  async function handleCreateProject(name: string) {
+  async function handleCreateProject(name: string, color: string) {
     if (!user) return;
     const rich = await supabase
       .from("projects")
-      .insert({ owner_id: user.id, name })
-      .select("id, name, default_document_id")
+      .insert({ owner_id: user.id, name, color })
+      .select("id, name, default_document_id, color, instructions")
       .single();
 
     let newProject: ProjectRow | null = null;
     if (!rich.error && rich.data) {
       newProject = rich.data;
     } else {
-      // Same fallback as refreshProjects — the migration adding
-      // default_document_id likely hasn't run on this database yet.
-      console.error("Failed to create project (retrying without default_document_id):", rich.error);
+      // Same fallback as refreshProjects — one of the projects migrations
+      // likely hasn't run on this database yet.
+      console.error("Failed to create project (retrying with legacy columns only):", rich.error);
       const legacy = await supabase.from("projects").insert({ owner_id: user.id, name }).select("id, name").single();
       if (legacy.error || !legacy.data) {
         console.error("Failed to create project:", legacy.error);
         return;
       }
-      newProject = { ...legacy.data, default_document_id: null };
+      newProject = { ...legacy.data, default_document_id: null, color: null, instructions: null };
     }
 
     setProjects((prev) => [...prev, newProject as ProjectRow]);
-    // Land directly in a fresh chat inside the new project — creating one
-    // with no visible reaction was the actual bug report ("did not
-    // redirect"), not just a missing highlight in the sidebar.
-    setActiveProjectId(newProject.id);
-    handleNewChat(newProject.id);
+    // Land directly in the new project's home screen — creating one with no
+    // visible reaction was the actual bug report ("did not redirect"), not
+    // just a missing highlight in the sidebar.
+    handleSelectProject(newProject.id);
+  }
+
+  function handleSelectProject(id: string | null) {
+    setActiveProjectId(id);
+    handleNewChat(id);
   }
 
   async function handleRenameProject(id: string, name: string) {
     setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, name } : p)));
     const { error } = await supabase.from("projects").update({ name }).eq("id", id);
     if (error) console.error("Failed to rename project:", error);
+  }
+
+  async function handleSetProjectInstructions(id: string, instructions: string) {
+    const previous = projects;
+    setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, instructions } : p)));
+    const { error } = await supabase.from("projects").update({ instructions }).eq("id", id);
+    if (error) {
+      console.error("Failed to set project instructions:", error);
+      setProjects(previous);
+    }
   }
 
   async function handleSetProjectDefaultPaper(id: string, documentId: string | null) {
@@ -621,7 +642,7 @@ export function AssistantPage() {
         onSelectConversation={handleSelectConversation}
         onRenameConversation={handleRenameConversation}
         onDeleteConversation={handleDeleteConversation}
-        onSelectProject={setActiveProjectId}
+        onSelectProject={handleSelectProject}
         onCreateProject={handleCreateProject}
         onDeleteProject={handleDeleteProject}
         onSignOut={handleSignOut}
@@ -664,40 +685,48 @@ export function AssistantPage() {
 
         <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
           <div className="max-w-3xl mx-auto px-4 py-8 flex flex-col gap-5">
-            {messages.length === 0 && (
-              <div className="text-center py-12 animate-fade-in-up">
-                <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-serif text-3xl">
-                  §
+            {messages.length === 0 &&
+              (activeProject ? (
+                <ProjectHome
+                  project={activeProject}
+                  conversations={conversations.filter((c) => c.project_id === activeProject.id)}
+                  onSelectConversation={handleSelectConversation}
+                  onSetInstructions={(instructions) => handleSetProjectInstructions(activeProject.id, instructions)}
+                />
+              ) : (
+                <div className="text-center py-12 animate-fade-in-up">
+                  <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-serif text-3xl">
+                    §
+                  </div>
+                  <p className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1 tracking-tight">
+                    What are you writing today?
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
+                    Ask for help drafting or refining any part of your paper's content — or switch to image mode
+                    below to generate a figure or illustration.
+                  </p>
+                  {/* Roman numerals + hairline dividers, styled like the paper's
+                      own table of contents, instead of an icon-per-card grid —
+                      the empty state should feel like it belongs to this app
+                      specifically, not a generic prompt-suggestion widget. */}
+                  <div className="max-w-md mx-auto text-left border-t border-gray-200 dark:border-gray-800">
+                    {STARTER_PROMPTS.map(({ numeral, text }) => (
+                      <button
+                        key={text}
+                        onClick={() => sendMessage(text)}
+                        className="group w-full flex items-baseline gap-4 py-3.5 border-b border-gray-200 dark:border-gray-800 text-left transition-colors"
+                      >
+                        <span className="flex-none font-serif text-sm text-gray-400 dark:text-gray-500 w-5">
+                          {numeral}
+                        </span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 group-hover:translate-x-0.5 transition-all">
+                          {text}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1 tracking-tight">
-                  What are you writing today?
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-                  Ask for help drafting or refining any part of your paper's content — or switch to image mode
-                  below to generate a figure or illustration.
-                </p>
-                {/* Roman numerals + hairline dividers, styled like the paper's
-                    own table of contents, instead of an icon-per-card grid —
-                    the empty state should feel like it belongs to this app
-                    specifically, not a generic prompt-suggestion widget. */}
-                <div className="max-w-md mx-auto text-left border-t border-gray-200 dark:border-gray-800">
-                  {STARTER_PROMPTS.map(({ numeral, text }) => (
-                    <button
-                      key={text}
-                      onClick={() => sendMessage(text)}
-                      className="group w-full flex items-baseline gap-4 py-3.5 border-b border-gray-200 dark:border-gray-800 text-left transition-colors"
-                    >
-                      <span className="flex-none font-serif text-sm text-gray-400 dark:text-gray-500 w-5">
-                        {numeral}
-                      </span>
-                      <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 group-hover:translate-x-0.5 transition-all">
-                        {text}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              ))}
 
             {messages.map((message, i) => {
               const isEmptyStreamingReply =

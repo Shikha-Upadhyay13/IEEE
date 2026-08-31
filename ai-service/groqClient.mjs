@@ -19,13 +19,18 @@ If the user shares context about their paper (title, abstract, existing section 
  * the entire reason this service exists: to keep GROQ_API_KEY off the client
  * (a VITE_ env var ships straight into the browser bundle).
  */
-export async function streamChat({ messages, documentContext }) {
+export async function streamChat({ messages, documentContext, projectInstructions }) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Missing GROQ_API_KEY (check ai-service/.env)");
 
-  const systemContent = documentContext
-    ? `${SYSTEM_PROMPT}\n\nHere is the user's current paper for context:\n${documentContext}`
-    : SYSTEM_PROMPT;
+  // projectInstructions come from the user's own Project settings (see
+  // AssistantPage's ProjectHome) — standing context for every chat in that
+  // project, the same role ChatGPT's own "project instructions" play.
+  const systemContent = [
+    SYSTEM_PROMPT,
+    projectInstructions ? `\n\nStanding instructions for this project, set by the user — follow them:\n${projectInstructions}` : "",
+    documentContext ? `\n\nHere is the user's current paper for context:\n${documentContext}` : "",
+  ].join("");
 
   const response = await fetch(GROQ_URL, {
     method: "POST",

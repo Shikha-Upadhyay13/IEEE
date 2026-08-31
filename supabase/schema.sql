@@ -149,6 +149,12 @@ create table if not exists projects (
   -- handleNewChat). Nullable: a project with no default paper just behaves
   -- like a plain folder.
   default_document_id uuid references documents(id) on delete set null,
+  -- Folder icon color (hex, e.g. "#2563eb") and free-text project-level
+  -- instructions prepended to every chat's system prompt in this project —
+  -- ChatGPT's Projects feature calls the equivalent "project instructions".
+  -- Both nullable/optional; a project with neither just behaves plainly.
+  color text,
+  instructions text,
   created_at timestamptz default now()
 );
 
@@ -303,3 +309,13 @@ using (
 -- create table above already (if recreating from scratch).
 alter table projects
   add column if not exists default_document_id uuid references documents(id) on delete set null;
+
+-- ── Migration: project color + instructions ─────────────────────────
+-- Folder icon color and project-level instructions (prepended to every
+-- chat's system prompt in that project) — the app's take on the same
+-- "give each project its own identity and standing context" idea behind
+-- ChatGPT's Projects feature. Run alongside the migration above for
+-- existing databases.
+alter table projects
+  add column if not exists color text,
+  add column if not exists instructions text;
