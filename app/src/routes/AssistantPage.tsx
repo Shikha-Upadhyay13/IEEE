@@ -46,6 +46,12 @@ const STARTER_PROMPTS = [
 // instead of pushing the send button further down the page.
 const INPUT_MAX_HEIGHT = 160;
 
+// One-click refinements offered under the most recent reply only — the
+// model already has the full conversation in context, so a short
+// instruction like "Make it shorter" reads unambiguously as "redo the
+// thing you just wrote" without the user having to restate anything.
+const FOLLOW_UP_SUGGESTIONS = ["Make it shorter", "Make it more formal", "Simplify the language", "Continue"];
+
 function deriveTitle(messages: ChatMessage[]): string {
   const firstUser = messages.find((m) => m.role === "user")?.content.trim();
   if (!firstUser) return "New chat";
@@ -732,6 +738,19 @@ export function AssistantPage() {
                                 : `+ Add to ${selectedDoc.title || "paper"}`}
                           </button>
                         )}
+                      </div>
+                    )}
+                    {showAssistantActions && isLastMessage && !isStreaming && (
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {FOLLOW_UP_SUGGESTIONS.map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            onClick={() => sendMessage(suggestion)}
+                            className="text-[11px] text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-full px-2.5 py-1 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>
