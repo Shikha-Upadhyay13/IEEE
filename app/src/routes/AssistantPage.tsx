@@ -11,6 +11,7 @@ import {
   type ConversationRow,
   type ProjectRow,
 } from "../components/assistant/ConversationSidebar";
+import { ProjectBar } from "../components/assistant/ProjectBar";
 import { MarkdownContent } from "../components/assistant/MarkdownContent";
 
 const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL ?? "http://localhost:3002";
@@ -158,7 +159,7 @@ export function AssistantPage() {
   function refreshProjects() {
     supabase
       .from("projects")
-      .select("id, name")
+      .select("id, name, default_document_id")
       .order("created_at", { ascending: true })
       .then(({ data, error }) => {
         if (error) console.error("Failed to load projects:", error);
@@ -436,14 +437,18 @@ export function AssistantPage() {
     setMessages([]);
     setError(null);
     setActiveConversationId(null);
-    setSelectedDoc(null);
-    setDocumentContext(null);
     setInsertedIndices(new Set());
     setInsertingIndex(null);
     setPendingImageIndex(null);
     setIsGeneratingImage(false);
     lastSavedMessagesRef.current = null;
     setPendingProjectId(activeProjectId);
+    // A project's whole point is "this project = this paper" — every new
+    // chat started inside one picks up its default paper automatically
+    // instead of starting context-less every time. Outside any project (or
+    // one with no default set), this just clears context like before.
+    const project = projects.find((p) => p.id === activeProjectId);
+    selectContextDocument(project?.default_document_id ?? "");
     // Explicit rather than relying solely on the focus effect above: that
     // effect only re-fires when activeConversationId actually *changes* to a
     // different value, which starting a second new chat in a row wouldn't do.
@@ -489,13 +494,29 @@ export function AssistantPage() {
     const { data, error } = await supabase
       .from("projects")
       .insert({ owner_id: user.id, name })
-      .select("id, name")
+      .select("id, name, default_document_id")
       .single();
     if (error || !data) {
       console.error("Failed to create project:", error);
       return;
     }
     setProjects((prev) => [...prev, data]);
+  }
+
+  async function handleRenameProject(id: string, name: string) {
+    setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, name } : p)));
+    const { error } = await supabase.from("projects").update({ name }).eq("id", id);
+    if (error) console.error("Failed to rename project:", error);
+  }
+
+  async function handleSetProjectDefaultPaper(id: string, documentId: string | null) {
+    const previous = projects;
+    setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, default_document_id: documentId } : p)));
+    const { error } = await supabase.from("projects").update({ default_document_id: documentId }).eq("id", id);
+    if (error) {
+      console.error("Failed to set project default paper:", error);
+      setProjects(previous);
+    }
   }
 
   async function handleDeleteProject(id: string) {
@@ -519,6 +540,11 @@ export function AssistantPage() {
     await supabase.auth.signOut();
     navigate("/login");
   }
+
+  const activeProject = projects.find((p) => p.id === activeProjectId) ?? null;
+  const activeProjectConversationCount = activeProject
+    ? conversations.filter((c) => c.project_id === activeProject.id).length
+    : 0;
 
   return (
     <div className="h-screen flex bg-[#f7f6f3] dark:bg-gray-950">
@@ -561,6 +587,17 @@ export function AssistantPage() {
             </div>
           </div>
         </div>
+
+        {activeProject && (
+          <ProjectBar
+            project={activeProject}
+            conversationCount={activeProjectConversationCount}
+            documentOptions={documentOptions}
+            onRename={(name) => handleRenameProject(activeProject.id, name)}
+            onSetDefaultPaper={(documentId) => handleSetProjectDefaultPaper(activeProject.id, documentId)}
+            onDelete={() => handleDeleteProject(activeProject.id)}
+          />
+        )}
 
         <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
           <div className="max-w-3xl mx-auto px-4 py-8 flex flex-col gap-5">

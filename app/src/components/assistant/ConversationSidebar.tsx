@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ProfileMenu } from "./ProfileMenu";
 
 export type ConversationRow = { id: string; title: string; project_id: string | null; updated_at: string };
-export type ProjectRow = { id: string; name: string };
+export type ProjectRow = { id: string; name: string; default_document_id: string | null };
 
 // A left rail styled like ChatGPT's — dark, icon-first, with the running
 // conversation list as the main content — is the most recognizable "this is

@@ -144,6 +144,11 @@ create table if not exists projects (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid references auth.users(id) not null,
   name text not null,
+  -- The paper this project is "about" — every new chat started inside the
+  -- project auto-attaches this paper as context (see AssistantPage's
+  -- handleNewChat). Nullable: a project with no default paper just behaves
+  -- like a plain folder.
+  default_document_id uuid references documents(id) on delete set null,
   created_at timestamptz default now()
 );
 
@@ -289,3 +294,12 @@ using (
   bucket_id = 'exports'
   and (storage.foldername(name))[1] = auth.uid()::text
 );
+
+-- ── Migration: per-project default paper ───────────────────────────
+-- Lets a Project carry a default attached paper, so every new chat
+-- started inside it automatically has that paper's context - the
+-- point of "projects" is working on separate papers separately.
+-- Run this once for existing databases; new ones get it from the
+-- create table above already (if recreating from scratch).
+alter table projects
+  add column if not exists default_document_id uuid references documents(id) on delete set null;
