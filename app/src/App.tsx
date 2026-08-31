@@ -10,6 +10,7 @@ import { SettingsPage } from "./routes/SettingsPage";
 import { DownloadsPage } from "./routes/DownloadsPage";
 import { RequireAuth } from "./components/RequireAuth";
 import { ChatLauncher } from "./components/ChatLauncher";
+import { CommandPalette } from "./components/CommandPalette";
 import { useAuth } from "./lib/useAuth";
 
 // Signed-in visitors who land on the public "/" marketing page should go
@@ -38,6 +39,7 @@ function App() {
         <Route path="/print/:documentId" element={<PrintView />} />
       </Routes>
       <ChatLauncher />
+      <CommandPalette />
     </>
   );
 }

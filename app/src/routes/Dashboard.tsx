@@ -10,6 +10,12 @@ import { PaperThumbnail } from "../components/dashboard/PaperThumbnail";
 import { useConfirm } from "../components/ConfirmDialog";
 
 type DocumentRow = { id: string; title: string | null; updated_at: string };
+type SortOrder = "updated" | "title";
+
+const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
+  { value: "updated", label: "Last edited" },
+  { value: "title", label: "Title (A–Z)" },
+];
 
 function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
   const [open, setOpen] = useState(false);
@@ -155,6 +161,7 @@ export function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<SortOrder>("updated");
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -179,9 +186,19 @@ export function Dashboard() {
 
   const filteredDocuments = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return documents;
-    return documents.filter((d) => (d.title || "Untitled paper").toLowerCase().includes(q));
-  }, [documents, search]);
+    const filtered = q
+      ? documents.filter((d) => (d.title || "Untitled paper").toLowerCase().includes(q))
+      : documents;
+    if (sortBy === "title") {
+      // documents is already sorted by updated_at from the query — .toSorted
+      // keeps that as the stable tiebreaker for equal titles instead of
+      // mutating the loaded array in place.
+      return filtered.toSorted((a, b) =>
+        (a.title || "Untitled paper").localeCompare(b.title || "Untitled paper")
+      );
+    }
+    return filtered;
+  }, [documents, search, sortBy]);
 
   async function handleCreate() {
     if (!user) return;
@@ -270,12 +287,26 @@ export function Dashboard() {
           </div>
 
           {!loading && documents.length > 0 && (
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search your papers…"
-              className={`${inputBase} max-w-xs mb-6`}
-            />
+            <div className="flex items-center gap-3 mb-6">
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search your papers…"
+                className={`${inputBase} max-w-xs`}
+              />
+              <select
+                aria-label="Sort papers"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOrder)}
+                className={`${inputBase} w-auto cursor-pointer`}
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
 
           {loading ? (
