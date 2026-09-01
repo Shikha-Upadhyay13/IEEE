@@ -678,7 +678,7 @@ export function AssistantPage() {
           </Link>
           <span className="text-gray-300 dark:text-gray-700">|</span>
           <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-serif text-xs">
+            <div className="w-6 h-6 rounded-md bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-serif text-xs">
               §
             </div>
             <div>
@@ -729,7 +729,7 @@ export function AssistantPage() {
                 />
               ) : (
                 <div className="text-center py-12 animate-fade-in-up">
-                  <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-serif text-3xl">
+                  <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-serif text-3xl">
                     §
                   </div>
                   <p className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1 tracking-tight">
@@ -929,7 +929,7 @@ export function AssistantPage() {
                         }}
                         className={`w-full text-left text-sm px-3 py-1.5 truncate hover:bg-gray-50 dark:hover:bg-gray-800 ${
                           selectedDoc?.id === doc.id
-                            ? "text-gray-900 dark:text-gray-100 font-medium"
+                            ? "text-blue-700 dark:text-blue-400 font-medium"
                             : "text-gray-700 dark:text-gray-300"
                         }`}
                       >
@@ -945,7 +945,7 @@ export function AssistantPage() {
                     title="Attach a paper for context"
                     className={`inline-flex items-center gap-1.5 max-w-48 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                       selectedDoc
-                        ? "text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800"
+                        ? "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40"
                         : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}
                   >
@@ -963,7 +963,7 @@ export function AssistantPage() {
                     title={imageMode ? "Switch back to text replies" : "Generate an image instead"}
                     className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                       imageMode
-                        ? "text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800"
+                        ? "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40"
                         : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}
                   >
@@ -983,7 +983,7 @@ export function AssistantPage() {
                 <button
                   type="submit"
                   disabled={imageMode ? isGeneratingImage || !input.trim() : !input.trim()}
-                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-semibold px-3 py-1.5 hover:bg-black dark:hover:bg-white disabled:opacity-40 disabled:hover:bg-gray-900 dark:disabled:hover:bg-gray-100 transition-colors"
+                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-blue-600 dark:bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 hover:bg-blue-700 dark:hover:bg-blue-400 disabled:opacity-40 disabled:hover:bg-blue-600 dark:disabled:hover:bg-blue-500 transition-colors"
                 >
                   {imageMode ? (isGeneratingImage ? "Generating…" : "Generate") : "Send"}
                   {!isGeneratingImage && <span className="leading-none">↵</span>}

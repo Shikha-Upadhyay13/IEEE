@@ -74,7 +74,7 @@ export function SettingsPage() {
                   onClick={() => setSection(s.id)}
                   className={`flex items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-sm text-left transition-colors ${
                     section === s.id
-                      ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium"
+                      ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 font-medium"
                       : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                   }`}
                 >
@@ -95,7 +95,7 @@ export function SettingsPage() {
                         onClick={() => setTheme(opt.value)}
                         className={`flex-1 flex flex-col items-center gap-1 rounded-lg border px-3 py-3 text-sm transition-colors ${
                           theme === opt.value
-                            ? "border-gray-400 dark:border-gray-500 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium"
+                            ? "border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 font-medium"
                             : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
                         }`}
                       >

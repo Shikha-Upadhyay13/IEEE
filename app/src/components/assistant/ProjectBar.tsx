@@ -37,7 +37,7 @@ export function ProjectBar({
     <div className="flex-none px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/60">
       <div className="flex items-center gap-3">
         <span
-          className="flex-none w-9 h-9 rounded-lg flex items-center justify-center text-base bg-gray-200 dark:bg-gray-800"
+          className="flex-none w-9 h-9 rounded-lg flex items-center justify-center text-base bg-blue-100 dark:bg-blue-950/40"
           style={project.color ? { backgroundColor: `${project.color}26` } : undefined}
         >
           📁
@@ -80,7 +80,7 @@ export function ProjectBar({
           value={project.default_document_id ?? ""}
           onChange={(e) => onSetDefaultPaper(e.target.value || null)}
           title="Every new chat in this project attaches this paper automatically"
-          className="text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-2.5 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-gray-400 max-w-52"
+          className="text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-2.5 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-400 max-w-52"
         >
           <option value="">None</option>
           {documentOptions.map((doc) => (

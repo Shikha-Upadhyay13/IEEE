@@ -23,7 +23,7 @@ export function ProjectHome({
     <div className="max-w-xl mx-auto animate-fade-in-up py-4 text-left">
       <div className="flex items-center gap-3 mb-6">
         <span
-          className="flex-none w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+          className="flex-none w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-blue-100 dark:bg-blue-950/40"
           style={{ backgroundColor: project.color ? `${project.color}26` : undefined }}
         >
           📁
@@ -52,7 +52,7 @@ export function ProjectHome({
           }}
           rows={3}
           placeholder="Give the assistant standing context for every chat in this project — tone, terminology, constraints…"
-          className="w-full mt-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 resize-none placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-400"
+          className="w-full mt-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 resize-none placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-400"
         />
       </div>
 
@@ -66,7 +66,7 @@ export function ProjectHome({
               <button
                 key={c.id}
                 onClick={() => onSelectConversation(c.id)}
-                className="text-left rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 hover:border-gray-400 dark:hover:border-gray-600 transition-colors"
+                className="text-left rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
               >
                 <span className="block text-sm text-gray-800 dark:text-gray-200 truncate">{c.title}</span>
                 <span className="block text-xs text-gray-400 dark:text-gray-500">{relativeTime(c.updated_at)}</span>
