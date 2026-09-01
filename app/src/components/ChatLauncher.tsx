@@ -16,7 +16,7 @@ export function ChatLauncher() {
       to="/assistant"
       aria-label="Open AI writing assistant"
       title="AI writing assistant"
-      className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 shadow-lg hover:bg-black dark:hover:bg-white hover:scale-105 transition-all flex items-center justify-center text-2xl"
+      className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-blue-600 dark:bg-blue-500 text-white shadow-lg hover:bg-blue-700 dark:hover:bg-blue-400 hover:scale-105 transition-all flex items-center justify-center text-2xl"
     >
       💬
     </Link>

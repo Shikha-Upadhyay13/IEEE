@@ -15,7 +15,7 @@ export function DashboardSidebar({ onSignOut }: { onSignOut: () => void }) {
   return (
     <div className="w-60 flex-none h-screen sticky top-0 flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 px-3 py-4">
       <div className="flex items-center gap-2 px-2 mb-6">
-        <div className="w-8 h-8 rounded-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-serif text-sm flex-none">
+        <div className="w-8 h-8 rounded-md bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-serif text-sm flex-none">
           §
         </div>
         <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight text-sm">
@@ -32,7 +32,7 @@ export function DashboardSidebar({ onSignOut }: { onSignOut: () => void }) {
               to={item.to}
               className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
                 active
-                  ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium"
+                  ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 font-medium"
                   : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
               }`}
             >
