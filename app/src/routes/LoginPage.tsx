@@ -60,7 +60,7 @@ export function LoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Branding panel — hidden on small screens, where the form alone is plenty. */}
-      <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-slate-950 via-gray-900 to-black text-white px-12 py-12 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white px-12 py-12 relative overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
           style={{
