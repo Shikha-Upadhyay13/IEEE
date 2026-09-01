@@ -678,7 +678,7 @@ export function AssistantPage() {
           </Link>
           <span className="text-gray-300 dark:text-gray-700">|</span>
           <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-md bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-serif text-xs">
+            <div className="w-6 h-6 rounded-md bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-xs">
               §
             </div>
             <div>
@@ -729,7 +729,7 @@ export function AssistantPage() {
                 />
               ) : (
                 <div className="text-center py-12 animate-fade-in-up">
-                  <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-serif text-3xl">
+                  <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-3xl">
                     §
                   </div>
                   <p className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1 tracking-tight">
@@ -983,7 +983,7 @@ export function AssistantPage() {
                 <button
                   type="submit"
                   disabled={imageMode ? isGeneratingImage || !input.trim() : !input.trim()}
-                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-blue-600 dark:bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 hover:bg-blue-700 dark:hover:bg-blue-400 disabled:opacity-40 disabled:hover:bg-blue-600 dark:disabled:hover:bg-blue-500 transition-colors"
+                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-blue-700 dark:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-700 dark:disabled:hover:bg-blue-600 transition-colors"
                 >
                   {imageMode ? (isGeneratingImage ? "Generating…" : "Generate") : "Send"}
                   {!isGeneratingImage && <span className="leading-none">↵</span>}

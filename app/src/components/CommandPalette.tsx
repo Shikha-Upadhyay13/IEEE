@@ -223,7 +223,7 @@ export function CommandPalette() {
                 onMouseEnter={() => setSelected(i)}
                 className={`w-full flex items-center gap-3 px-4 py-2 text-left text-sm transition-colors ${
                   i === selected
-                    ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400"
                     : "text-gray-700 dark:text-gray-300"
                 }`}
               >

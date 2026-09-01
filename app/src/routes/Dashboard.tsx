@@ -135,7 +135,7 @@ function PaperCard({
                   setEditing(false);
                 }
               }}
-              className="w-full text-sm font-medium text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 border border-blue-400 dark:border-blue-500 rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full text-sm font-medium text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 border border-blue-400 dark:border-blue-500 rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           ) : (
             <button

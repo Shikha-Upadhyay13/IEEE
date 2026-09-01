@@ -15,7 +15,7 @@ export function DashboardSidebar({ onSignOut }: { onSignOut: () => void }) {
   return (
     <div className="w-60 flex-none h-screen sticky top-0 flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 px-3 py-4">
       <div className="flex items-center gap-2 px-2 mb-6">
-        <div className="w-8 h-8 rounded-md bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-serif text-sm flex-none">
+        <div className="w-8 h-8 rounded-md bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-sm flex-none">
           §
         </div>
         <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight text-sm">

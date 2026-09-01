@@ -202,7 +202,7 @@ export function AppearancePanel() {
                     disabled={!accentColor}
                     checked={meta.accentTargets?.[opt.key] ?? false}
                     onChange={(e) => setAccentTarget(opt.key, e.target.checked)}
-                    className="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-500 focus:ring-blue-400"
+                    className="rounded border-gray-300 dark:border-gray-600 text-blue-700 dark:text-blue-600 focus:ring-blue-600"
                   />
                   {opt.label}
                 </label>
@@ -223,7 +223,7 @@ export function AppearancePanel() {
                   type="checkbox"
                   checked={meta.linkStyle?.underline ?? false}
                   onChange={(e) => setLinkStyle("underline" as LinkStyleKey, e.target.checked)}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-500 focus:ring-blue-400"
+                  className="rounded border-gray-300 dark:border-gray-600 text-blue-700 dark:text-blue-600 focus:ring-blue-600"
                 />
                 Underline
               </label>
@@ -237,7 +237,7 @@ export function AppearancePanel() {
                   disabled={!accentColor}
                   checked={meta.linkStyle?.colored ?? false}
                   onChange={(e) => setLinkStyle("colored" as LinkStyleKey, e.target.checked)}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-500 focus:ring-blue-400"
+                  className="rounded border-gray-300 dark:border-gray-600 text-blue-700 dark:text-blue-600 focus:ring-blue-600"
                 />
                 Use accent color{!accentColor && " (pick a color above first)"}
               </label>
@@ -269,7 +269,7 @@ export function AppearancePanel() {
                     aria-pressed={active}
                     className={`px-3 py-1.5 text-sm transition-colors ${i > 0 ? "border-l border-gray-300 dark:border-gray-600" : ""} ${
                       active
-                        ? "bg-blue-600 dark:bg-blue-500 text-white font-medium"
+                        ? "bg-blue-700 dark:bg-blue-600 text-white font-medium"
                         : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
                   >

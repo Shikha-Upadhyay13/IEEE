@@ -65,7 +65,7 @@ export function ConversationSidebar({
   return (
     <div className="w-72 flex-none h-full flex flex-col bg-gray-900 text-gray-300">
       <div className="flex items-center gap-2 px-4 pt-4 pb-1">
-        <div className="w-6 h-6 rounded-md bg-gray-100 text-gray-900 flex items-center justify-center font-serif text-xs flex-none">
+        <div className="w-6 h-6 rounded-md bg-blue-500 text-white flex items-center justify-center font-serif text-xs flex-none">
           §
         </div>
         <span className="text-sm font-medium text-gray-200 tracking-tight">Assistant</span>

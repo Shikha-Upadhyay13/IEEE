@@ -52,7 +52,7 @@ export function ResetPasswordPage() {
     <div className="min-h-screen flex items-center justify-center px-6 py-12 bg-gray-50 dark:bg-gray-950">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-serif text-sm">
+          <div className="w-8 h-8 rounded-md bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-sm">
             §
           </div>
           <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">IEEE Paper Builder</span>

@@ -251,7 +251,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
     <div
       className={`rounded-2xl border transition-all ${
         open
-          ? "border-blue-200 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/30 shadow-sm"
+          ? "border-gray-300 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40 shadow-sm"
           : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-700"
       }`}
     >
@@ -263,7 +263,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         <span
           className={`flex-none w-6 h-6 rounded-full flex items-center justify-center text-base leading-none transition-all ${
             open
-              ? "bg-blue-600 dark:bg-blue-500 text-white rotate-45"
+              ? "bg-blue-700 dark:bg-blue-600 text-white rotate-45"
               : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
           }`}
         >
@@ -331,7 +331,7 @@ function NavBar() {
     >
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-serif text-sm shadow-md shadow-blue-600/20">
+          <div className="w-8 h-8 rounded-lg bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-sm shadow-md shadow-black/10">
             §
           </div>
           <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">IEEE Paper Builder</span>
@@ -405,26 +405,26 @@ export function LandingPage() {
       <section className="relative overflow-hidden">
         {/* Soft, quiet backdrop — a couple of gentle blurred gray blobs plus
             a faint grid, kept neutral rather than tinted to any brand hue. */}
-        <GridBackdrop className="text-blue-900 dark:text-blue-100" />
+        <GridBackdrop className="text-gray-900 dark:text-gray-100" />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-52 -right-40 w-[640px] h-[640px] rounded-full bg-gradient-to-br from-blue-200/40 via-sky-100/30 to-transparent blur-3xl"
+          className="pointer-events-none absolute -top-52 -right-40 w-[640px] h-[640px] rounded-full bg-gradient-to-br from-gray-300/40 via-gray-200/30 to-transparent blur-3xl"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-20 -left-52 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-sky-100/40 to-transparent blur-3xl"
+          className="pointer-events-none absolute top-20 -left-52 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-gray-200/40 to-transparent blur-3xl"
         />
 
         <div className="relative max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-16 grid lg:grid-cols-2 gap-16 items-center">
           <div className="animate-fade-in-up">
-            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 rounded-full px-3 py-1.5 mb-7">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full px-3 py-1.5 mb-7">
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-100" />
               Free IEEE conference paper builder
             </p>
             <h1 className="text-6xl sm:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 leading-[1.02] mb-6">
               Write your paper.
               <br />
-              <span className="text-blue-600 dark:text-blue-400">We'll handle the formatting.</span>
+              <span className="text-gray-500 dark:text-gray-400">We'll handle the formatting.</span>
             </h1>
             <p className="text-lg text-gray-500 dark:text-gray-400 leading-relaxed mb-9 max-w-md">
               Drag, drop, and write your content — margins, two-column layout, fonts, figure
@@ -433,7 +433,7 @@ export function LandingPage() {
             <div className="flex items-center gap-4 mb-7">
               <Link
                 to="/login"
-                className={`${btnPrimary} px-7 py-3.5 text-base shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 hover:-translate-y-0.5`}
+                className={`${btnPrimary} px-7 py-3.5 text-base shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 hover:-translate-y-0.5`}
               >
                 Get started for free
                 {Icons.arrowRight("w-4 h-4")}
@@ -460,7 +460,7 @@ export function LandingPage() {
               embed would only ever show a corner of one; scale the whole page
               down to a thumbnail instead of letting the crop cut into it. */}
           <div className="relative animate-fade-in-up" style={{ animationDelay: "120ms" }}>
-            <div className="absolute -inset-10 bg-gradient-to-br from-blue-200/50 via-sky-100/40 to-transparent rounded-[3rem] -z-10 blur-2xl" />
+            <div className="absolute -inset-10 bg-gradient-to-br from-gray-300/50 via-gray-200/40 to-transparent rounded-[3rem] -z-10 blur-2xl" />
 
             <TiltCard>
               <div
@@ -501,7 +501,7 @@ export function LandingPage() {
                     key={label}
                     className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium ${
                       i === 1
-                        ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 ring-1 ring-blue-200 dark:ring-blue-800"
+                        ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 ring-1 ring-gray-300 dark:ring-gray-700"
                         : "text-gray-600 dark:text-gray-400"
                     }`}
                   >
@@ -521,7 +521,7 @@ export function LandingPage() {
           <div className="relative z-10 bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl shadow-gray-900/10 grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-800">
             {STATS.map((s) => (
               <div key={s.label} className="px-4 sm:px-8 py-6 text-center">
-                <p className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-blue-600 to-sky-600 dark:from-blue-400 dark:to-sky-400 bg-clip-text text-transparent">
+                <p className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-gray-700 to-gray-900 dark:from-gray-300 dark:to-gray-100 bg-clip-text text-transparent">
                   {s.value}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 leading-snug">{s.label}</p>
@@ -623,7 +623,7 @@ export function LandingPage() {
                 </p>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
                 >
                   Get started for free
                   {Icons.arrowRight("w-3.5 h-3.5")}
@@ -641,21 +641,22 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA — dark, with the same blue accent as the rest of the
-          page threaded through the gradient instead of plain graphite. */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 py-24">
+      {/* Final CTA — plain dark graphite with a faint grid; the section is
+          already dark-by-design regardless of theme, so it doesn't need a
+          brand-color tint on top to stand out. */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-gray-900 to-black py-24">
         <GridBackdrop className="text-white" />
         <Reveal>
           <div className="relative max-w-4xl mx-auto px-6 text-center">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
               Stop fighting your formatting.
             </h2>
-            <p className="text-blue-100/80 text-base mb-8 max-w-md mx-auto">
+            <p className="text-gray-300/90 text-base mb-8 max-w-md mx-auto">
               Start your paper with a template that's already correct.
             </p>
             <Link
               to="/login"
-              className={`${btnPrimary} px-7 py-3.5 text-base shadow-lg shadow-blue-600/30 hover:-translate-y-0.5`}
+              className={`${btnPrimary} px-7 py-3.5 text-base shadow-lg shadow-black/20 hover:-translate-y-0.5`}
             >
               Get started for free
               {Icons.arrowRight("w-4 h-4")}

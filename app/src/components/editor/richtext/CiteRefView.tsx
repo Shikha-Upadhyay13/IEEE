@@ -25,7 +25,7 @@ export function CiteRefView({ node }: NodeViewProps) {
           accent
             ? ""
             : reference
-              ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400"
+              ? "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
               : "bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400"
         }`}
       >

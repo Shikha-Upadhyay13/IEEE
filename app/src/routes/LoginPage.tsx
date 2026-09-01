@@ -60,7 +60,7 @@ export function LoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Branding panel — hidden on small screens, where the form alone is plenty. */}
-      <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white px-12 py-12 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-slate-950 via-gray-900 to-black text-white px-12 py-12 relative overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
           style={{
@@ -109,7 +109,7 @@ export function LoginPage() {
       <div className="flex items-center justify-center px-6 py-12 bg-gray-50 dark:bg-gray-950">
         <div className="w-full max-w-sm">
           <div className="lg:hidden mb-8 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-serif text-sm">
+            <div className="w-8 h-8 rounded-md bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-sm">
               §
             </div>
             <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">IEEE Paper Builder</span>
@@ -155,7 +155,7 @@ export function LoginPage() {
                         setError(null);
                         setMessage(null);
                       }}
-                      className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-1"
+                      className="text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline mb-1"
                     >
                       Forgot password?
                     </button>
@@ -204,7 +204,7 @@ export function LoginPage() {
                   setError(null);
                   setMessage(null);
                 }}
-                className="text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
+                className="text-blue-700 dark:text-blue-400 font-medium hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
               >
                 ← Back to sign in
               </button>
@@ -214,7 +214,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-                  className="text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
+                  className="text-blue-700 dark:text-blue-400 font-medium hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
                 >
                   {mode === "signin" ? "Sign up" : "Sign in"}
                 </button>

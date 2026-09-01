@@ -88,7 +88,7 @@ export function RichParagraphEditor({
   return (
     <div
       data-rich-paragraph-editor=""
-      className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400"
+      className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500"
     >
       <div className="flex gap-1 flex-wrap items-center px-2 py-1.5 border-b border-gray-100 dark:border-gray-800">
         <button
