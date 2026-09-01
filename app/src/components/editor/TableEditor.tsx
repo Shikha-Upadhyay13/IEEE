@@ -43,7 +43,7 @@ export function TableEditor({ node }: { node: Table }) {
             type="checkbox"
             checked={node.width === "double-column"}
             onChange={(e) => updateTableWidth(node.id, e.target.checked ? "double-column" : "single-column")}
-            className="rounded border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-gray-400"
+            className="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-500 focus:ring-blue-400"
           />
           Span both columns
         </label>
@@ -52,7 +52,7 @@ export function TableEditor({ node }: { node: Table }) {
           <select
             value={node.spacing ?? "comfortable"}
             onChange={(e) => updateTableSpacing(node.id, e.target.value as TableSpacing)}
-            className="rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-400"
           >
             <option value="compact">Compact</option>
             <option value="comfortable">Comfortable</option>
@@ -70,7 +70,7 @@ export function TableEditor({ node }: { node: Table }) {
                   <input
                     value={cell}
                     onChange={(e) => setCell(r, c, e.target.value)}
-                    className="w-[70px] text-xs px-1 py-0.5 border-none bg-transparent text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-400 rounded"
+                    className="w-[70px] text-xs px-1 py-0.5 border-none bg-transparent text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-400 rounded"
                   />
                 </td>
               ))}
