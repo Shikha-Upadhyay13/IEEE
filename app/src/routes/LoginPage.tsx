@@ -109,7 +109,7 @@ export function LoginPage() {
       <div className="flex items-center justify-center px-6 py-12 bg-gray-50 dark:bg-gray-950">
         <div className="w-full max-w-sm">
           <div className="lg:hidden mb-8 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-serif text-sm">
+            <div className="w-8 h-8 rounded-md bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-serif text-sm">
               §
             </div>
             <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">IEEE Paper Builder</span>
@@ -155,7 +155,7 @@ export function LoginPage() {
                         setError(null);
                         setMessage(null);
                       }}
-                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:underline mb-1"
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-1"
                     >
                       Forgot password?
                     </button>
@@ -204,7 +204,7 @@ export function LoginPage() {
                   setError(null);
                   setMessage(null);
                 }}
-                className="text-gray-900 dark:text-gray-100 font-medium hover:underline"
+                className="text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
               >
                 ← Back to sign in
               </button>
@@ -214,7 +214,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-                  className="text-gray-900 dark:text-gray-100 font-medium hover:underline"
+                  className="text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
                 >
                   {mode === "signin" ? "Sign up" : "Sign in"}
                 </button>
