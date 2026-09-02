@@ -29,21 +29,34 @@ body {
   animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes typing-dot-bounce {
-  0%,
-  60%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.4;
+@keyframes fade-in {
+  from {
+    opacity: 0;
   }
-  30% {
-    transform: translateY(-4px);
+  to {
     opacity: 1;
   }
 }
 
-.animate-typing-dot {
-  animation: typing-dot-bounce 1.1s ease-in-out infinite;
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out both;
+}
+
+/* The assistant's live streaming caret — a steady on/off blink (not
+   animate-pulse's fade), matching how a real text cursor reads. */
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-caret-blink {
+  animation: caret-blink 1s step-end infinite;
 }
 
 /* @tiptap/extension-placeholder marks an empty paragraph with this class and

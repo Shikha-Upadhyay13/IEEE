@@ -105,6 +105,12 @@ export function AssistantPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  // Whether the transcript was already scrolled to (near) the bottom right
+  // before this update — read inside the scroll-follow effect below so a
+  // reply streaming in doesn't yank the view back down while the user has
+  // scrolled up to reread something earlier.
+  const isNearBottomRef = useRef(true);
+  const [showJumpToLatest, setShowJumpToLatest] = useState(false);
 
   // "Share their documents": pulling one paper's content in as context is
   // opt-in and visible (the chip below), not silently applied — the user
@@ -262,8 +268,36 @@ export function AssistantPage() {
     setInsertedIndices((prev) => new Set(prev).add(index));
   }
 
+  // Tracks scroll position so the effect below knows whether to follow new
+  // content — separate from that effect since this one only needs to attach
+  // its listener once, not re-run on every message.
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el) return;
+    function handleScroll() {
+      if (!el) return;
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      const nearBottom = distanceFromBottom < 120;
+      isNearBottomRef.current = nearBottom;
+      setShowJumpToLatest(!nearBottom);
+    }
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  function scrollToLatest(behavior: ScrollBehavior = "smooth") {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior });
+    isNearBottomRef.current = true;
+    setShowJumpToLatest(false);
+  }
+
+  // Only auto-follows a growing reply while the user is already at (or near)
+  // the bottom — scrolling up to reread an earlier turn is never overridden
+  // by the next streamed token.
+  useEffect(() => {
+    if (isNearBottomRef.current) scrollToLatest();
   }, [messages]);
 
   // Keep the composer focused by default — on first load, after a reply
@@ -717,7 +751,8 @@ export function AssistantPage() {
           />
         )}
 
-        <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+        <div className="relative flex-1 min-h-0">
+        <div ref={scrollRef} className="h-full overflow-y-auto">
           <div className="max-w-3xl mx-auto px-4 py-8 flex flex-col gap-5">
             {messages.length === 0 &&
               (activeProject ? (
@@ -811,7 +846,13 @@ export function AssistantPage() {
                         {message.content}
                       </div>
                     ) : (
-                      <div className="pl-4 py-0.5 border-l-2 border-gray-200 dark:border-gray-800 font-serif text-[15px] leading-relaxed text-gray-800 dark:text-gray-200">
+                      <div
+                        className={`pl-4 py-0.5 border-l-2 border-gray-200 dark:border-gray-800 font-serif text-[15px] leading-relaxed text-gray-800 dark:text-gray-200 ${
+                          isStreaming && isLastMessage && message.content
+                            ? "after:content-['|'] after:inline-block after:ml-0.5 after:font-sans after:text-gray-400 dark:after:text-gray-500 after:animate-caret-blink"
+                            : ""
+                        }`}
+                      >
                         {isEmptyStreamingReply ? (
                           <ThinkingIndicator />
                         ) : (
@@ -882,6 +923,19 @@ export function AssistantPage() {
           </div>
         </div>
 
+        {/* Only shown once the transcript is scrolled away from the bottom
+            (see the scroll-tracking effect above) — a quiet way back down
+            that doesn't fight a reader who scrolled up on purpose. */}
+        {showJumpToLatest && (
+          <button
+            onClick={() => scrollToLatest()}
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-gray-900/90 dark:bg-gray-100/90 text-white dark:text-gray-900 text-xs font-medium pl-3 pr-3.5 py-1.5 shadow-lg hover:bg-gray-900 dark:hover:bg-white transition-colors animate-fade-in"
+          >
+            ↓ New messages
+          </button>
+        )}
+        </div>
+
         <form onSubmit={handleSubmit} className="flex-none px-4 pb-5 pt-2">
           {/* A bordered compose block with its own toolbar row, not a
               rounded-pill input with floating circular icon buttons — the
@@ -902,7 +956,7 @@ export function AssistantPage() {
               }}
               rows={1}
               placeholder={imageMode ? "Describe an image to generate…" : "Ask for help with your paper's content…"}
-              className="w-full resize-none bg-transparent text-sm leading-relaxed px-4 pt-3 pb-1.5 focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600 text-gray-900 dark:text-gray-100"
+              className="w-full resize-none bg-transparent text-sm leading-relaxed px-4 pt-3 pb-1.5 focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600 text-gray-900 dark:text-gray-100 transition-[height] duration-100 ease-out"
             />
             <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 dark:border-gray-800">
               <div ref={attachMenuRef} className="relative">
@@ -973,17 +1027,19 @@ export function AssistantPage() {
               </div>
               {!imageMode && isStreaming ? (
                 <button
+                  key="stop"
                   type="button"
                   onClick={stopGenerating}
-                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-xs font-semibold px-3 py-1.5 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-xs font-semibold px-3 py-1.5 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors animate-fade-in"
                 >
                   <span className="w-2 h-2 bg-current" /> Stop
                 </button>
               ) : (
                 <button
+                  key="send"
                   type="submit"
                   disabled={imageMode ? isGeneratingImage || !input.trim() : !input.trim()}
-                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-blue-700 dark:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-700 dark:disabled:hover:bg-blue-600 transition-colors"
+                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-blue-700 dark:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-700 dark:disabled:hover:bg-blue-600 transition-colors animate-fade-in"
                 >
                   {imageMode ? (isGeneratingImage ? "Generating…" : "Generate") : "Send"}
                   {!isGeneratingImage && <span className="leading-none">↵</span>}
