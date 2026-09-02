@@ -2,11 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/useAuth";
 import { supabase } from "../supabaseClient";
 import { btnSecondary } from "../lib/uiClasses";
-
-function formatJoinDate(iso: string | undefined): string {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
-}
+import { formatJoinDate } from "../lib/formatJoinDate";
 
 export function ProfilePage() {
   const { user } = useAuth();
