@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 // assistant can do.
 const NAV_ITEMS = [
   { to: "/dashboard", icon: "📄", label: "My Papers" },
-  { to: "/assistant", icon: "✨", label: "AI Assistant" },
+  { to: "/assistant", icon: "✨", label: "Doc Buddy" },
   { to: "/downloads", icon: "📥", label: "Downloads" },
 ];
 

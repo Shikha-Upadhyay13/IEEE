@@ -51,7 +51,7 @@ export function ProjectHome({
             if (instructionsDraft !== (project.instructions ?? "")) onSetInstructions(instructionsDraft);
           }}
           rows={3}
-          placeholder="Give the assistant standing context for every chat in this project — tone, terminology, constraints…"
+          placeholder="Give Doc Buddy standing context for every chat in this project — tone, terminology, constraints…"
           className="w-full mt-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 resize-none placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
         />
       </div>

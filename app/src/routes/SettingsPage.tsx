@@ -62,7 +62,7 @@ export function SettingsPage() {
     if (!user) return;
     const ok = await confirm({
       title: "Clear all conversations?",
-      message: "Delete all AI Assistant conversations? This can't be undone.",
+      message: "Delete all Doc Buddy conversations? This can't be undone.",
       confirmLabel: "Clear all",
     });
     if (!ok) return;
@@ -84,7 +84,7 @@ export function SettingsPage() {
       <div className="flex-1 min-w-0 px-8 py-10">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight mb-1">Settings</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-          Your account, appearance, and AI Assistant preferences.
+          Your account, appearance, and Doc Buddy preferences.
         </p>
 
         {/* Account summary banner — full width, real content (avatar, join
@@ -146,7 +146,7 @@ export function SettingsPage() {
           </div>
 
           <div className={`${cardBase} p-6`}>
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">AI Assistant</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Doc Buddy</h2>
             <div className="flex items-start gap-3">
               <span className="text-lg flex-none">💬</span>
               <div>
@@ -170,7 +170,7 @@ export function SettingsPage() {
           <div className={`${cardBase} p-6 lg:col-span-3`}>
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Data</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Remove every saved AI Assistant conversation, including any images generated inside them. Your
+              Remove every saved Doc Buddy conversation, including any images generated inside them. Your
               papers aren't affected.
             </p>
             <button

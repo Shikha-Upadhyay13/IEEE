@@ -81,7 +81,7 @@ function extractSseFrames(buffer: string): { frames: string[]; rest: string } {
 function RoleLabel({ role }: { role: "user" | "assistant" }) {
   return (
     <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-0.5">
-      {role === "user" ? "You" : "Assistant"}
+      {role === "user" ? "You" : "Doc Buddy"}
     </span>
   );
 }
@@ -717,7 +717,7 @@ export function AssistantPage() {
             </div>
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-none tracking-tight">
-                Assistant
+                Doc Buddy
               </p>
               <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-none mt-0.5">
                 Drafting &amp; revision support

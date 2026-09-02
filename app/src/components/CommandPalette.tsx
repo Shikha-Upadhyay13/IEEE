@@ -123,7 +123,7 @@ export function CommandPalette() {
   const staticItems: PaletteItem[] = user
     ? [
         { id: "nav-dashboard", icon: "📄", label: "Go to My Papers", run: () => navigate("/dashboard") },
-        { id: "nav-assistant", icon: "✨", label: "Go to AI Assistant", run: () => navigate("/assistant") },
+        { id: "nav-assistant", icon: "✨", label: "Go to Doc Buddy", run: () => navigate("/assistant") },
         { id: "nav-downloads", icon: "📥", label: "Go to Downloads", run: () => navigate("/downloads") },
         { id: "nav-settings", icon: "⚙️", label: "Go to Settings", run: () => navigate("/settings") },
         { id: "nav-profile", icon: "👤", label: "Go to My Account", run: () => navigate("/profile") },
