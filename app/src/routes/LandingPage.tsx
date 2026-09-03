@@ -394,8 +394,33 @@ function TiltCard({ children }: { children: ReactNode }) {
   );
 }
 
+// The hero preview box is a fixed-pixel crop of a real US-letter page (see
+// HERO_PAGE_WIDTH/HEIGHT above) — on a phone-width single-column layout
+// that fixed size no longer fits its grid cell and was getting silently
+// clipped by the hero section's overflow-hidden instead of shrinking to
+// fit. This watches the actual rendered width of the wrapping box (which
+// *does* respond to the grid/viewport) and derives a smaller scale so the
+// preview shrinks with it instead of overflowing.
+function useHeroScale() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(HERO_PAGE_SCALE);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setScale(Math.min(HERO_PAGE_SCALE, entry.contentRect.width / 816));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return { containerRef, scale };
+}
+
 export function LandingPage() {
   const resolvedSample = useMemo(() => resolveNumbering(samplePaper), []);
+  const { containerRef: heroRef, scale: heroScale } = useHeroScale();
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
@@ -416,12 +441,12 @@ export function LandingPage() {
         />
 
         <div className="relative max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-16 grid lg:grid-cols-2 gap-16 items-center">
-          <div className="animate-fade-in-up">
+          <div className="min-w-0 animate-fade-in-up">
             <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full px-3 py-1.5 mb-7">
               <span className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-100" />
               Free IEEE conference paper builder
             </p>
-            <h1 className="text-6xl sm:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 leading-[1.02] mb-6">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 leading-[1.05] sm:leading-[1.02] mb-6">
               Write your paper.
               <br />
               <span className="text-gray-500 dark:text-gray-400">We'll handle the formatting.</span>
@@ -459,16 +484,20 @@ export function LandingPage() {
               The renderer produces real US-letter (816x1056px) pages, so a raw
               embed would only ever show a corner of one; scale the whole page
               down to a thumbnail instead of letting the crop cut into it. */}
-          <div className="relative animate-fade-in-up" style={{ animationDelay: "120ms" }}>
+          <div
+            ref={heroRef}
+            className="relative w-full min-w-0 mx-auto lg:mx-0 animate-fade-in-up"
+            style={{ maxWidth: HERO_PAGE_WIDTH, animationDelay: "120ms" }}
+          >
             <div className="absolute -inset-10 bg-gradient-to-br from-gray-300/50 via-gray-200/40 to-transparent rounded-[3rem] -z-10 blur-2xl" />
 
             <TiltCard>
               <div
                 className="relative mx-auto rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl shadow-black/20 overflow-hidden bg-gray-500 dark:bg-gray-700"
-                style={{ width: HERO_PAGE_WIDTH, height: HERO_PAGE_HEIGHT }}
+                style={{ width: 816 * heroScale, height: HERO_PAGE_HEIGHT * (heroScale / HERO_PAGE_SCALE) }}
               >
                 <div
-                  style={{ width: 816, transform: `scale(${HERO_PAGE_SCALE})`, transformOrigin: "top left" }}
+                  style={{ width: 816, transform: `scale(${heroScale})`, transformOrigin: "top left" }}
                   className="pt-6 flex justify-center"
                 >
                   <PagedPreview document={resolvedSample} />
@@ -518,7 +547,7 @@ export function LandingPage() {
             "floating bar" pattern that gives the fold a confident, finished
             edge instead of just trailing off into whitespace. */}
         <div className="relative max-w-4xl mx-auto px-6">
-          <div className="relative z-10 bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl shadow-gray-900/10 grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-800">
+          <div className="relative z-10 bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl shadow-gray-900/10 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 divide-x-0 sm:divide-x divide-gray-100 dark:divide-gray-800">
             {STATS.map((s) => (
               <div key={s.label} className="px-4 sm:px-8 py-6 text-center">
                 <p className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-gray-700 to-gray-900 dark:from-gray-300 dark:to-gray-100 bg-clip-text text-transparent">
