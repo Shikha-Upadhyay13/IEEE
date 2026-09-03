@@ -14,12 +14,20 @@ export type ProjectRow = {
 // A left rail styled like ChatGPT's — dark, icon-first, with the running
 // conversation list as the main content — is the most recognizable "this is
 // a serious AI product" visual cue available without a custom icon set.
+//
+// Below md there's no room for a permanent 288px rail (see the mobile
+// audit — it left ~87px for the entire chat UI), so it renders as a drawer
+// instead, opened by a hamburger button AssistantPage puts in its own
+// header (kept there, not duplicated here, so mobile doesn't show two
+// stacked "Doc Buddy" brand bars).
 export function ConversationSidebar({
   conversations,
   projects,
   activeConversationId,
   activeProjectId,
   userEmail,
+  mobileOpen,
+  onCloseMobile,
   onNewChat,
   onSelectConversation,
   onRenameConversation,
@@ -34,6 +42,8 @@ export function ConversationSidebar({
   activeConversationId: string | null;
   activeProjectId: string | null;
   userEmail: string | null;
+  mobileOpen: boolean;
+  onCloseMobile: () => void;
   onNewChat: () => void;
   onSelectConversation: (id: string) => void;
   onRenameConversation: (id: string, title: string) => void;
@@ -62,135 +72,178 @@ export function ConversationSidebar({
     if (trimmed) onRenameConversation(id, trimmed);
   }
 
-  return (
-    <div className="w-72 flex-none h-full flex flex-col bg-gray-900 text-gray-300">
-      <div className="flex items-center gap-2 px-4 pt-4 pb-1">
-        <div className="w-6 h-6 rounded-md bg-blue-500 text-white flex items-center justify-center font-serif text-xs flex-none">
-          §
+  // Shared by the permanent desktop rail and the mobile drawer — every
+  // navigating action also closes the drawer (a harmless no-op on desktop,
+  // where it's already closed).
+  function SidebarBody() {
+    return (
+      <>
+        <div className="flex items-center gap-2 px-4 pt-4 pb-1">
+          <div className="w-6 h-6 rounded-md bg-blue-500 text-white flex items-center justify-center font-serif text-xs flex-none">
+            §
+          </div>
+          <span className="text-sm font-medium text-gray-200 tracking-tight">Doc Buddy</span>
         </div>
-        <span className="text-sm font-medium text-gray-200 tracking-tight">Doc Buddy</span>
-      </div>
-      <div className="p-3">
-        <button
-          onClick={onNewChat}
-          className="w-full flex items-center gap-2 rounded-lg border border-gray-700 hover:bg-gray-800 px-3 py-2 text-sm text-white transition-colors"
-        >
-          <span className="text-base leading-none">＋</span> New chat
-        </button>
-      </div>
+        <div className="p-3">
+          <button
+            onClick={() => {
+              onCloseMobile();
+              onNewChat();
+            }}
+            className="w-full flex items-center gap-2 rounded-lg border border-gray-700 hover:bg-gray-800 px-3 py-2 text-sm text-white transition-colors"
+          >
+            <span className="text-base leading-none">＋</span> New chat
+          </button>
+        </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">
-        <div className="mb-5">
-          <div className="flex items-center justify-between px-1 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Projects</span>
+        <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">
+          <div className="mb-5">
+            <div className="flex items-center justify-between px-1 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Projects</span>
+              <button
+                onClick={() => setCreatingProject(true)}
+                aria-label="New project"
+                title="New project"
+                className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors text-base leading-none"
+              >
+                ＋
+              </button>
+            </div>
+
             <button
-              onClick={() => setCreatingProject(true)}
-              aria-label="New project"
-              title="New project"
-              className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors text-base leading-none"
+              onClick={() => {
+                onCloseMobile();
+                onSelectProject(null);
+              }}
+              className={`w-full text-left text-sm rounded-lg px-2.5 py-2 mb-1 transition-colors ${
+                activeProjectId === null ? "bg-gray-800 text-white font-medium" : "hover:bg-gray-800/60"
+              }`}
             >
-              ＋
+              All chats
             </button>
+
+            {projects.length === 0 && !creatingProject && (
+              <p className="text-xs text-gray-600 px-2.5 py-1.5 leading-relaxed">
+                No projects yet — group chats around a specific paper.
+              </p>
+            )}
+
+            {projects.map((p) => (
+              <div
+                key={p.id}
+                className={`group flex items-center gap-2 rounded-lg px-2.5 py-2 mb-1 text-sm cursor-pointer transition-colors ${
+                  activeProjectId === p.id ? "bg-gray-800 text-white font-medium" : "hover:bg-gray-800/60"
+                }`}
+                onClick={() => {
+                  onCloseMobile();
+                  onSelectProject(p.id);
+                }}
+              >
+                <span
+                  className="flex-none w-2 h-2 rounded-full"
+                  style={{ backgroundColor: p.color ?? "#6b7280" }}
+                  aria-hidden="true"
+                />
+                <span className="text-sm flex-none">📁</span>
+                <span className="flex-1 truncate">{p.name}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteProject(p.id);
+                  }}
+                  aria-label={`Delete project ${p.name}`}
+                  className="opacity-0 group-hover:opacity-100 flex-none w-5 h-5 flex items-center justify-center rounded text-gray-500 hover:text-red-400 hover:bg-gray-700 transition-all text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
           </div>
 
-          <button
-            onClick={() => onSelectProject(null)}
-            className={`w-full text-left text-sm rounded-lg px-2.5 py-2 mb-1 transition-colors ${
-              activeProjectId === null ? "bg-gray-800 text-white font-medium" : "hover:bg-gray-800/60"
-            }`}
-          >
-            All chats
-          </button>
-
-          {projects.length === 0 && !creatingProject && (
-            <p className="text-xs text-gray-600 px-2.5 py-1.5 leading-relaxed">
-              No projects yet — group chats around a specific paper.
-            </p>
-          )}
-
-          {projects.map((p) => (
-            <div
-              key={p.id}
-              className={`group flex items-center gap-2 rounded-lg px-2.5 py-2 mb-1 text-sm cursor-pointer transition-colors ${
-                activeProjectId === p.id ? "bg-gray-800 text-white font-medium" : "hover:bg-gray-800/60"
-              }`}
-              onClick={() => onSelectProject(p.id)}
-            >
-              <span
-                className="flex-none w-2 h-2 rounded-full"
-                style={{ backgroundColor: p.color ?? "#6b7280" }}
-                aria-hidden="true"
-              />
-              <span className="text-sm flex-none">📁</span>
-              <span className="flex-1 truncate">{p.name}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteProject(p.id);
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Chats</p>
+            {visibleConversations.length === 0 && (
+              <p className="text-xs text-gray-600 px-2 py-1">No conversations yet.</p>
+            )}
+            {visibleConversations.map((c) => (
+              <div
+                key={c.id}
+                className={`group flex items-center gap-2 rounded-lg px-2.5 py-2 mb-1 text-sm cursor-pointer transition-colors ${
+                  activeConversationId === c.id ? "bg-gray-800 text-white font-medium" : "hover:bg-gray-800/60"
+                }`}
+                onClick={() => {
+                  onCloseMobile();
+                  onSelectConversation(c.id);
                 }}
-                aria-label={`Delete project ${p.name}`}
-                className="opacity-0 group-hover:opacity-100 flex-none w-5 h-5 flex items-center justify-center rounded text-gray-500 hover:text-red-400 hover:bg-gray-700 transition-all text-xs"
               >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Chats</p>
-          {visibleConversations.length === 0 && (
-            <p className="text-xs text-gray-600 px-2 py-1">No conversations yet.</p>
-          )}
-          {visibleConversations.map((c) => (
-            <div
-              key={c.id}
-              className={`group flex items-center gap-2 rounded-lg px-2.5 py-2 mb-1 text-sm cursor-pointer transition-colors ${
-                activeConversationId === c.id ? "bg-gray-800 text-white font-medium" : "hover:bg-gray-800/60"
-              }`}
-              onClick={() => onSelectConversation(c.id)}
-            >
-              {editingId === c.id ? (
-                <input
-                  autoFocus
-                  value={draftTitle}
-                  onChange={(e) => setDraftTitle(e.target.value)}
-                  onBlur={() => commitRename(c.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") e.currentTarget.blur();
-                    if (e.key === "Escape") setEditingId(null);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex-1 bg-gray-700 rounded px-1 py-0.5 text-white text-sm focus:outline-none"
-                />
-              ) : (
-                <span
-                  className="flex-1 truncate"
-                  onDoubleClick={(e) => {
+                {editingId === c.id ? (
+                  <input
+                    autoFocus
+                    value={draftTitle}
+                    onChange={(e) => setDraftTitle(e.target.value)}
+                    onBlur={() => commitRename(c.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") e.currentTarget.blur();
+                      if (e.key === "Escape") setEditingId(null);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex-1 bg-gray-700 rounded px-1 py-0.5 text-white text-sm focus:outline-none"
+                  />
+                ) : (
+                  <span
+                    className="flex-1 truncate"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      startRename(c);
+                    }}
+                    title={`${c.title} (double-click to rename)`}
+                  >
+                    {c.title}
+                  </span>
+                )}
+                <button
+                  onClick={(e) => {
                     e.stopPropagation();
-                    startRename(c);
+                    onDeleteConversation(c.id);
                   }}
-                  title={`${c.title} (double-click to rename)`}
+                  aria-label={`Delete conversation ${c.title}`}
+                  className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all text-xs"
                 >
-                  {c.title}
-                </span>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteConversation(c.id);
-                }}
-                aria-label={`Delete conversation ${c.title}`}
-                className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all text-xs"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
+
+        <ProfileMenu userEmail={userEmail} onSignOut={onSignOut} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      {/* Desktop rail — unchanged from before, just hidden below md. */}
+      <div className="hidden md:flex w-72 flex-none h-full flex-col bg-gray-900 text-gray-300">
+        <SidebarBody />
       </div>
 
-      <ProfileMenu userEmail={userEmail} onSignOut={onSignOut} />
+      {/* Mobile drawer, opened via AssistantPage's own header hamburger. */}
+      {mobileOpen && (
+        <div className="md:hidden fixed inset-0 z-40 flex">
+          <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onCloseMobile} aria-hidden="true" />
+          <div className="relative w-72 max-w-[85%] h-full flex flex-col bg-gray-900 text-gray-300 shadow-xl">
+            <button
+              onClick={onCloseMobile}
+              aria-label="Close menu"
+              className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-white hover:bg-gray-800"
+            >
+              ✕
+            </button>
+            <SidebarBody />
+          </div>
+        </div>
+      )}
 
       {creatingProject && (
         <CreateProjectModal
@@ -201,6 +254,6 @@ export function ConversationSidebar({
           onClose={() => setCreatingProject(false)}
         />
       )}
-    </div>
+    </>
   );
 }

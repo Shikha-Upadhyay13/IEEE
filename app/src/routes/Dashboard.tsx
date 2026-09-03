@@ -274,10 +274,10 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#f7f6f3] dark:bg-gray-950">
+    <div className="min-h-screen flex flex-col md:flex-row bg-[#f7f6f3] dark:bg-gray-950">
       <DashboardSidebar onSignOut={handleSignOut} />
 
-      <div className="flex-1 min-w-0 px-8 py-10">
+      <div className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10">
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-end mb-6">
             <div>

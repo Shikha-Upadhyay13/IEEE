@@ -145,6 +145,9 @@ export function AssistantPage() {
   // starting a chat from inside a project keeps it there once it's saved.
   const [conversations, setConversations] = useState<ConversationRow[]>([]);
   const [projects, setProjects] = useState<ProjectRow[]>([]);
+  // Below md, ConversationSidebar renders as a drawer instead of a
+  // permanent rail — opened from the hamburger in this page's own header.
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   // Set whenever a projects query has to fall back to legacy columns (see
   // refreshProjects/handleCreateProject) — surfaced as a visible banner
   // instead of only a console.error, since a silently-dropped color or
@@ -692,6 +695,8 @@ export function AssistantPage() {
         activeConversationId={activeConversationId}
         activeProjectId={activeProjectId}
         userEmail={user?.email ?? null}
+        mobileOpen={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
         onNewChat={() => handleNewChat()}
         onSelectConversation={handleSelectConversation}
         onRenameConversation={handleRenameConversation}
@@ -703,15 +708,23 @@ export function AssistantPage() {
       />
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="flex-none flex items-center gap-3 px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur">
+        <div className="flex-none flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur">
+          <button
+            type="button"
+            onClick={() => setMobileSidebarOpen(true)}
+            aria-label="Open chat history"
+            className="md:hidden w-8 h-8 flex-none flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-lg -ml-1"
+          >
+            ☰
+          </button>
           <Link
             to="/dashboard"
             className="text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
           >
             ← Dashboard
           </Link>
-          <span className="text-gray-300 dark:text-gray-700">|</span>
-          <div className="flex items-center gap-2.5">
+          <span className="hidden sm:inline text-gray-300 dark:text-gray-700">|</span>
+          <div className="hidden sm:flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-md bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-xs">
               §
             </div>
