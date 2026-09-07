@@ -199,6 +199,8 @@ type DocumentStore = {
   removeBlock: (id: string) => void;
   reorderBlocks: (containerId: string | null, activeId: string, overId: string) => void;
   addReference: () => void;
+  addReferenceWithFields: (fields: ReferenceFields) => void;
+  importReferences: (items: ReferenceFields[]) => void;
   updateReferenceField: (id: string, field: keyof ReferenceFields, value: string) => void;
   removeReference: (id: string) => void;
 };
@@ -488,6 +490,32 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         references: [
           ...state.document.references,
           { id: generateId("ref"), fields: { ...emptyReferenceFields }, renderedText: "" },
+        ],
+      },
+    })),
+
+  addReferenceWithFields: (fields) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        references: [
+          ...state.document.references,
+          { id: generateId("ref"), fields, renderedText: generateReferenceText(fields) },
+        ],
+      },
+    })),
+
+  importReferences: (items) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        references: [
+          ...state.document.references,
+          ...items.map((fields) => ({
+            id: generateId("ref"),
+            fields,
+            renderedText: generateReferenceText(fields),
+          })),
         ],
       },
     })),
