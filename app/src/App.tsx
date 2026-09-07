@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { LandingPage } from "./routes/LandingPage";
 import { LoginPage } from "./routes/LoginPage";
 import { ResetPasswordPage } from "./routes/ResetPasswordPage";
+import { TermsPage } from "./routes/TermsPage";
+import { PrivacyPage } from "./routes/PrivacyPage";
 import { RequireAuth } from "./components/RequireAuth";
 import { ChatLauncher } from "./components/ChatLauncher";
 import { CommandPalette } from "./components/CommandPalette";
@@ -44,6 +46,8 @@ function App() {
               token — not wrapped in RequireAuth so this page can manage that
               transitional auth state itself (see its own comment). */}
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="/editor/:documentId" element={<RequireAuth><EditorPage /></RequireAuth>} />
           <Route path="/assistant" element={<RequireAuth><AssistantPage /></RequireAuth>} />

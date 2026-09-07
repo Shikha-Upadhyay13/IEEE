@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { btnPrimary, inputBase, labelBase } from "../lib/uiClasses";
 
@@ -182,6 +182,19 @@ export function LoginPage() {
                     ? "Create account"
                     : "Send reset link"}
             </button>
+            {mode === "signup" && (
+              <p className="mt-3 text-xs text-center text-gray-500 dark:text-gray-400">
+                By creating an account, you agree to our{" "}
+                <Link to="/terms" className="underline hover:text-gray-700 dark:hover:text-gray-300">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link to="/privacy" className="underline hover:text-gray-700 dark:hover:text-gray-300">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            )}
           </form>
 
           {error && (

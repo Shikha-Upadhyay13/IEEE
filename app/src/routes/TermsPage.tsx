@@ -1,0 +1,203 @@
+import { Link } from "react-router-dom";
+
+export function TermsPage() {
+  return (
+    <div className="min-h-screen bg-[#f7f6f3] dark:bg-gray-950 py-16 px-6">
+      <div className="max-w-3xl mx-auto">
+        <Link
+          to="/"
+          className="text-sm text-blue-600 dark:text-blue-400 hover:underline mb-8 inline-block"
+        >
+          ← Back to home
+        </Link>
+
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Terms of Service
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-10">
+          Effective date: September 2026
+        </p>
+
+        <div className="prose prose-gray dark:prose-invert max-w-none space-y-8 text-gray-700 dark:text-gray-300">
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              1. Acceptance of Terms
+            </h2>
+            <p>
+              By creating an account or using IEEE Paper Builder ("the Service"), you agree to these
+              Terms of Service. If you do not agree, do not use the Service.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              2. Description of Service
+            </h2>
+            <p>
+              IEEE Paper Builder is a web-based tool that helps users create, format, and export
+              academic papers in the IEEE conference format. The Service includes a block-based
+              editor, live paginated preview, PDF export, an AI writing assistant, and associated
+              features.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              3. Acceptable Use
+            </h2>
+            <p>You agree not to:</p>
+            <ul className="list-disc pl-6 mt-2 space-y-1">
+              <li>Use the Service for any unlawful purpose or in violation of any regulations.</li>
+              <li>
+                Attempt to reverse-engineer, scrape, or exploit the Service or its underlying
+                infrastructure.
+              </li>
+              <li>
+                Use automated scripts or bots to create accounts or generate bulk requests to the AI
+                service or PDF export service.
+              </li>
+              <li>
+                Upload content that infringes third-party intellectual property rights, is
+                defamatory, or is otherwise illegal.
+              </li>
+              <li>
+                Attempt to gain unauthorized access to other users' accounts or data.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              4. No Guarantee of Format Accuracy
+            </h2>
+            <p>
+              IEEE Paper Builder is designed to produce output consistent with IEEE conference paper
+              formatting guidelines. However, <strong>we make no warranty</strong> that any paper
+              produced by the Service will be accepted by any particular conference, publication
+              venue, or institution. IEEE's formatting requirements may change, and specific venues
+              may have additional requirements beyond what the Service currently implements. You are
+              responsible for verifying that your submission meets your target venue's requirements.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              5. Your Content
+            </h2>
+            <p>
+              You retain full ownership of the academic content you create using the Service
+              (paper text, figures, references, etc.). By using the Service, you grant us a limited
+              license to store and process your content solely as necessary to operate the Service —
+              for example, to save your documents to our database, to generate PDF exports, and to
+              pass relevant content to the AI assistant when you explicitly request it.
+            </p>
+            <p className="mt-3">
+              We do not use your paper content to train AI models, sell your data, or share it with
+              third parties except as described in our{" "}
+              <Link to="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              6. AI Assistant
+            </h2>
+            <p>
+              The AI assistant feature is powered by Groq's language model API. Responses are
+              generated by an AI and may be inaccurate, incomplete, or inappropriate for academic
+              use. You are solely responsible for reviewing, verifying, and editing any AI-generated
+              content before including it in a submission. Academic integrity policies at your
+              institution may restrict or prohibit the use of AI-generated text — you are responsible
+              for complying with those policies.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              7. Account Suspension
+            </h2>
+            <p>
+              We reserve the right to suspend or terminate accounts that violate these Terms,
+              abuse the Service (e.g., bulk automated requests, quota exhaustion attacks), or engage
+              in conduct harmful to other users or the Service. We will attempt to notify you before
+              suspension except where immediate action is required to protect the Service.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              8. Service Availability
+            </h2>
+            <p>
+              We aim to keep the Service available but make no uptime guarantees. The Service may
+              be interrupted for maintenance, infrastructure issues, or other reasons. We are not
+              liable for any loss resulting from Service unavailability, including missed submission
+              deadlines.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              9. Disclaimer of Warranties
+            </h2>
+            <p>
+              THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+              INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+              PURPOSE, OR NON-INFRINGEMENT. USE OF THE SERVICE IS AT YOUR OWN RISK.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              10. Limitation of Liability
+            </h2>
+            <p>
+              TO THE FULLEST EXTENT PERMITTED BY LAW, WE SHALL NOT BE LIABLE FOR ANY INDIRECT,
+              INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF
+              THE SERVICE, INCLUDING LOSS OF DATA OR MISSED DEADLINES.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              11. Changes to These Terms
+            </h2>
+            <p>
+              We may update these Terms from time to time. Continued use of the Service after
+              changes are posted constitutes acceptance of the revised Terms. We will notify users
+              of material changes via email or an in-app notice.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              12. Governing Law
+            </h2>
+            <p>
+              These Terms are governed by the laws of India. Any disputes shall be subject to the
+              exclusive jurisdiction of the courts of India.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              13. Contact
+            </h2>
+            <p>
+              Questions about these Terms? Contact us at:{" "}
+              <a
+                href="mailto:support@ieeepaperbuilder.com"
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                support@ieeepaperbuilder.com
+              </a>
+            </p>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}

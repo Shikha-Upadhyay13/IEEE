@@ -695,7 +695,12 @@ export function LandingPage() {
       </section>
 
       <footer className="py-8 text-center text-xs text-gray-400 dark:text-gray-600">
-        IEEE Paper Builder — built for students and researchers.
+        <p>IEEE Paper Builder — built for students and researchers.</p>
+        <p className="mt-1.5 space-x-3">
+          <Link to="/terms" className="hover:text-gray-600 dark:hover:text-gray-400 underline underline-offset-2 transition-colors">Terms of Service</Link>
+          <span>·</span>
+          <Link to="/privacy" className="hover:text-gray-600 dark:hover:text-gray-400 underline underline-offset-2 transition-colors">Privacy Policy</Link>
+        </p>
       </footer>
     </div>
   );
