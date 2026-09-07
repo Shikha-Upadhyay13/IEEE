@@ -7,6 +7,7 @@ import { relativeTime } from "../lib/relativeTime";
 import { inputBase } from "../lib/uiClasses";
 import { DashboardSidebar } from "../components/dashboard/DashboardSidebar";
 import { PaperThumbnail } from "../components/dashboard/PaperThumbnail";
+import { OnboardingWizard } from "../components/dashboard/OnboardingWizard";
 import { useConfirm } from "../components/ConfirmDialog";
 
 type DocumentRow = { id: string; title: string | null; updated_at: string };
@@ -162,6 +163,7 @@ export function Dashboard() {
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOrder>("updated");
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -174,15 +176,41 @@ export function Dashboard() {
         .order("updated_at", { ascending: false });
       if (!cancelled) {
         if (error) console.error("Failed to load documents:", error);
-        setDocuments(data ?? []);
+        const docs = data ?? [];
+        setDocuments(docs);
         setLoading(false);
+
+        // Check if user has completed onboarding
+        if (user) {
+          const cached = localStorage.getItem(`ieee_onboarding_${user.id}`);
+          if (!cached) {
+            try {
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("has_completed_onboarding")
+                .eq("id", user.id)
+                .maybeSingle();
+
+              if (!profile || !profile.has_completed_onboarding) {
+                if (docs.length === 0 || !profile?.has_completed_onboarding) {
+                  setShowOnboarding(true);
+                }
+              }
+            } catch {
+              // If profiles table isn't migrated yet, show onboarding if 0 documents
+              if (docs.length === 0) {
+                setShowOnboarding(true);
+              }
+            }
+          }
+        }
       }
     }
     load();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user]);
 
   const filteredDocuments = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -342,6 +370,13 @@ export function Dashboard() {
         </div>
       </div>
       {ConfirmDialog}
+      {user && (
+        <OnboardingWizard
+          userId={user.id}
+          isOpen={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+        />
+      )}
     </div>
   );
 }

@@ -230,3 +230,7 @@ export const samplePaper: Document = {
     },
   ],
 };
+
+export function createSamplePaper(): Document {
+  return structuredClone(samplePaper);
+}
