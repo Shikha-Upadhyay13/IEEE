@@ -25,6 +25,7 @@ const AssistantPage = lazy(() => import("./routes/AssistantPage").then((m) => ({
 const ProfilePage = lazy(() => import("./routes/ProfilePage").then((m) => ({ default: m.ProfilePage })));
 const SettingsPage = lazy(() => import("./routes/SettingsPage").then((m) => ({ default: m.SettingsPage })));
 const DownloadsPage = lazy(() => import("./routes/DownloadsPage").then((m) => ({ default: m.DownloadsPage })));
+const ViewPage = lazy(() => import("./routes/ViewPage").then((m) => ({ default: m.ViewPage })));
 
 // Signed-in visitors who land on the public "/" marketing page should go
 // straight to their papers instead of seeing the pitch again.
@@ -57,6 +58,8 @@ function App() {
           {/* Not behind RequireAuth: the headless PDF export path has no user
               session at all (see PrintView's own token-vs-session handling). */}
           <Route path="/print/:documentId" element={<PrintView />} />
+          {/* Public read-only paper viewer for shared links */}
+          <Route path="/view/:documentId" element={<ViewPage />} />
         </Routes>
       </Suspense>
       <ChatLauncher />

@@ -6,6 +6,7 @@ import { useDebouncedValue } from "../lib/useDebouncedValue";
 import { PagedPreview } from "../components/renderer/PagedPreview";
 import { EditorPanel } from "../components/editor/EditorPanel";
 import { ExportButton } from "../components/editor/ExportButton";
+import { ShareButton } from "../components/editor/ShareButton";
 import { supabase } from "../supabaseClient";
 import { btnGhost, btnPrimary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
@@ -190,7 +191,10 @@ export function EditorPage() {
           <span className="text-gray-300 dark:text-gray-700">|</span>
           <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
         </div>
-        {documentId && <ExportButton documentId={documentId} title={extractTitleText(document)} compact />}
+        <div className="flex items-center gap-2">
+          {documentId && <ShareButton documentId={documentId} />}
+          {documentId && <ExportButton documentId={documentId} title={extractTitleText(document)} compact />}
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 flex">
