@@ -7,8 +7,9 @@ import { PagedPreview } from "../components/renderer/PagedPreview";
 import { EditorPanel } from "../components/editor/EditorPanel";
 import { ExportButton } from "../components/editor/ExportButton";
 import { ShareButton } from "../components/editor/ShareButton";
+import { VersionHistoryPanel } from "../components/editor/VersionHistoryPanel";
 import { supabase } from "../supabaseClient";
-import { btnGhost, btnPrimary } from "../lib/uiClasses";
+import { btnGhost, btnPrimary, btnSecondary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { extractTitleText } from "../lib/extractTitleText";
 import type { Document } from "../types/document";
@@ -21,6 +22,7 @@ export function EditorPage() {
 
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [historyOpen, setHistoryOpen] = useState(false);
   // The last content known to be persisted — compared by reference (not a
   // fire-count flag) against the debounced value below, so autosave skips
   // only a genuinely unchanged state, not just "the first debounce cycle"
@@ -192,6 +194,17 @@ export function EditorPage() {
           <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
         </div>
         <div className="flex items-center gap-2">
+          {documentId && (
+            <button
+              type="button"
+              onClick={() => setHistoryOpen(true)}
+              className={`${btnSecondary} text-xs py-1.5 px-3 flex items-center gap-1.5`}
+              title="Version history"
+            >
+              <span>🕒</span>
+              <span>History</span>
+            </button>
+          )}
           {documentId && <ShareButton documentId={documentId} />}
           {documentId && <ExportButton documentId={documentId} title={extractTitleText(document)} compact />}
         </div>
@@ -240,6 +253,17 @@ export function EditorPage() {
           </div>
         </div>
       </div>
+      {documentId && (
+        <VersionHistoryPanel
+          documentId={documentId}
+          currentDocument={document}
+          isOpen={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          onRestore={(restored) => {
+            loadDocument(documentId, restored);
+          }}
+        />
+      )}
     </div>
   );
 }
