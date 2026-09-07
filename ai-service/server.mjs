@@ -7,6 +7,46 @@ const PORT = process.env.PORT ?? 3002;
 // any real deployment.
 const ORIGIN = process.env.FRONTEND_ORIGIN ?? "http://localhost:3000";
 
+// ─── Rate Limiting ──────────────────────────────────────────────────────────
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = parseInt(process.env.RATE_LIMIT_PER_MINUTE ?? "20", 10);
+const ipRequestCounts = new Map();
+
+// Periodic prune to prevent unbounded memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of ipRequestCounts.entries()) {
+    if (now > record.resetTime) {
+      ipRequestCounts.delete(ip);
+    }
+  }
+}, 5 * 60 * 1000).unref();
+
+function getClientIp(req) {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+  return req.socket.remoteAddress || "127.0.0.1";
+}
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  let record = ipRequestCounts.get(ip);
+  if (!record || now > record.resetTime) {
+    record = { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS };
+    ipRequestCounts.set(ip, record);
+    return { limited: false, remaining: RATE_LIMIT_MAX_REQUESTS - 1, resetInSeconds: 60 };
+  }
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    const resetInSeconds = Math.max(1, Math.ceil((record.resetTime - now) / 1000));
+    return { limited: true, remaining: 0, resetInSeconds };
+  }
+  record.count++;
+  const resetInSeconds = Math.max(1, Math.ceil((record.resetTime - now) / 1000));
+  return { limited: false, remaining: RATE_LIMIT_MAX_REQUESTS - record.count, resetInSeconds };
+}
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let data = "";
@@ -34,6 +74,25 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && req.url === "/chat") {
+    const clientIp = getClientIp(req);
+    const rateLimit = checkRateLimit(clientIp);
+    res.setHeader("X-RateLimit-Limit", String(RATE_LIMIT_MAX_REQUESTS));
+    res.setHeader("X-RateLimit-Remaining", String(rateLimit.remaining));
+    res.setHeader("X-RateLimit-Reset", String(rateLimit.resetInSeconds));
+
+    if (rateLimit.limited) {
+      res.writeHead(429, {
+        "Content-Type": "application/json",
+        "Retry-After": String(rateLimit.resetInSeconds),
+      });
+      res.end(
+        JSON.stringify({
+          error: "Rate limit exceeded. Please wait a moment before sending more requests.",
+        })
+      );
+      return;
+    }
+
     try {
       const body = JSON.parse(await readBody(req));
       const { messages, documentContext, projectInstructions } = body;
