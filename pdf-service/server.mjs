@@ -2,10 +2,15 @@ import http from "node:http";
 import { renderPdf } from "./render.mjs";
 
 const PORT = process.env.PORT ?? 3001;
-// Dev-only permissive CORS (reflects the request origin) — fine for a
-// solo-student local setup; tighten to an explicit allowlist before any
-// real deployment.
-const ORIGIN = process.env.FRONTEND_ORIGIN ?? "http://localhost:5173";
+// Explicit CORS origin allowlist from env (supports comma-separated list),
+// falling back to local frontend dev servers.
+const rawAllowed = process.env.ALLOWED_ORIGINS ?? process.env.FRONTEND_ORIGIN ?? "http://localhost:3000,http://localhost:5173";
+const ALLOWED_ORIGINS = new Set(
+  rawAllowed
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+);
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -17,11 +22,20 @@ function readBody(req) {
 }
 
 const server = http.createServer(async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", ORIGIN);
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
+    if (origin && !ALLOWED_ORIGINS.has(origin)) {
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "CORS origin not allowed" }));
+      return;
+    }
     res.writeHead(204);
     res.end();
     return;
