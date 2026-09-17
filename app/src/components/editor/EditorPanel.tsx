@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useState, useMemo, type CSSProperties } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -25,6 +25,7 @@ import { EquationEditor } from "./EquationEditor";
 import { AppearancePanel } from "./AppearancePanel";
 import { cardBase, inputBase, labelBase } from "../../lib/uiClasses";
 import { useEditorPreferences } from "../../lib/useEditorPreferences";
+import { countDocumentStats } from "../../lib/countWords";
 
 type BlockType = "paragraph" | "section" | "figure" | "table" | "equation";
 
@@ -420,10 +421,12 @@ export function EditorPanel() {
   // ~150 words. This is advisory, not enforced — going over doesn't block
   // anything, it just tells you before your target venue's reviewer does.
   const abstractOverLimit = abstractWordCount > 150;
+  const stats = useMemo(() => countDocumentStats(document), [document]);
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto bg-gray-50 dark:bg-gray-950 px-6 py-6">
-      <div className={`${cardBase} p-5 mb-5`}>
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950 px-6 py-6">
+        <div className={`${cardBase} p-5 mb-5`}>
         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Paper Details</h2>
 
         <div className="mb-4">
@@ -569,6 +572,22 @@ export function EditorPanel() {
       </div>
 
       <ReferencesEditor />
+      </div>
+      <div className="flex-none border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-2 text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-x-4 gap-y-1">
+        <span>
+          {stats.words} {stats.words === 1 ? "word" : "words"}
+        </span>
+        <span>
+          {stats.characters} {stats.characters === 1 ? "character" : "characters"}
+        </span>
+        <span>
+          {stats.paragraphs} {stats.paragraphs === 1 ? "paragraph" : "paragraphs"}
+        </span>
+        <span>
+          {stats.sections} {stats.sections === 1 ? "section" : "sections"}
+        </span>
+        <span>~{stats.readingTimeMinutes} min read</span>
+      </div>
     </div>
   );
 }
