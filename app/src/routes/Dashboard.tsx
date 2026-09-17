@@ -76,7 +76,7 @@ function NewPaperCard({ creating, onClick }: { creating: boolean; onClick: () =>
     <button
       onClick={onClick}
       disabled={creating}
-      className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-colors"
+      className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-accent hover:text-accent hover:bg-accent-soft/50 transition-colors"
     >
       <span className="text-3xl leading-none">+</span>
       <span className="text-sm font-medium">{creating ? "Creating…" : "New paper"}</span>
@@ -141,7 +141,7 @@ function PaperCard({
           ) : (
             <button
               onClick={() => setEditing(true)}
-              className="text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-400 text-left truncate block w-full"
+              className="text-sm font-medium text-ink hover:text-accent text-left truncate block w-full"
               title={`${doc.title || "Untitled paper"} (click to rename)`}
             >
               {doc.title || "Untitled paper"}
@@ -302,14 +302,14 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#f7f6f3] dark:bg-gray-950">
+    <div className="min-h-screen flex flex-col md:flex-row bg-canvas">
       <DashboardSidebar onSignOut={handleSignOut} />
 
       <div className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10">
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-end mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">My Papers</h1>
+              <h1 className="font-display text-2xl font-semibold text-ink tracking-tight">My Papers</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">Your first paper is free forever.</p>
             </div>
           </div>

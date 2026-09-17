@@ -2,16 +2,16 @@ import { Link } from "react-router-dom";
 
 export function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#f7f6f3] dark:bg-gray-950 py-16 px-6">
+    <div className="min-h-screen bg-canvas py-16 px-6">
       <div className="max-w-3xl mx-auto">
         <Link
           to="/"
-          className="text-sm text-blue-600 dark:text-blue-400 hover:underline mb-8 inline-block"
+          className="text-sm text-accent hover:underline mb-8 inline-block"
         >
           ← Back to home
         </Link>
 
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+        <h1 className="font-display text-3xl font-semibold text-ink mb-2">
           Privacy Policy
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-10">
@@ -101,7 +101,7 @@ export function PrivacyPage() {
                   href="https://supabase.com/privacy"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:underline ml-1"
+                  className="text-accent hover:underline ml-1"
                 >
                   Supabase Privacy Policy →
                 </a>
@@ -114,7 +114,7 @@ export function PrivacyPage() {
                   href="https://groq.com/privacy-policy/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:underline ml-1"
+                  className="text-accent hover:underline ml-1"
                 >
                   Groq Privacy Policy →
                 </a>
@@ -178,7 +178,7 @@ export function PrivacyPage() {
                 your account and all associated data. To exercise this right, email us at{" "}
                 <a
                   href="mailto:support@ieeepaperbuilder.com"
-                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                  className="text-accent hover:underline"
                 >
                   support@ieeepaperbuilder.com
                 </a>{" "}
@@ -248,7 +248,7 @@ export function PrivacyPage() {
               For privacy-related questions or to exercise your rights, contact us at:{" "}
               <a
                 href="mailto:support@ieeepaperbuilder.com"
-                className="text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-accent hover:underline"
               >
                 support@ieeepaperbuilder.com
               </a>

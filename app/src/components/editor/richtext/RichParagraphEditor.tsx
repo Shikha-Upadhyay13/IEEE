@@ -79,7 +79,7 @@ export function RichParagraphEditor({
   const toolbarBtn = (active: boolean) =>
     `w-7 h-7 rounded flex items-center justify-center text-sm font-semibold transition-colors ${
       active
-        ? "bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400"
+        ? "bg-accent-soft text-accent"
         : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
     }`;
   const toolbarSelect =

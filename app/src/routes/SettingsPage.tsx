@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/useAuth";
 import { useTheme, type ThemeSetting } from "../lib/useTheme";
 import { supabase } from "../supabaseClient";
-import { btnDanger, btnSecondary, cardBase } from "../lib/uiClasses";
+import { btnDanger, btnSecondary, cardBase, pageShell } from "../lib/uiClasses";
 import { useConfirm } from "../components/ConfirmDialog";
 import { DashboardSidebar } from "../components/dashboard/DashboardSidebar";
 import { formatJoinDate } from "../lib/formatJoinDate";
@@ -20,13 +20,13 @@ function ThemePreview({ mode }: { mode: ThemeSetting }) {
   if (mode === "system") {
     return (
       <div className="w-full h-16 rounded-md overflow-hidden border border-gray-300 dark:border-gray-600 flex">
-        <div className="w-1/2 bg-white flex flex-col gap-1.5 p-2">
-          <div className="h-1.5 w-full rounded-full bg-gray-200" />
-          <div className="h-1.5 w-2/3 rounded-full bg-gray-200" />
+        <div className="w-1/2 bg-canvas flex flex-col gap-1.5 p-2">
+          <div className="h-1.5 w-full rounded-full bg-line" />
+          <div className="h-1.5 w-2/3 rounded-full bg-line" />
         </div>
-        <div className="w-1/2 bg-gray-900 flex flex-col gap-1.5 p-2">
-          <div className="h-1.5 w-full rounded-full bg-gray-700" />
-          <div className="h-1.5 w-2/3 rounded-full bg-gray-700" />
+        <div className="w-1/2 bg-[#12100e] flex flex-col gap-1.5 p-2">
+          <div className="h-1.5 w-full rounded-full bg-[#322e28]" />
+          <div className="h-1.5 w-2/3 rounded-full bg-[#322e28]" />
         </div>
       </div>
     );
@@ -35,12 +35,12 @@ function ThemePreview({ mode }: { mode: ThemeSetting }) {
   return (
     <div
       className={`w-full h-16 rounded-md overflow-hidden border flex flex-col gap-1.5 p-2 ${
-        isDark ? "border-gray-600 bg-gray-900" : "border-gray-300 bg-white"
+        isDark ? "border-[#322e28] bg-[#12100e]" : "border-line bg-surface"
       }`}
     >
-      <div className={`h-1.5 w-full rounded-full ${isDark ? "bg-gray-700" : "bg-gray-200"}`} />
-      <div className={`h-1.5 w-2/3 rounded-full ${isDark ? "bg-gray-700" : "bg-gray-200"}`} />
-      <div className={`h-1.5 w-1/2 rounded-full ${isDark ? "bg-gray-700" : "bg-gray-200"}`} />
+      <div className={`h-1.5 w-full rounded-full ${isDark ? "bg-[#322e28]" : "bg-line"}`} />
+      <div className={`h-1.5 w-2/3 rounded-full ${isDark ? "bg-[#322e28]" : "bg-line"}`} />
+      <div className={`h-1.5 w-1/2 rounded-full ${isDark ? "bg-[#322e28]" : "bg-line"}`} />
     </div>
   );
 }
@@ -78,11 +78,11 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#f7f6f3] dark:bg-gray-950">
+    <div className={`${pageShell} flex flex-col md:flex-row`}>
       <DashboardSidebar onSignOut={handleSignOut} />
 
       <div className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight mb-1">Settings</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink tracking-tight mb-1">Settings</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
           Your account, appearance, and Doc Buddy preferences.
         </p>
@@ -92,7 +92,7 @@ export function SettingsPage() {
             page doesn't feel like a mostly-empty shell around three small
             cards. */}
         <div className={`${cardBase} p-6 mb-6 flex flex-wrap items-center gap-4`}>
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 dark:from-gray-300 dark:to-gray-100 text-white dark:text-gray-900 flex items-center justify-center text-xl font-semibold flex-none">
+          <div className="w-14 h-14 rounded-full bg-accent text-accent-fg flex items-center justify-center text-xl font-semibold flex-none">
             {user?.email?.[0]?.toUpperCase() ?? "?"}
           </div>
           <div className="min-w-0 flex-1">
@@ -122,16 +122,16 @@ export function SettingsPage() {
                   onClick={() => setTheme(opt.value)}
                   className={`rounded-lg border-2 p-2 text-sm transition-colors ${
                     theme === opt.value
-                      ? "border-blue-600 dark:border-blue-500"
-                      : "border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+                      ? "border-accent"
+                      : "border-transparent hover:border-line"
                   }`}
                 >
                   <ThemePreview mode={opt.value} />
                   <span
                     className={`block mt-2 font-medium ${
                       theme === opt.value
-                        ? "text-blue-700 dark:text-blue-400"
-                        : "text-gray-600 dark:text-gray-400"
+                        ? "text-accent"
+                        : "text-muted"
                     }`}
                   >
                     {opt.label}

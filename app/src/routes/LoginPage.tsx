@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { btnPrimary, inputBase, labelBase } from "../lib/uiClasses";
+import { BrandMark } from "../components/BrandMark";
 
 const FEATURES = [
   "Drag-and-drop editing, no LaTeX required",
@@ -60,7 +61,7 @@ export function LoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Branding panel — hidden on small screens, where the form alone is plenty. */}
-      <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-slate-950 via-gray-900 to-black text-white px-12 py-12 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-[#0f2433] via-[#184a6b] to-[#0a1620] text-white px-12 py-12 relative overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
           style={{
@@ -74,11 +75,11 @@ export function LoginPage() {
           <div className="w-8 h-8 rounded-md bg-white/10 border border-white/20 flex items-center justify-center font-serif text-sm">
             §
           </div>
-          <span className="font-semibold tracking-tight">IEEE Paper Builder</span>
+          <span className="font-display font-semibold tracking-tight">IEEE Paper Builder</span>
         </div>
 
         <div className="relative max-w-md">
-          <h1 className="text-3xl font-semibold leading-tight tracking-tight mb-4">
+          <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight mb-4">
             Write your paper.
             <br />
             We'll handle the formatting.
@@ -106,19 +107,17 @@ export function LoginPage() {
       </div>
 
       {/* Form panel */}
-      <div className="flex items-center justify-center px-6 py-12 bg-gray-50 dark:bg-gray-950">
+      <div className="flex items-center justify-center px-6 py-12 bg-canvas">
         <div className="w-full max-w-sm">
           <div className="lg:hidden mb-8 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-sm">
-              §
-            </div>
-            <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">IEEE Paper Builder</span>
+            <BrandMark />
+            <span className="font-display font-semibold text-ink tracking-tight">IEEE Paper Builder</span>
           </div>
 
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight mb-1">
+          <h2 className="font-display text-2xl font-semibold text-ink tracking-tight mb-1">
             {mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
+          <p className="text-sm text-muted mb-8">
             {mode === "signin"
               ? "Sign in to continue working on your papers."
               : mode === "signup"
@@ -155,7 +154,7 @@ export function LoginPage() {
                         setError(null);
                         setMessage(null);
                       }}
-                      className="text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline mb-1"
+                      className="text-xs text-accent hover:text-accent-hover hover:underline mb-1"
                     >
                       Forgot password?
                     </button>
@@ -217,7 +216,7 @@ export function LoginPage() {
                   setError(null);
                   setMessage(null);
                 }}
-                className="text-blue-700 dark:text-blue-400 font-medium hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
+                className="text-accent font-medium hover:text-accent-hover hover:underline"
               >
                 ← Back to sign in
               </button>
@@ -227,7 +226,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-                  className="text-blue-700 dark:text-blue-400 font-medium hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
+                  className="text-accent font-medium hover:text-accent-hover hover:underline"
                 >
                   {mode === "signin" ? "Sign up" : "Sign in"}
                 </button>

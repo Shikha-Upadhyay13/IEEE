@@ -60,7 +60,7 @@ export function FigureEditor({ node }: { node: Figure }) {
             onChange={(e) =>
               updateFigureWidth(node.id, e.target.checked ? "double-column" : "single-column")
             }
-            className="rounded border-gray-300 dark:border-gray-600 text-blue-700 dark:text-blue-600 focus:ring-blue-600"
+            className="rounded border-line text-accent focus:ring-accent"
           />
           Span both columns
         </label>

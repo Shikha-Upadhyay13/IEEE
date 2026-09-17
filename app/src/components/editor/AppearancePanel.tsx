@@ -19,9 +19,9 @@ const SPACING_OPTIONS: { value: SpacingDensity; label: string }[] = [
   { value: "relaxed", label: "Relaxed" },
 ];
 
-// Curated, deliberately not-purple palette (see the app-wide graphite pass) —
-// these are picked for the *paper's own* accent, a per-document choice the
-// author makes, unlike the app's own brand color which stays graphite.
+// Curated, deliberately not-purple palette — these are picked for the
+// *paper's own* accent, a per-document choice the author makes, unlike
+// the app's cream-and-navy chrome in index.css.
 const ACCENT_SWATCHES: { value: string | null; label: string }[] = [
   { value: null, label: "None (default)" },
   { value: "#64748b", label: "Slate" },
@@ -202,7 +202,7 @@ export function AppearancePanel() {
                     disabled={!accentColor}
                     checked={meta.accentTargets?.[opt.key] ?? false}
                     onChange={(e) => setAccentTarget(opt.key, e.target.checked)}
-                    className="rounded border-gray-300 dark:border-gray-600 text-blue-700 dark:text-blue-600 focus:ring-blue-600"
+                    className="rounded border-line text-accent focus:ring-accent"
                   />
                   {opt.label}
                 </label>
@@ -223,7 +223,7 @@ export function AppearancePanel() {
                   type="checkbox"
                   checked={meta.linkStyle?.underline ?? false}
                   onChange={(e) => setLinkStyle("underline" as LinkStyleKey, e.target.checked)}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-700 dark:text-blue-600 focus:ring-blue-600"
+                  className="rounded border-line text-accent focus:ring-accent"
                 />
                 Underline
               </label>
@@ -237,7 +237,7 @@ export function AppearancePanel() {
                   disabled={!accentColor}
                   checked={meta.linkStyle?.colored ?? false}
                   onChange={(e) => setLinkStyle("colored" as LinkStyleKey, e.target.checked)}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-700 dark:text-blue-600 focus:ring-blue-600"
+                  className="rounded border-line text-accent focus:ring-accent"
                 />
                 Use accent color{!accentColor && " (pick a color above first)"}
               </label>
@@ -269,7 +269,7 @@ export function AppearancePanel() {
                     aria-pressed={active}
                     className={`px-3 py-1.5 text-sm transition-colors ${i > 0 ? "border-l border-gray-300 dark:border-gray-600" : ""} ${
                       active
-                        ? "bg-blue-700 dark:bg-blue-600 text-white font-medium"
+                        ? "bg-accent text-accent-fg font-medium"
                         : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
                   >

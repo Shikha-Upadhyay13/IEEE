@@ -14,6 +14,7 @@ import {
 import { ProjectBar } from "../components/assistant/ProjectBar";
 import { ProjectHome } from "../components/assistant/ProjectHome";
 import { MarkdownContent } from "../components/assistant/MarkdownContent";
+import { BrandMark } from "../components/BrandMark";
 
 const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL ?? "http://localhost:3002";
 
@@ -688,7 +689,7 @@ export function AssistantPage() {
     : 0;
 
   return (
-    <div className="h-screen flex bg-[#f7f6f3] dark:bg-gray-950">
+    <div className="h-screen flex bg-canvas">
       <ConversationSidebar
         conversations={conversations}
         projects={projects}
@@ -725,9 +726,7 @@ export function AssistantPage() {
           </Link>
           <span className="hidden sm:inline text-gray-300 dark:text-gray-700">|</span>
           <div className="hidden sm:flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-md bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-xs">
-              §
-            </div>
+            <BrandMark size="sm" />
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-none tracking-tight">
                 Doc Buddy
@@ -777,9 +776,7 @@ export function AssistantPage() {
                 />
               ) : (
                 <div className="text-center py-12 animate-fade-in-up">
-                  <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-3xl">
-                    §
-                  </div>
+                  <BrandMark size="lg" className="mx-auto mb-5 rounded-xl" />
                   <p className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1 tracking-tight">
                     What are you writing today?
                   </p>
@@ -996,7 +993,7 @@ export function AssistantPage() {
                         }}
                         className={`w-full text-left text-sm px-3 py-1.5 truncate hover:bg-gray-50 dark:hover:bg-gray-800 ${
                           selectedDoc?.id === doc.id
-                            ? "text-blue-700 dark:text-blue-400 font-medium"
+                            ? "text-accent font-medium"
                             : "text-gray-700 dark:text-gray-300"
                         }`}
                       >
@@ -1012,7 +1009,7 @@ export function AssistantPage() {
                     title="Attach a paper for context"
                     className={`inline-flex items-center gap-1.5 max-w-48 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                       selectedDoc
-                        ? "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40"
+                        ? "text-accent bg-accent-soft"
                         : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}
                   >
@@ -1030,7 +1027,7 @@ export function AssistantPage() {
                     title={imageMode ? "Switch back to text replies" : "Generate an image instead"}
                     className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                       imageMode
-                        ? "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40"
+                        ? "text-accent bg-accent-soft"
                         : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}
                   >
@@ -1052,7 +1049,7 @@ export function AssistantPage() {
                   key="send"
                   type="submit"
                   disabled={imageMode ? isGeneratingImage || !input.trim() : !input.trim()}
-                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-blue-700 dark:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 hover:bg-blue-800 dark:hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-700 dark:disabled:hover:bg-blue-600 transition-colors animate-fade-in"
+                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-accent text-accent-fg text-xs font-semibold px-3 py-1.5 hover:bg-accent-hover disabled:opacity-40 transition-colors animate-fade-in"
                 >
                   {imageMode ? (isGeneratingImage ? "Generating…" : "Generate") : "Send"}
                   {!isGeneratingImage && <span className="leading-none">↵</span>}

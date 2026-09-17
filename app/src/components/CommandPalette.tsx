@@ -192,11 +192,11 @@ export function CommandPalette() {
         role="dialog"
         aria-modal="true"
         aria-label="Command palette"
-        className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-fade-in-up"
+        className="w-full max-w-lg bg-surface rounded-xl shadow-2xl border border-line overflow-hidden animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-          <span className="flex-none text-xs font-mono text-gray-400 dark:text-gray-500 border border-gray-300 dark:border-gray-700 rounded px-1.5 py-0.5">
+        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-line">
+          <span className="flex-none text-xs font-mono text-muted border border-line rounded px-1.5 py-0.5">
             ⌘K
           </span>
           <input
@@ -208,7 +208,7 @@ export function CommandPalette() {
             }}
             onKeyDown={handleInputKeyDown}
             placeholder="Search papers, jump to a page, or run a command…"
-            className="flex-1 bg-transparent text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none"
+            className="flex-1 bg-transparent text-sm text-ink placeholder:text-muted/70 focus:outline-none"
           />
         </div>
         <div className="max-h-80 overflow-y-auto py-1.5">
@@ -223,7 +223,7 @@ export function CommandPalette() {
                 onMouseEnter={() => setSelected(i)}
                 className={`w-full flex items-center gap-3 px-4 py-2 text-left text-sm transition-colors ${
                   i === selected
-                    ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400"
+                    ? "bg-accent-soft text-accent"
                     : "text-gray-700 dark:text-gray-300"
                 }`}
               >

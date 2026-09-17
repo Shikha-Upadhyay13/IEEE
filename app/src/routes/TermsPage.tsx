@@ -2,16 +2,16 @@ import { Link } from "react-router-dom";
 
 export function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#f7f6f3] dark:bg-gray-950 py-16 px-6">
+    <div className="min-h-screen bg-canvas py-16 px-6">
       <div className="max-w-3xl mx-auto">
         <Link
           to="/"
-          className="text-sm text-blue-600 dark:text-blue-400 hover:underline mb-8 inline-block"
+          className="text-sm text-accent hover:underline mb-8 inline-block"
         >
           ← Back to home
         </Link>
 
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+        <h1 className="font-display text-3xl font-semibold text-ink mb-2">
           Terms of Service
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-10">
@@ -94,7 +94,7 @@ export function TermsPage() {
             <p className="mt-3">
               We do not use your paper content to train AI models, sell your data, or share it with
               third parties except as described in our{" "}
-              <Link to="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
+              <Link to="/privacy" className="text-accent hover:underline">
                 Privacy Policy
               </Link>
               .
@@ -190,7 +190,7 @@ export function TermsPage() {
               Questions about these Terms? Contact us at:{" "}
               <a
                 href="mailto:support@ieeepaperbuilder.com"
-                className="text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-accent hover:underline"
               >
                 support@ieeepaperbuilder.com
               </a>

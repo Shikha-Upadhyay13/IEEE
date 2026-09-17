@@ -4,6 +4,7 @@ import { resolveNumbering } from "../lib/numbering";
 import { samplePaper } from "../data/samplePaper";
 import { PagedPreview } from "../components/renderer/PagedPreview";
 import { btnPrimary } from "../lib/uiClasses";
+import { BrandMark } from "../components/BrandMark";
 
 // The renderer produces real US-letter pages (816x1056px); this scale shrinks
 // that down to a hero-sized thumbnail while keeping the aspect ratio exact.
@@ -263,8 +264,8 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         <span
           className={`flex-none w-6 h-6 rounded-full flex items-center justify-center text-base leading-none transition-all ${
             open
-              ? "bg-blue-700 dark:bg-blue-600 text-white rotate-45"
-              : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+              ? "bg-accent text-accent-fg rotate-45"
+              : "bg-canvas text-muted"
           }`}
         >
           +
@@ -325,16 +326,14 @@ function NavBar() {
 
   return (
     <header
-      className={`sticky top-0 z-20 border-b bg-white/70 dark:bg-gray-950/70 backdrop-blur-md transition-shadow ${
-        scrolled ? "border-gray-200 dark:border-gray-800 shadow-sm" : "border-transparent"
+      className={`sticky top-0 z-20 border-b bg-surface/80 backdrop-blur-md transition-shadow ${
+        scrolled ? "border-line shadow-sm" : "border-transparent"
       }`}
     >
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-sm shadow-md shadow-black/10">
-            §
-          </div>
-          <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">IEEE Paper Builder</span>
+          <BrandMark className="shadow-md shadow-black/10" />
+          <span className="font-display font-semibold text-ink tracking-tight">IEEE Paper Builder</span>
         </div>
         <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-600 dark:text-gray-400">
           <a href="#how-it-works" className="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
@@ -350,7 +349,7 @@ function NavBar() {
         <div className="flex items-center gap-3">
           <Link
             to="/login"
-            className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            className="text-sm font-medium text-muted hover:text-ink transition-colors"
           >
             Login
           </Link>
@@ -423,7 +422,7 @@ export function LandingPage() {
   const { containerRef: heroRef, scale: heroScale } = useHeroScale();
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
+    <div className="min-h-screen bg-canvas">
       <NavBar />
 
       {/* Hero */}
@@ -433,11 +432,11 @@ export function LandingPage() {
         <GridBackdrop className="text-gray-900 dark:text-gray-100" />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-52 -right-40 w-[640px] h-[640px] rounded-full bg-gradient-to-br from-gray-300/40 via-gray-200/30 to-transparent blur-3xl"
+          className="pointer-events-none absolute -top-52 -right-40 w-[640px] h-[640px] rounded-full bg-gradient-to-br from-accent/20 via-accent-soft/40 to-transparent blur-3xl"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-20 -left-52 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-gray-200/40 to-transparent blur-3xl"
+          className="pointer-events-none absolute top-20 -left-52 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-accent-soft/50 to-transparent blur-3xl"
         />
 
         <div className="relative max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-16 grid lg:grid-cols-2 gap-16 items-center">
@@ -446,10 +445,10 @@ export function LandingPage() {
               <span className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-100" />
               Free IEEE conference paper builder
             </p>
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 leading-[1.05] sm:leading-[1.02] mb-6">
+            <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-semibold tracking-tight text-ink leading-[1.05] sm:leading-[1.02] mb-6">
               Write your paper.
               <br />
-              <span className="text-gray-500 dark:text-gray-400">We'll handle the formatting.</span>
+              <span className="text-muted">We'll handle the formatting.</span>
             </h1>
             <p className="text-lg text-gray-500 dark:text-gray-400 leading-relaxed mb-9 max-w-md">
               Drag, drop, and write your content — margins, two-column layout, fonts, figure
@@ -565,7 +564,7 @@ export function LandingPage() {
         <div className="max-w-[1440px] mx-auto px-6 lg:px-10 pt-20 pb-24">
           <Reveal>
             <div className="text-center mb-14">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-3">
+              <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-ink mb-3">
                 From blank page to submission-ready, in three steps
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
@@ -598,11 +597,11 @@ export function LandingPage() {
       {/* Features */}
       <section
         id="features"
-        className="relative bg-gradient-to-b from-[#f7f6f3] to-[#f2f0ec] dark:from-gray-950 dark:to-gray-900 py-24"
+        className="relative bg-gradient-to-b from-canvas to-accent-soft/30 py-24"
       >
         <div className="max-w-[1440px] mx-auto px-6 lg:px-10">
           <Reveal>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-ink mb-3">
               Everything you need for an IEEE paper
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-12 max-w-xl">
@@ -639,7 +638,7 @@ export function LandingPage() {
         <div className="grid lg:grid-cols-[minmax(0,340px)_1fr] gap-12">
           <Reveal>
             <div className="lg:sticky lg:top-24">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-3">
+              <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-ink mb-3">
                 Frequently asked questions
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
@@ -652,7 +651,7 @@ export function LandingPage() {
                 </p>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-accent-hover hover:underline"
                 >
                   Get started for free
                   {Icons.arrowRight("w-3.5 h-3.5")}
@@ -670,14 +669,13 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA — plain dark graphite with a faint grid; the section is
-          already dark-by-design regardless of theme, so it doesn't need a
-          brand-color tint on top to stand out. */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-gray-900 to-black py-24">
+      {/* Final CTA — navy editorial band with a faint grid; always dark
+          regardless of theme so the close reads as a distinct closer. */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0f2433] via-[#184a6b] to-[#0a1620] py-24">
         <GridBackdrop className="text-white" />
         <Reveal>
           <div className="relative max-w-4xl mx-auto px-6 text-center">
-            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl font-display font-semibold tracking-tight text-white mb-4">
               Stop fighting your formatting.
             </h2>
             <p className="text-gray-300/90 text-base mb-8 max-w-md mx-auto">

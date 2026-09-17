@@ -11,6 +11,7 @@ import { VersionHistoryPanel } from "../components/editor/VersionHistoryPanel";
 import { supabase } from "../supabaseClient";
 import { btnGhost, btnPrimary, btnSecondary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
+import { BrandMark } from "../components/BrandMark";
 import { extractTitleText } from "../lib/extractTitleText";
 import type { Document } from "../types/document";
 
@@ -158,10 +159,8 @@ export function EditorPage() {
   }
   if (loadState === "error") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-[#f7f6f3] dark:bg-gray-950 px-6 text-center">
-        <div className="w-10 h-10 rounded-lg bg-gray-300 dark:bg-gray-700 text-white flex items-center justify-center font-serif text-xl">
-          §
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-canvas px-6 text-center">
+        <BrandMark size="lg" className="bg-muted text-accent-fg" />
         <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm">
           Couldn't load that paper — it may not exist, or you may not have access.
         </p>
@@ -175,14 +174,18 @@ export function EditorPage() {
   const saveLabel =
     saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : saveState === "error" ? "Save failed" : "";
   const saveLabelClass =
-    saveState === "error" ? "text-red-600" : saveState === "saving" ? "text-gray-400" : "text-emerald-600";
+    saveState === "error"
+      ? "text-red-600 dark:text-red-400"
+      : saveState === "saving"
+        ? "text-muted"
+        : "text-emerald-600 dark:text-emerald-400";
 
   return (
     <div className="h-screen flex flex-col">
       {/* Top bar spans both panes — mirrors the reference layout's header:
           navigation/status on the left, the primary action (export) on the
           right, both reachable regardless of what's happening below. */}
-      <div className="flex-none flex justify-between items-center px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 z-20">
+      <div className="flex-none flex justify-between items-center px-6 py-3 border-b border-line bg-surface z-20">
         <div className="flex items-center gap-3">
           <Link
             to="/dashboard"
@@ -211,7 +214,7 @@ export function EditorPage() {
       </div>
 
       <div className="flex-1 min-h-0 flex">
-        <div className="w-1/2 min-w-0 h-full flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <div className="w-1/2 min-w-0 h-full flex flex-col border-r border-line bg-surface">
           <EditorPanel />
         </div>
 
@@ -221,8 +224,8 @@ export function EditorPage() {
         <div
           className={
             previewOpen
-              ? "fixed inset-0 z-50 bg-gray-100 dark:bg-gray-950 overflow-y-auto py-10"
-              : "w-1/2 min-w-0 relative overflow-y-auto bg-gray-100 dark:bg-gray-950 py-10"
+              ? "fixed inset-0 z-50 bg-canvas overflow-y-auto py-10"
+              : "w-1/2 min-w-0 relative overflow-y-auto bg-canvas py-10"
           }
         >
           {previewOpen && (

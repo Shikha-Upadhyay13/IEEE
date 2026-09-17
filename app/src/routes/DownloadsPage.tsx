@@ -109,7 +109,7 @@ export function DownloadsPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#f7f6f3] dark:bg-gray-950">
+    <div className="min-h-screen flex flex-col md:flex-row bg-canvas">
       <DashboardSidebar
         onSignOut={async () => {
           await supabase.auth.signOut();
@@ -119,7 +119,7 @@ export function DownloadsPage() {
 
       <div className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight mb-1">Downloads</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink tracking-tight mb-1">Downloads</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
             {exports.length > 0
               ? `${exports.length} export${exports.length === 1 ? "" : "s"} across ${groups.length} paper${groups.length === 1 ? "" : "s"} — export again from a paper's editor to add another.`

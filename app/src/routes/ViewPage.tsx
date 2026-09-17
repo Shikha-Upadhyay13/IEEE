@@ -73,7 +73,7 @@ export function ViewPage() {
 
   if (loadState === "unauthorized") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#f7f6f3] dark:bg-gray-950 px-6 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-canvas px-6 text-center">
         <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl font-bold">
           🔒
         </div>
@@ -95,7 +95,7 @@ export function ViewPage() {
 
   if (loadState === "notfound" || !resolvedDoc) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#f7f6f3] dark:bg-gray-950 px-6 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-canvas px-6 text-center">
         <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-800 text-gray-500 flex items-center justify-center text-2xl font-bold">
           📄
         </div>
@@ -111,11 +111,11 @@ export function ViewPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#e5e5e5] dark:bg-gray-950">
+    <div className="min-h-screen flex flex-col bg-canvas">
       {/* Top Banner */}
-      <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-2.5 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-xs">
+      <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-2.5 bg-surface border-b border-line shadow-xs">
         <div className="flex items-center gap-3 min-w-0">
-          <Link to="/" className="flex items-center gap-1.5 text-blue-700 dark:text-blue-400 font-bold text-sm">
+          <Link to="/" className="flex items-center gap-1.5 text-accent font-semibold text-sm">
             <span>⚡</span>
             <span className="hidden sm:inline">IEEE Paper Builder</span>
           </Link>

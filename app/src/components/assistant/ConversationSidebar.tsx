@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ProfileMenu } from "./ProfileMenu";
 import { CreateProjectModal } from "./CreateProjectModal";
+import { BrandMark } from "../BrandMark";
 
 export type ConversationRow = { id: string; title: string; project_id: string | null; updated_at: string };
 export type ProjectRow = {
@@ -79,9 +80,7 @@ export function ConversationSidebar({
     return (
       <>
         <div className="flex items-center gap-2 px-4 pt-4 pb-1">
-          <div className="w-6 h-6 rounded-md bg-blue-500 text-white flex items-center justify-center font-serif text-xs flex-none">
-            §
-          </div>
+          <BrandMark size="sm" />
           <span className="text-sm font-medium text-gray-200 tracking-tight">Doc Buddy</span>
         </div>
         <div className="p-3">
@@ -224,7 +223,7 @@ export function ConversationSidebar({
   return (
     <>
       {/* Desktop rail — unchanged from before, just hidden below md. */}
-      <div className="hidden md:flex w-72 flex-none h-full flex-col bg-gray-900 text-gray-300">
+      <div className="hidden md:flex w-72 flex-none h-full flex-col bg-[#0f2433] text-gray-300">
         <SidebarBody />
       </div>
 
@@ -232,7 +231,7 @@ export function ConversationSidebar({
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-40 flex">
           <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onCloseMobile} aria-hidden="true" />
-          <div className="relative w-72 max-w-[85%] h-full flex flex-col bg-gray-900 text-gray-300 shadow-xl">
+          <div className="relative w-72 max-w-[85%] h-full flex flex-col bg-[#0f2433] text-gray-300 shadow-xl">
             <button
               onClick={onCloseMobile}
               aria-label="Close menu"

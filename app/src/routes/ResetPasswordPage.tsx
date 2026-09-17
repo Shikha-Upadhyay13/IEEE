@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { btnPrimary, inputBase, labelBase } from "../lib/uiClasses";
+import { BrandMark } from "../components/BrandMark";
 
 // Reached only via the link Supabase emails from LoginPage's "Forgot
 // password?" flow — the recovery token lives in the URL fragment, and
@@ -49,13 +50,11 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-12 bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen flex items-center justify-center px-6 py-12 bg-canvas">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-blue-700 dark:bg-blue-600 text-white flex items-center justify-center font-serif text-sm">
-            §
-          </div>
-          <span className="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">IEEE Paper Builder</span>
+          <BrandMark />
+          <span className="font-display font-semibold text-ink tracking-tight">IEEE Paper Builder</span>
         </div>
 
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight mb-1">

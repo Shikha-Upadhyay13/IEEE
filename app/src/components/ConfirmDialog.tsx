@@ -58,13 +58,13 @@ export function useConfirm() {
       <div
         role="alertdialog"
         aria-modal="true"
-        className="bg-white dark:bg-gray-900 rounded-xl shadow-xl max-w-sm w-full p-5 animate-fade-in-up"
+        className="bg-surface rounded-xl shadow-xl max-w-sm w-full p-5 animate-fade-in-up border border-line"
         onClick={(e) => e.stopPropagation()}
       >
         {options.title && (
-          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1.5">{options.title}</h3>
+          <h3 className="text-base font-semibold text-ink mb-1.5">{options.title}</h3>
         )}
-        <p className="text-sm text-gray-600 dark:text-gray-400">{options.message}</p>
+        <p className="text-sm text-muted">{options.message}</p>
         <div className="flex justify-end gap-2 mt-5">
           <button ref={cancelButtonRef} onClick={() => settle(false)} className={btnSecondary}>
             Cancel

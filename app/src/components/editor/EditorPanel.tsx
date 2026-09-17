@@ -425,7 +425,7 @@ export function EditorPanel() {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
-      <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950 px-6 py-6">
+      <div className="flex-1 overflow-y-auto bg-canvas px-6 py-6">
         <div className={`${cardBase} p-5 mb-5`}>
         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Paper Details</h2>
 
@@ -573,7 +573,7 @@ export function EditorPanel() {
 
       <ReferencesEditor />
       </div>
-      <div className="flex-none border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-2 text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-x-4 gap-y-1">
+      <div className="flex-none border-t border-line bg-surface px-6 py-2 text-xs text-muted flex flex-wrap gap-x-4 gap-y-1">
         <span>
           {stats.words} {stats.words === 1 ? "word" : "words"}
         </span>
