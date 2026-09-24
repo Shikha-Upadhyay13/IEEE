@@ -1,6 +1,7 @@
 import { useState, useMemo, type CSSProperties } from "react";
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
   closestCenter,
   pointerWithin,
@@ -8,6 +9,7 @@ import {
   useSensors,
   type CollisionDetection,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -16,7 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useDocumentStore, collectSectionOptions, collectSectionDescendantIds } from "../../store/documentStore";
-import type { BodyNode, FontFamily } from "../../types/document";
+import type { BodyNode, FontFamily, InlineNode } from "../../types/document";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 import { FigureEditor } from "./FigureEditor";
 import { TableEditor } from "./TableEditor";
@@ -44,6 +46,41 @@ const FONT_OPTIONS: { value: FontFamily; label: string }[] = [
   { value: "georgia", label: "Georgia" },
   { value: "calibri", label: "Calibri" },
 ];
+
+function findNodeById(nodes: BodyNode[], id: string): BodyNode | null {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    if (node.type === "section") {
+      const found = findNodeById(node.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function inlinePreview(nodes: InlineNode[], max = 48): string {
+  const text = nodes
+    .map((n) => (n.type === "text" ? n.text : ""))
+    .join("")
+    .trim();
+  if (!text) return "Empty paragraph";
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
+function dragOverlayLabel(node: BodyNode): string {
+  switch (node.type) {
+    case "section":
+      return node.heading.trim() || "Untitled section";
+    case "paragraph":
+      return inlinePreview(node.content);
+    case "figure":
+      return inlinePreview(node.caption) || "Figure";
+    case "table":
+      return inlinePreview(node.caption) || "Table";
+    case "equation":
+      return node.latex.trim() ? `Eq: ${node.latex.slice(0, 40)}` : "Equation";
+  }
+}
 
 // Two problems compound here, both from nested sortable items having
 // wildly different heights (a section's rect spans all its nested content):
@@ -126,9 +163,11 @@ function SortableBlockItem({
       {...attributes}
       {...listeners}
       data-drag-handle={node.id}
+      type="button"
       aria-label="Drag to reorder"
+      title="Drag to reorder within this list"
       style={dragHandleAccent ? { color: dragHandleAccent } : undefined}
-      className="flex-none w-6 h-6 flex items-center justify-center rounded text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing touch-none"
+      className="flex-none w-7 h-7 flex items-center justify-center rounded border border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700 cursor-grab active:cursor-grabbing touch-none"
     >
       ⠿
     </button>
@@ -422,6 +461,7 @@ export function EditorPanel() {
   const appendTable = useDocumentStore((s) => s.appendTable);
   const appendEquation = useDocumentStore((s) => s.appendEquation);
   const reorderBlocks = useDocumentStore((s) => s.reorderBlocks);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
   const sensors = useSensors(
     // A small activation distance keeps ordinary clicks (into a text field,
@@ -429,8 +469,13 @@ export function EditorPanel() {
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
   );
 
+  function handleDragStart(event: DragStartEvent) {
+    setActiveDragId(String(event.active.id));
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
+    setActiveDragId(null);
     if (!over || active.id === over.id) return;
     const activeContainer = (active.data.current?.containerId ?? null) as string | null;
     const overContainer = (over.data.current?.containerId ?? null) as string | null;
@@ -439,6 +484,12 @@ export function EditorPanel() {
     if (activeContainer !== overContainer) return;
     reorderBlocks(activeContainer, String(active.id), String(over.id));
   }
+
+  function handleDragCancel() {
+    setActiveDragId(null);
+  }
+
+  const activeDragNode = activeDragId ? findNodeById(document.body, activeDragId) : null;
 
   const titleText = document.titleBlock.title
     .map((n) => (n.type === "text" ? n.text : ""))
@@ -557,7 +608,11 @@ export function EditorPanel() {
       <AppearancePanel />
 
       <div className={`${cardBase} p-5 mb-5`}>
-        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Body Content</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Body Content</h2>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+          Drag the ⠿ handle to reorder blocks in the same list. Use ⇥ Move to… to place a block in a
+          different section. Expand a section (▸) before reordering its children.
+        </p>
 
         {/* DndContext stays outside the zoom wrapper: CSS zoom scales layout
             but leaves pointer coordinates unscaled, so dnd-kit's hit-testing
@@ -567,11 +622,21 @@ export function EditorPanel() {
         <DndContext
           sensors={sensors}
           collisionDetection={collisionDetectionWithinContainer}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
           <div style={{ zoom: textScale, "--block-gap": `${8 * blockSpacing}px` } as CSSProperties}>
             <SortableBlockList containerId={null} nodes={document.body} depth={0} />
           </div>
+          <DragOverlay dropAnimation={null}>
+            {activeDragNode ? (
+              <div className="max-w-sm rounded-lg border border-accent bg-surface px-3 py-2 text-sm font-medium text-ink shadow-lg cursor-grabbing">
+                <span className="mr-2 text-muted">⠿</span>
+                {dragOverlayLabel(activeDragNode)}
+              </div>
+            ) : null}
+          </DragOverlay>
         </DndContext>
 
         <select
