@@ -112,9 +112,11 @@ function SortableBlockItem({
   // Content card by the Appearance panel's "Space between blocks" slider
   // (see EditorPanel below) — 8px (Tailwind's old mb-2) is the fallback for
   // anyone who hasn't touched that control.
-  const wrapperStyle = {
+  const dragStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
+  };
+  const layoutStyle = {
     marginBottom: "var(--block-gap, 8px)",
   };
   const wrapperClass = isDragging ? "opacity-50" : "";
@@ -181,14 +183,21 @@ function SortableBlockItem({
   );
 
   if (node.type === "section") {
+    // Sortable ref + transform live on the header row only — not the outer
+    // wrapper that grows to include expanded children. When the ref spanned
+    // the whole expanded section, its hit-box swallowed sibling sections
+    // below it and collision detection picked the wrong drop target.
     return (
       <div
-        ref={setNodeRef}
         data-block-id={node.id}
-        style={{ ...wrapperStyle, marginLeft: depth * 16, ...(borderAccent ? { borderColor: borderAccent } : {}) }}
-        className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
+        style={{
+          ...layoutStyle,
+          marginLeft: depth * 16,
+          ...(borderAccent ? { borderColor: borderAccent } : {}),
+        }}
+        className={`rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3 ${wrapperClass}`}
       >
-        <div className="flex gap-2 items-center mb-2">
+        <div ref={setNodeRef} style={dragStyle} className="flex gap-2 items-center mb-2">
           {dragHandle}
           <button
             onClick={() => setExpanded((v) => !v)}
@@ -249,7 +258,12 @@ function SortableBlockItem({
       <div
         ref={setNodeRef}
         data-block-id={node.id}
-        style={{ ...wrapperStyle, marginLeft: depth * 16, ...(borderAccent ? { borderColor: borderAccent } : {}) }}
+        style={{
+          ...dragStyle,
+          ...layoutStyle,
+          marginLeft: depth * 16,
+          ...(borderAccent ? { borderColor: borderAccent } : {}),
+        }}
         className={wrapperClass}
       >
         <div className="flex gap-2 items-start">
@@ -272,7 +286,12 @@ function SortableBlockItem({
       <div
         ref={setNodeRef}
         data-block-id={node.id}
-        style={{ ...wrapperStyle, marginLeft: depth * 16, ...(borderAccent ? { borderColor: borderAccent } : {}) }}
+        style={{
+          ...dragStyle,
+          ...layoutStyle,
+          marginLeft: depth * 16,
+          ...(borderAccent ? { borderColor: borderAccent } : {}),
+        }}
         className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
       >
         <div className="flex gap-2 items-start">
@@ -292,7 +311,12 @@ function SortableBlockItem({
       <div
         ref={setNodeRef}
         data-block-id={node.id}
-        style={{ ...wrapperStyle, marginLeft: depth * 16, ...(borderAccent ? { borderColor: borderAccent } : {}) }}
+        style={{
+          ...dragStyle,
+          ...layoutStyle,
+          marginLeft: depth * 16,
+          ...(borderAccent ? { borderColor: borderAccent } : {}),
+        }}
         className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
       >
         <div className="flex gap-2 items-start">
@@ -312,7 +336,7 @@ function SortableBlockItem({
     <div
       ref={setNodeRef}
       data-block-id={node.id}
-      style={{ ...wrapperStyle, marginLeft: depth * 16 }}
+      style={{ ...dragStyle, ...layoutStyle, marginLeft: depth * 16 }}
       className={`${wrapperClass} rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3`}
     >
       <div className="flex gap-2 items-start">
