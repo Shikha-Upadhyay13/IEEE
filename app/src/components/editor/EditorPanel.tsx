@@ -535,20 +535,20 @@ export function EditorPanel() {
       <div className={`${cardBase} p-5 mb-5`}>
         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Body Content</h2>
 
-        {/* Appearance panel's "Editing View" sliders only ever touch this
-            wrapper — zoom scales the block list's text/spacing together like
-            a browser zoom, and --block-gap drives each block's own margin
-            (see SortableBlockItem above). Neither reaches the PagedPreview/
-            export path at all. */}
-        <div style={{ zoom: textScale, "--block-gap": `${8 * blockSpacing}px` } as CSSProperties}>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={collisionDetectionWithinContainer}
-            onDragEnd={handleDragEnd}
-          >
+        {/* DndContext stays outside the zoom wrapper: CSS zoom scales layout
+            but leaves pointer coordinates unscaled, so dnd-kit's hit-testing
+            desyncs whenever Appearance → Text size is not 100%. The zoom/
+            --block-gap wrapper still applies editing-view comfort only —
+            neither reaches the PagedPreview/export path. */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={collisionDetectionWithinContainer}
+          onDragEnd={handleDragEnd}
+        >
+          <div style={{ zoom: textScale, "--block-gap": `${8 * blockSpacing}px` } as CSSProperties}>
             <SortableBlockList containerId={null} nodes={document.body} depth={0} />
-          </DndContext>
-        </div>
+          </div>
+        </DndContext>
 
         <select
           aria-label="Add block"
