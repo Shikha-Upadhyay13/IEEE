@@ -336,8 +336,12 @@ function SortableBlockList({
   nodes: BodyNode[];
   depth: number;
 }) {
+  // Unique id per nested list — required by dnd-kit when multiple
+  // SortableContexts share one DndContext. Without it, nested drop
+  // targets collide and reordering inside expanded sections silently fails.
+  const sortableId = containerId ?? "root";
   return (
-    <SortableContext items={nodes.map((n) => n.id)} strategy={verticalListSortingStrategy}>
+    <SortableContext id={sortableId} items={nodes.map((n) => n.id)} strategy={verticalListSortingStrategy}>
       {nodes.map((node) => (
         <SortableBlockItem key={node.id} node={node} containerId={containerId} depth={depth} />
       ))}
