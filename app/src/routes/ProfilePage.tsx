@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { useAuth } from "../lib/useAuth";
 import { supabase } from "../supabaseClient";
 import { btnSecondary, cardBase, pageShell } from "../lib/uiClasses";
@@ -42,8 +43,12 @@ export function ProfilePage() {
             </dl>
 
             <div className="border-t border-line mt-6 pt-6 flex justify-between items-center">
-              <Link to="/settings" className="text-sm text-accent hover:text-accent-hover hover:underline font-medium">
-                Go to Settings →
+              <Link
+                to="/settings"
+                className="inline-flex items-center gap-1 text-sm text-accent hover:text-accent-hover hover:underline font-medium"
+              >
+                Go to Settings
+                <ArrowRight size={14} aria-hidden="true" />
               </Link>
               <button onClick={handleSignOut} className={btnSecondary}>
                 Sign out

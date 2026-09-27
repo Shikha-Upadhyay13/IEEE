@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Image as ImageIcon, MessageSquare } from "lucide-react";
 import { useAuth } from "../lib/useAuth";
 import { useTheme, type ThemeSetting } from "../lib/useTheme";
 import { supabase } from "../supabaseClient";
@@ -148,7 +149,7 @@ export function SettingsPage() {
           <div className={`${cardBase} p-6`}>
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Doc Buddy</h2>
             <div className="flex items-start gap-3">
-              <span className="text-lg flex-none">💬</span>
+              <MessageSquare size={18} className="flex-none mt-0.5 text-accent" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Chat</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -157,7 +158,7 @@ export function SettingsPage() {
               </div>
             </div>
             <div className="flex items-start gap-3 mt-4">
-              <span className="text-lg flex-none">🖼️</span>
+              <ImageIcon size={18} className="flex-none mt-0.5 text-accent" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Image generation</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">

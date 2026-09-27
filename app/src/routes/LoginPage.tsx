@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { ArrowLeft, Check } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { btnPrimary, inputBase, labelBase } from "../lib/uiClasses";
 import { BrandMark } from "../components/BrandMark";
@@ -95,8 +96,8 @@ export function LoginPage() {
           <ul className="flex flex-col gap-3">
             {FEATURES.map((f) => (
               <li key={f} className="flex items-start gap-2.5 text-sm text-gray-100/90">
-                <span className="mt-0.5 flex-none w-4 h-4 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-[10px]">
-                  ✓
+                <span className="mt-0.5 flex-none w-4 h-4 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+                  <Check size={10} strokeWidth={3} aria-hidden="true" />
                 </span>
                 {f}
               </li>
@@ -228,9 +229,10 @@ export function LoginPage() {
                   setError(null);
                   setMessage(null);
                 }}
-                className="text-accent font-medium hover:text-accent-hover hover:underline"
+                className="inline-flex items-center gap-1 text-accent font-medium hover:text-accent-hover hover:underline"
               >
-                ← Back to sign in
+                <ArrowLeft size={14} aria-hidden="true" />
+                Back to sign in
               </button>
             ) : (
               <>

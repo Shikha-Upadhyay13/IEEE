@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 export function TermsPage() {
   return (
@@ -6,9 +7,10 @@ export function TermsPage() {
       <div className="max-w-3xl mx-auto">
         <Link
           to="/"
-          className="text-sm text-accent hover:underline mb-8 inline-block"
+          className="text-sm text-accent hover:underline mb-8 inline-flex items-center gap-1"
         >
-          ← Back to home
+          <ArrowLeft size={14} aria-hidden="true" />
+          Back to home
         </Link>
 
         <h1 className="font-display text-3xl font-semibold text-ink mb-2">

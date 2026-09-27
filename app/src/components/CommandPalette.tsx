@@ -1,5 +1,24 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Download,
+  FileText,
+  Heading,
+  Image as ImageIcon,
+  LogIn,
+  LogOut,
+  Monitor,
+  Moon,
+  Pilcrow,
+  Plus,
+  Settings,
+  Sigma,
+  Sparkles,
+  Sun,
+  Table2,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { useTheme, type ThemeSetting } from "../lib/useTheme";
@@ -10,7 +29,7 @@ import { exportDocumentPdf } from "../lib/exportPdf";
 
 type PaletteItem = {
   id: string;
-  icon: string;
+  icon: LucideIcon;
   label: string;
   hint?: string;
   run: () => void;
@@ -101,14 +120,14 @@ export function CommandPalette() {
   const editorDocumentId = location.pathname.match(/^\/editor\/([^/]+)/)?.[1] ?? null;
   const editorItems: PaletteItem[] = editorDocumentId
     ? [
-        { id: "insert-paragraph", icon: "¶", label: "Add paragraph", run: appendParagraph },
-        { id: "insert-section", icon: "§", label: "Add section", run: appendSection },
-        { id: "insert-figure", icon: "🖼️", label: "Add figure", run: appendFigure },
-        { id: "insert-table", icon: "▦", label: "Add table", run: appendTable },
-        { id: "insert-equation", icon: "∑", label: "Add equation", run: appendEquation },
+        { id: "insert-paragraph", icon: Pilcrow, label: "Add paragraph", run: appendParagraph },
+        { id: "insert-section", icon: Heading, label: "Add section", run: appendSection },
+        { id: "insert-figure", icon: ImageIcon, label: "Add figure", run: appendFigure },
+        { id: "insert-table", icon: Table2, label: "Add table", run: appendTable },
+        { id: "insert-equation", icon: Sigma, label: "Add equation", run: appendEquation },
         {
           id: "export-pdf",
-          icon: "⬇",
+          icon: Download,
           label: "Export PDF",
           run: () => {
             exportDocumentPdf(editorDocumentId, extractTitleText(document)).catch((err) =>
@@ -119,25 +138,25 @@ export function CommandPalette() {
       ]
     : [];
 
-  const themeIcon = theme === "dark" ? "☀️" : theme === "light" ? "🖥️" : "🌙";
+  const themeIcon = theme === "dark" ? Sun : theme === "light" ? Monitor : Moon;
   const staticItems: PaletteItem[] = user
     ? [
-        { id: "nav-dashboard", icon: "📄", label: "Go to My Papers", run: () => navigate("/dashboard") },
-        { id: "nav-assistant", icon: "✨", label: "Go to Doc Buddy", run: () => navigate("/assistant") },
-        { id: "nav-downloads", icon: "📥", label: "Go to Downloads", run: () => navigate("/downloads") },
-        { id: "nav-settings", icon: "⚙️", label: "Go to Settings", run: () => navigate("/settings") },
-        { id: "nav-profile", icon: "👤", label: "Go to My Account", run: () => navigate("/profile") },
-        { id: "new-paper", icon: "＋", label: "New paper", run: createAndOpenPaper },
+        { id: "nav-dashboard", icon: FileText, label: "Go to My Papers", run: () => navigate("/dashboard") },
+        { id: "nav-assistant", icon: Sparkles, label: "Go to Doc Buddy", run: () => navigate("/assistant") },
+        { id: "nav-downloads", icon: Download, label: "Go to Downloads", run: () => navigate("/downloads") },
+        { id: "nav-settings", icon: Settings, label: "Go to Settings", run: () => navigate("/settings") },
+        { id: "nav-profile", icon: UserRound, label: "Go to My Account", run: () => navigate("/profile") },
+        { id: "new-paper", icon: Plus, label: "New paper", run: createAndOpenPaper },
         {
           id: "toggle-theme",
           icon: themeIcon,
           label: `Switch to ${NEXT_THEME[theme]} theme`,
           run: () => setTheme(NEXT_THEME[theme]),
         },
-        { id: "sign-out", icon: "⏻", label: "Sign out", run: handleSignOut },
+        { id: "sign-out", icon: LogOut, label: "Sign out", run: handleSignOut },
       ]
     : [
-        { id: "nav-login", icon: "🔑", label: "Sign in", run: () => navigate("/login") },
+        { id: "nav-login", icon: LogIn, label: "Sign in", run: () => navigate("/login") },
         {
           id: "toggle-theme",
           icon: themeIcon,
@@ -148,7 +167,7 @@ export function CommandPalette() {
 
   const paperItems: PaletteItem[] = papers.map((p) => ({
     id: `paper-${p.id}`,
-    icon: "📄",
+    icon: FileText,
     label: p.title || "Untitled paper",
     hint: "Open paper",
     run: () => navigate(`/editor/${p.id}`),
@@ -227,7 +246,7 @@ export function CommandPalette() {
                     : "text-gray-700 dark:text-gray-300"
                 }`}
               >
-                <span className="flex-none w-4 text-center">{item.icon}</span>
+                <item.icon size={15} className="flex-none" aria-hidden="true" />
                 <span className="flex-1 truncate">{item.label}</span>
                 {item.hint && <span className="text-[11px] text-gray-400 dark:text-gray-500">{item.hint}</span>}
               </button>

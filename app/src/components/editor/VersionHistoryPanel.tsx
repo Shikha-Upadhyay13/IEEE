@@ -154,7 +154,7 @@ export function VersionHistoryPanel({
             <p className="text-xs text-center text-gray-400 dark:text-gray-500 py-8">Loading history…</p>
           ) : versions.length === 0 ? (
             <div className="text-center py-10 px-4">
-              <span className="text-3xl block mb-2 opacity-50">📑</span>
+              <History size={28} className="mx-auto mb-2 text-muted opacity-60" aria-hidden="true" />
               <p className="text-xs font-medium text-gray-700 dark:text-gray-300">No snapshots saved yet</p>
               <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
                 Save a snapshot above anytime to bookmark your progress, or let auto-snapshots keep your revisions safe.

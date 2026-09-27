@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 
 export function PrivacyPage() {
   return (
@@ -6,9 +7,10 @@ export function PrivacyPage() {
       <div className="max-w-3xl mx-auto">
         <Link
           to="/"
-          className="text-sm text-accent hover:underline mb-8 inline-block"
+          className="text-sm text-accent hover:underline mb-8 inline-flex items-center gap-1"
         >
-          ← Back to home
+          <ArrowLeft size={14} aria-hidden="true" />
+          Back to home
         </Link>
 
         <h1 className="font-display text-3xl font-semibold text-ink mb-2">
@@ -103,7 +105,8 @@ export function PrivacyPage() {
                   rel="noopener noreferrer"
                   className="text-accent hover:underline ml-1"
                 >
-                  Supabase Privacy Policy →
+                  Supabase Privacy Policy
+                  <ExternalLink size={12} className="inline ml-0.5 -mt-0.5" aria-hidden="true" />
                 </a>
               </li>
               <li>
@@ -116,7 +119,8 @@ export function PrivacyPage() {
                   rel="noopener noreferrer"
                   className="text-accent hover:underline ml-1"
                 >
-                  Groq Privacy Policy →
+                  Groq Privacy Policy
+                  <ExternalLink size={12} className="inline ml-0.5 -mt-0.5" aria-hidden="true" />
                 </a>
               </li>
               <li>
