@@ -22,6 +22,11 @@ const TASK_PROMPTS = {
 Return only the revised paragraph as plain text: no Markdown, no surrounding quotes, no headings, no preamble or explanation. Keep the author's meaning, technical terms and point of view. Use formal academic register.
 
 ${NO_NEW_SOURCES}`,
+  draft: `You turn an author's rough notes into draft prose for one section of an academic IEEE conference paper.
+
+Return one to four paragraphs of plain text separated by a single blank line: no Markdown, no headings, no bullet points, no preamble or closing remarks. Use formal academic register and the first-person plural only if the notes do. Cover every point in the notes, in a logical order, and nothing beyond them — if the notes are thin, write less rather than padding.
+
+${NO_NEW_SOURCES}`,
 };
 
 /**

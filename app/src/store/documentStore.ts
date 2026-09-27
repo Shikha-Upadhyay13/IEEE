@@ -187,6 +187,7 @@ type DocumentStore = {
   appendParagraph: () => void;
   appendSection: () => void;
   importBody: (nodes: BodyNode[], mode: "append" | "replace") => void;
+  insertSectionParagraphs: (sectionId: string, paragraphs: InlineNode[][], replaceParagraphs: boolean) => void;
   appendFigure: () => void;
   appendTable: () => void;
   appendEquation: () => void;
@@ -398,6 +399,23 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   appendSection: () =>
     set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("section")] } })),
+
+  insertSectionParagraphs: (sectionId, paragraphs, replaceParagraphs) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        body: updateNodeById(state.document.body, sectionId, (node) => {
+          if (node.type !== "section") return node;
+          const created: BodyNode[] = paragraphs.map((content) => ({ type: "paragraph", id: generateId("p"), content }));
+          if (!replaceParagraphs) return { ...node, children: [...node.children, ...created] };
+          // Paragraphs go where the first old one was; figures, tables and subsections stay put.
+          const firstParagraph = node.children.findIndex((c) => c.type === "paragraph");
+          const kept = node.children.filter((c) => c.type !== "paragraph");
+          const at = firstParagraph === -1 ? kept.length : node.children.slice(0, firstParagraph).filter((c) => c.type !== "paragraph").length;
+          return { ...node, children: [...kept.slice(0, at), ...created, ...kept.slice(at)] };
+        }),
+      },
+    })),
 
   importBody: (nodes, mode) =>
     set((state) => ({

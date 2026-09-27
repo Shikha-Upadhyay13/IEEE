@@ -61,3 +61,33 @@ describe("author and affiliation actions", () => {
     expect(useDocumentStore.getState().document.meta.pageLimit).toBeNull();
   });
 });
+
+describe("insertSectionParagraphs", () => {
+  beforeEach(() => {
+    useDocumentStore.getState().loadDocument("doc-2", createBlankDocument("experimental"));
+  });
+
+  function section(heading: string) {
+    const node = useDocumentStore.getState().document.body.find((n) => n.type === "section" && n.heading === heading);
+    if (node?.type !== "section") throw new Error(`no section ${heading}`);
+    return node;
+  }
+
+  it("replaces paragraphs in place and keeps subsections", () => {
+    const id = section("Experimental Setup").id;
+    useDocumentStore.getState().insertSectionParagraphs(id, [[{ type: "text", text: "Drafted." }]], true);
+    expect(section("Experimental Setup").children.map((c) => (c.type === "section" ? c.heading : c.type))).toEqual([
+      "paragraph",
+      "Datasets",
+      "Evaluation Metrics",
+    ]);
+    const first = section("Experimental Setup").children[0];
+    expect(first.type === "paragraph" && first.content).toEqual([{ type: "text", text: "Drafted." }]);
+  });
+
+  it("appends when not replacing", () => {
+    const id = section("Introduction").id;
+    useDocumentStore.getState().insertSectionParagraphs(id, [[{ type: "text", text: "More." }]], false);
+    expect(section("Introduction").children).toHaveLength(2);
+  });
+});

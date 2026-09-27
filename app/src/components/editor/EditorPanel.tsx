@@ -27,6 +27,7 @@ import {
   Pilcrow,
   Plus,
   Sigma,
+  Sparkles,
   Table2,
   X,
   type LucideIcon,
@@ -40,6 +41,7 @@ import { TableEditor } from "./TableEditor";
 import { ReferencesEditor } from "./ReferencesEditor";
 import { EquationEditor } from "./EquationEditor";
 import { PasteImportDialog } from "./PasteImportDialog";
+import { SectionDraftPanel } from "./SectionDraftPanel";
 import { AppearancePanel } from "./AppearancePanel";
 import { AuthorsEditor } from "./AuthorsEditor";
 import { btnGhost, btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
@@ -168,6 +170,7 @@ function SortableBlockItem({
   // component state (not persisted to the document) is fine here since it's
   // purely an editing convenience, keyed by node.id so it survives reorders.
   const [expandedState, setExpanded] = useState(false);
+  const [draftOpen, setDraftOpen] = useState(false);
   const expanded = forceExpanded || expandedState;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -288,9 +291,27 @@ function SortableBlockItem({
               {node.children.length}
             </span>
           )}
+          <button
+            type="button"
+            onClick={() => setDraftOpen((v) => !v)}
+            aria-label="Draft this section from notes"
+            aria-pressed={draftOpen}
+            title="Draft this section from notes (AI)"
+            className="flex-none w-6 h-6 flex items-center justify-center rounded text-muted/60 hover:text-ink hover:bg-canvas aria-pressed:text-accent transition-colors"
+          >
+            <Sparkles size={14} aria-hidden="true" />
+          </button>
           {moveToControl}
           {deleteButton}
         </div>
+        {draftOpen && (
+          <SectionDraftPanel
+            sectionId={node.id}
+            heading={node.heading}
+            hasParagraphs={node.children.some((c) => c.type === "paragraph")}
+            onClose={() => setDraftOpen(false)}
+          />
+        )}
         {expanded && (
           <div className="pl-6 border-l-2 border-line">
             {node.children.length === 0 ? (
