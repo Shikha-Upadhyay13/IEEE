@@ -41,19 +41,19 @@ function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete
           setOpen((v) => !v);
         }}
         aria-label="More actions"
-        className="w-7 h-7 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex items-center justify-center transition-colors"
+        className="w-7 h-7 rounded-md hover:bg-canvas text-muted hover:text-ink flex items-center justify-center transition-colors"
       >
         <MoreVertical size={16} aria-hidden="true" />
       </button>
       {open && (
-        <div className="absolute right-0 bottom-full mb-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg py-1 z-10 text-sm">
+        <div className="absolute right-0 bottom-full mb-1 w-36 bg-surface border border-line rounded-lg shadow-lg py-1 z-10 text-sm">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onDuplicate();
               setOpen(false);
             }}
-            className="w-full flex items-center gap-2 text-left px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+            className="w-full flex items-center gap-2 text-left px-3 py-1.5 hover:bg-canvas text-ink"
           >
             <Copy size={14} aria-hidden="true" />
             Duplicate
@@ -80,7 +80,7 @@ function NewPaperCard({ creating, onClick }: { creating: boolean; onClick: () =>
     <button
       onClick={onClick}
       disabled={creating}
-      className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-accent hover:text-accent hover:bg-accent-soft/50 transition-colors"
+      className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-line flex flex-col items-center justify-center gap-2 text-muted hover:border-accent hover:text-accent hover:bg-accent-soft/50 transition-colors"
     >
       <Plus size={28} strokeWidth={1.5} aria-hidden="true" />
       <span className="text-sm font-medium">{creating ? "Creating…" : "New paper"}</span>
@@ -115,7 +115,7 @@ function PaperCard({
     <div className="flex flex-col">
       <button
         onClick={onOpen}
-        className="group relative aspect-[8.5/11] w-full rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all overflow-hidden bg-white dark:bg-gray-900"
+        className="group relative aspect-[8.5/11] w-full rounded-xl border border-line shadow-sm hover:shadow-md hover:border-accent transition-all overflow-hidden bg-surface"
       >
         <PaperThumbnail documentId={doc.id} />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-colors flex items-center justify-center">
@@ -140,7 +140,7 @@ function PaperCard({
                   setEditing(false);
                 }
               }}
-              className="w-full text-sm font-medium text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 border border-blue-400 dark:border-blue-500 rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full text-sm font-medium text-ink bg-surface border border-accent rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-accent"
             />
           ) : (
             <button
@@ -151,7 +151,7 @@ function PaperCard({
               {doc.title || "Untitled paper"}
             </button>
           )}
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">edited {relativeTime(doc.updated_at)}</p>
+          <p className="text-xs text-muted mt-0.5">edited {relativeTime(doc.updated_at)}</p>
         </div>
         <CardMenu onDuplicate={onDuplicate} onDelete={onDelete} />
       </div>
@@ -324,7 +324,7 @@ export function Dashboard() {
           <div className="flex justify-between items-end mb-6">
             <div>
               <h1 className="font-display text-2xl font-semibold text-ink tracking-tight">My Papers</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Your first paper is free forever.</p>
+              <p className="text-sm text-muted">Your first paper is free forever.</p>
             </div>
           </div>
 
@@ -388,13 +388,13 @@ export function Dashboard() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex flex-col gap-2">
-                  <div className="aspect-[8.5/11] w-full rounded-xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
-                  <div className="h-3.5 w-2/3 rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
+                  <div className="aspect-[8.5/11] w-full rounded-xl bg-line animate-pulse" />
+                  <div className="h-3.5 w-2/3 rounded bg-line animate-pulse" />
                 </div>
               ))}
             </div>
           ) : filteredDocuments.length === 0 && search ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500">No papers match "{search}".</p>
+            <p className="text-sm text-muted">No papers match "{search}".</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
               <NewPaperCard creating={creating} onClick={handleCreate} />
@@ -410,7 +410,7 @@ export function Dashboard() {
               ))}
             </div>
           )}
-          {duplicatingId && <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">Duplicating…</p>}
+          {duplicatingId && <p className="text-xs text-muted mt-4">Duplicating…</p>}
         </div>
       </div>
       {ConfirmDialog}

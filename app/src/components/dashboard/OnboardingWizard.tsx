@@ -88,7 +88,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl max-w-xl w-full p-6 sm:p-8 relative overflow-hidden">
+      <div className="bg-surface border border-line rounded-2xl shadow-2xl max-w-xl w-full p-6 sm:p-8 relative overflow-hidden">
         {/* Step Indicator */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
@@ -99,8 +99,8 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                   s === step
                     ? "w-8 bg-accent"
                     : s < step
-                      ? "w-2 bg-blue-300 dark:bg-blue-800"
-                      : "w-2 bg-gray-200 dark:bg-gray-800"
+                      ? "w-2 bg-accent/40"
+                      : "w-2 bg-line"
                 }`}
               />
             ))}
@@ -110,7 +110,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
               markCompleted();
               onClose();
             }}
-            className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="text-xs text-muted hover:text-ink transition-colors"
           >
             Skip tour
           </button>
@@ -121,34 +121,34 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
           <div className="space-y-4">
             <BrandMark size="lg" />
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+              <h2 className="text-xl font-bold text-ink tracking-tight">
                 Welcome to IEEE Paper Builder
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+              <p className="text-sm text-muted mt-1 leading-relaxed">
                 Write submission-ready IEEE conference and journal papers without fighting LaTeX margins,
                 column breaks, or equation numbering.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+              <div className="p-3.5 rounded-xl bg-canvas border border-line">
                 <Columns2 size={18} className="mb-1.5 text-accent" aria-hidden="true" />
-                <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100">Live 2-Column</h4>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <h4 className="text-xs font-semibold text-ink">Live 2-Column</h4>
+                <p className="text-[11px] text-muted mt-0.5">
                   Pixel-accurate IEEE typesetting as you type.
                 </p>
               </div>
-              <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+              <div className="p-3.5 rounded-xl bg-canvas border border-line">
                 <ListOrdered size={18} className="mb-1.5 text-accent" aria-hidden="true" />
-                <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100">Auto Numbering</h4>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <h4 className="text-xs font-semibold text-ink">Auto Numbering</h4>
+                <p className="text-[11px] text-muted mt-0.5">
                   Roman headings, figures, tables & equations resolved live.
                 </p>
               </div>
-              <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+              <div className="p-3.5 rounded-xl bg-canvas border border-line">
                 <Download size={18} className="mb-1.5 text-accent" aria-hidden="true" />
-                <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100">1-Click PDF</h4>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <h4 className="text-xs font-semibold text-ink">1-Click PDF</h4>
+                <p className="text-[11px] text-muted mt-0.5">
                   Download conference-ready PDFs in seconds.
                 </p>
               </div>
@@ -167,10 +167,10 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
         {step === 2 && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+              <h2 className="text-xl font-bold text-ink tracking-tight">
                 Choose your starting point
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-muted mt-1">
                 How would you like to begin your research drafting?
               </p>
             </div>
@@ -182,20 +182,20 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                 className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-start gap-3.5 ${
                   choice === "sample"
                     ? "border-accent bg-accent-soft/50"
-                    : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-transparent"
+                    : "border-line hover:border-line bg-transparent"
                 }`}
               >
                 <BookOpen size={22} className="flex-none mt-0.5 text-accent" aria-hidden="true" />
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <h3 className="text-sm font-semibold text-ink">
                       Explore Sample Paper
                     </h3>
                     <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-accent-soft text-accent">
                       Recommended
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-muted mt-1">
                     Pre-populated with sections, equations, a figure, a comparative table, and IEEE citations.
                   </p>
                 </div>
@@ -207,15 +207,15 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                 className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-start gap-3.5 ${
                   choice === "blank"
                     ? "border-accent bg-accent-soft/50"
-                    : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-transparent"
+                    : "border-line hover:border-line bg-transparent"
                 }`}
               >
                 <FilePlus2 size={22} className="flex-none mt-0.5 text-accent" aria-hidden="true" />
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="text-sm font-semibold text-ink">
                     Blank IEEE Conference Paper
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-muted mt-1">
                     Clean structure with standard headings: Introduction, Methodology, Results, and Conclusion.
                   </p>
                 </div>
@@ -227,7 +227,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                 className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-center gap-3.5 ${
                   choice === "skip"
                     ? "border-accent bg-accent-soft/50"
-                    : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 text-gray-600 dark:text-gray-400"
+                    : "border-line hover:border-line text-muted"
                 }`}
               >
                 <FolderOpen size={18} className="text-muted" aria-hidden="true" />
@@ -238,7 +238,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
             <div className="flex justify-between items-center pt-4">
               <button
                 onClick={() => setStep(1)}
-                className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="inline-flex items-center gap-1 text-sm text-muted hover:text-ink"
               >
                 <ArrowLeft size={14} aria-hidden="true" />
                 Back
@@ -255,33 +255,33 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
         {step === 3 && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+              <h2 className="text-xl font-bold text-ink tracking-tight">
                 Ready to create!
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-muted mt-1">
                 Here are 3 quick power features to know while drafting:
               </p>
             </div>
 
             <ul className="space-y-3 pt-1">
-              <li className="flex items-start gap-3 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/40 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
+              <li className="flex items-start gap-3 text-xs text-muted bg-canvas p-3 rounded-lg border border-line">
                 <GripVertical size={16} className="flex-none text-accent" aria-hidden="true" />
                 <div>
-                  <strong className="text-gray-900 dark:text-gray-100">Drag to Reorder:</strong> Drag section
+                  <strong className="text-ink">Drag to Reorder:</strong> Drag section
                   blocks to reorganize your paper. Section numerals and references update instantly.
                 </div>
               </li>
-              <li className="flex items-start gap-3 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/40 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
+              <li className="flex items-start gap-3 text-xs text-muted bg-canvas p-3 rounded-lg border border-line">
                 <MessageSquare size={16} className="flex-none text-accent" aria-hidden="true" />
                 <div>
-                  <strong className="text-gray-900 dark:text-gray-100">AI Assistant:</strong> Ask the integrated
+                  <strong className="text-ink">AI Assistant:</strong> Ask the integrated
                   research copilot to review sections, rephrase for IEEE style, or suggest improvements.
                 </div>
               </li>
-              <li className="flex items-start gap-3 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/40 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
+              <li className="flex items-start gap-3 text-xs text-muted bg-canvas p-3 rounded-lg border border-line">
                 <Download size={16} className="flex-none text-accent" aria-hidden="true" />
                 <div>
-                  <strong className="text-gray-900 dark:text-gray-100">Export Anytime:</strong> Hit Export in the
+                  <strong className="text-ink">Export Anytime:</strong> Hit Export in the
                   top right to generate compliant PDF files ready for IEEE Xplore submission.
                 </div>
               </li>
@@ -290,7 +290,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
             <div className="flex justify-between items-center pt-4">
               <button
                 onClick={() => setStep(2)}
-                className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="inline-flex items-center gap-1 text-sm text-muted hover:text-ink"
               >
                 <ArrowLeft size={14} aria-hidden="true" />
                 Back

@@ -121,16 +121,16 @@ export function DownloadsPage() {
       <div className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10">
         <div className="max-w-3xl mx-auto">
           <h1 className="font-display text-2xl font-semibold text-ink tracking-tight mb-1">Downloads</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <p className="text-sm text-muted mb-6">
             {exports.length > 0
               ? `${exports.length} export${exports.length === 1 ? "" : "s"} across ${groups.length} paper${groups.length === 1 ? "" : "s"} — export again from a paper's editor to add another.`
               : "Every PDF you've exported, kept in one place — export again from a paper's editor to add another."}
           </p>
 
           {loading ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400">Loading…</p>
+            <p className="text-sm text-muted">Loading…</p>
           ) : exports.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm text-muted">
               No exports yet — open a paper and export it to PDF.
             </p>
           ) : (
@@ -142,29 +142,29 @@ export function DownloadsPage() {
                 return (
                   <div
                     key={group.key}
-                    className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden"
+                    className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden"
                   >
-                    <div className="flex items-center gap-2.5 px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                    <div className="flex items-center gap-2.5 px-4 py-3 border-b border-line">
                       <FileText size={18} className="flex-none text-muted" aria-hidden="true" />
-                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate flex-1">
+                      <p className="text-sm font-semibold text-ink truncate flex-1">
                         {group.title}
                       </p>
-                      <span className="text-xs text-gray-400 dark:text-gray-500 flex-none">
+                      <span className="text-xs text-muted flex-none">
                         {group.rows.length} export{group.rows.length === 1 ? "" : "s"}
                       </span>
                       {group.documentId && (
                         <Link
                           to={`/editor/${group.documentId}`}
-                          className="text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:underline flex-none"
+                          className="text-xs text-ink hover:text-ink hover:underline flex-none"
                         >
                           Open paper
                         </Link>
                       )}
                     </div>
-                    <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                    <div className="divide-y divide-line">
                       {visibleRows.map((row) => (
                         <div key={row.id} className="flex items-center gap-3 px-4 py-2.5">
-                          <p className="text-xs text-gray-500 dark:text-gray-400 flex-1">
+                          <p className="text-xs text-muted flex-1">
                             Exported {relativeTime(row.created_at)}
                           </p>
                           <button
@@ -184,7 +184,7 @@ export function DownloadsPage() {
                           <button
                             onClick={() => handleDelete(row)}
                             aria-label="Delete download"
-                            className="w-8 h-8 flex-none flex items-center justify-center rounded-md text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                            className="w-8 h-8 flex-none flex items-center justify-center rounded-md text-muted hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
                           >
                             <Trash2 size={15} aria-hidden="true" />
                           </button>
@@ -194,7 +194,7 @@ export function DownloadsPage() {
                     {hiddenCount > 0 ? (
                       <button
                         onClick={() => toggleGroupExpanded(group.key)}
-                        className="w-full text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 py-2 border-t border-gray-100 dark:border-gray-800 transition-colors"
+                        className="w-full text-xs text-muted hover:text-ink py-2 border-t border-line transition-colors"
                       >
                         Show {hiddenCount} more
                       </button>
@@ -203,7 +203,7 @@ export function DownloadsPage() {
                       group.rows.length > COLLAPSED_ROW_LIMIT && (
                         <button
                           onClick={() => toggleGroupExpanded(group.key)}
-                          className="w-full text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 py-2 border-t border-gray-100 dark:border-gray-800 transition-colors"
+                          className="w-full text-xs text-muted hover:text-ink py-2 border-t border-line transition-colors"
                         >
                           Show fewer
                         </button>

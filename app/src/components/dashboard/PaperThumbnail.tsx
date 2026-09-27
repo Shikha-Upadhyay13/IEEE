@@ -68,7 +68,7 @@ export function PaperThumbnail({ documentId }: { documentId: string }) {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full overflow-hidden bg-gray-100 dark:bg-gray-800 flex justify-center pointer-events-none select-none"
+      className="w-full h-full overflow-hidden bg-canvas flex justify-center pointer-events-none select-none"
       style={{ paddingTop: "7%" }}
     >
       {resolved && zoom ? (
@@ -79,7 +79,7 @@ export function PaperThumbnail({ documentId }: { documentId: string }) {
           <IEEEConferenceTemplate document={resolved} />
         </div>
       ) : (
-        <div className="w-[86%] h-[80%] bg-gray-200 dark:bg-gray-700 rounded-sm animate-pulse" />
+        <div className="w-[86%] h-[80%] bg-line rounded-sm animate-pulse" />
       )}
     </div>
   );
