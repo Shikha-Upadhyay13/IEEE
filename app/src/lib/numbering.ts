@@ -48,7 +48,7 @@ function toLetters(num: number): string {
 // depth 1 (subsection): capital letters — A, B, C
 // depth 2: Arabic numerals — 1, 2, 3
 // depth 3+: lowercase letters — a, b, c
-function formatSectionNumber(siblingIndex: number, depth: number): string {
+export function formatSectionNumber(siblingIndex: number, depth: number): string {
   if (depth === 0) return toRoman(siblingIndex);
   if (depth === 1) return toLetters(siblingIndex);
   if (depth === 2) return String(siblingIndex);

@@ -139,10 +139,12 @@ function SortableBlockItem({
   node,
   containerId,
   depth,
+  forceExpanded = false,
 }: {
   node: BodyNode;
   containerId: string | null;
   depth: number;
+  forceExpanded?: boolean;
 }) {
   const updateParagraphContent = useDocumentStore((s) => s.updateParagraphContent);
   const updateSectionHeading = useDocumentStore((s) => s.updateSectionHeading);
@@ -163,7 +165,8 @@ function SortableBlockItem({
   // complaint ("I don't want the entire content visible already"). Local
   // component state (not persisted to the document) is fine here since it's
   // purely an editing convenience, keyed by node.id so it survives reorders.
-  const [expanded, setExpanded] = useState(false);
+  const [expandedState, setExpanded] = useState(false);
+  const expanded = forceExpanded || expandedState;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: node.id,
@@ -264,6 +267,7 @@ function SortableBlockItem({
         <div ref={setNodeRef} style={dragStyle} className="flex gap-2 items-center mb-2">
           {dragHandle}
           <button
+            hidden={forceExpanded}
             onClick={() => setExpanded((v) => !v)}
             aria-label={expanded ? "Collapse section" : "Expand section"}
             aria-expanded={expanded}
@@ -411,10 +415,12 @@ function SortableBlockList({
   containerId,
   nodes,
   depth,
+  expandedId,
 }: {
   containerId: string | null;
   nodes: BodyNode[];
   depth: number;
+  expandedId?: string;
 }) {
   // Unique id per nested list — required by dnd-kit when multiple
   // SortableContexts share one DndContext. Without it, nested drop
@@ -423,10 +429,27 @@ function SortableBlockList({
   return (
     <SortableContext id={sortableId} items={nodes.map((n) => n.id)} strategy={verticalListSortingStrategy}>
       {nodes.map((node) => (
-        <SortableBlockItem key={node.id} node={node} containerId={containerId} depth={depth} />
+        <SortableBlockItem
+          key={node.id}
+          node={node}
+          containerId={containerId}
+          depth={depth}
+          forceExpanded={node.id === expandedId}
+        />
       ))}
     </SortableContext>
   );
+}
+
+function findParentId(nodes: BodyNode[], id: string, parentId: string | null = null): string | null | undefined {
+  for (const node of nodes) {
+    if (node.id === id) return parentId;
+    if (node.type === "section") {
+      const found = findParentId(node.children, id, node.id);
+      if (found !== undefined) return found;
+    }
+  }
+  return undefined;
 }
 
 // Keeps its own draft text as the source of truth for what's displayed,
@@ -463,7 +486,14 @@ function KeywordsInput({
   );
 }
 
-export function EditorPanel() {
+export type EditorView =
+  | { kind: "all" }
+  | { kind: "details" }
+  | { kind: "section"; id: string }
+  | { kind: "references" }
+  | { kind: "appearance" };
+
+function PaperDetailsCard() {
   const document = useDocumentStore((s) => s.document);
   const setTitle = useDocumentStore((s) => s.setTitle);
   const setAbstract = useDocumentStore((s) => s.setAbstract);
@@ -472,6 +502,145 @@ export function EditorPanel() {
   const setPaperSize = useDocumentStore((s) => s.setPaperSize);
   const setShowPageNumbers = useDocumentStore((s) => s.setShowPageNumbers);
   const setPageLimit = useDocumentStore((s) => s.setPageLimit);
+
+  const titleText = document.titleBlock.title
+    .map((n) => (n.type === "text" ? n.text : ""))
+    .join("");
+
+  const abstractWordCount = document.abstract.text.trim() === "" ? 0 : document.abstract.text.trim().split(/\s+/).length;
+  // IEEE's own guidance (verified in this project's research): abstracts run
+  // ~150 words. This is advisory, not enforced — going over doesn't block
+  // anything, it just tells you before your target venue's reviewer does.
+  const abstractOverLimit = abstractWordCount > 150;
+
+  return (
+    <div className={`${cardBase} p-5 mb-5`}>
+      <h2 className="text-base font-semibold text-ink mb-4">Paper Details</h2>
+
+      <div className="mb-4">
+        <label htmlFor="paper-title" className={labelBase}>
+          Title
+        </label>
+        <textarea
+          id="paper-title"
+          value={titleText}
+          onChange={(e) => setTitle(e.target.value)}
+          rows={2}
+          placeholder="e.g., A Novel Approach to Efficient Edge Computing"
+          className={`${inputBase} resize-none`}
+        />
+      </div>
+
+      <AuthorsEditor />
+
+      <div className="mb-4">
+        <div className="flex justify-between items-baseline">
+          <label htmlFor="paper-abstract" className={labelBase}>
+            Abstract
+          </label>
+          <span className={`text-xs ${abstractOverLimit ? "text-amber-600 dark:text-amber-500" : "text-muted"}`}>
+            {abstractWordCount} / 150 words
+          </span>
+        </div>
+        <textarea
+          id="paper-abstract"
+          value={document.abstract.text}
+          onChange={(e) => setAbstract(e.target.value)}
+          rows={4}
+          placeholder="Summarize the problem, your approach, and key results in about 150 words."
+          className={`${inputBase} resize-none`}
+        />
+      </div>
+
+      <KeywordsInput keywords={document.keywords} onChange={setKeywords} />
+
+      <div>
+        <label htmlFor="paper-font" className={labelBase}>
+          Font
+        </label>
+        <select
+          id="paper-font"
+          value={document.meta.fontFamily ?? "times"}
+          onChange={(e) => setFontFamily(e.target.value as FontFamily)}
+          className={`${inputBase} cursor-pointer`}
+        >
+          {FONT_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        {document.meta.fontFamily && document.meta.fontFamily !== "times" && (
+          <p className="text-xs text-amber-600 dark:text-amber-500 mt-1.5">
+            IEEE submissions require Times New Roman — this is for draft/preview only and won't be
+            submission-compliant.
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4">
+        <label htmlFor="paper-size" className={labelBase}>
+          Paper size
+        </label>
+        <select
+          id="paper-size"
+          value={document.meta.paperSize}
+          onChange={(e) => setPaperSize(e.target.value as "letter" | "a4")}
+          className={`${inputBase} cursor-pointer`}
+        >
+          <option value="letter">US Letter (8.5 × 11 in)</option>
+          <option value="a4">A4 (210 × 297 mm)</option>
+        </select>
+        <p className="text-xs text-muted mt-1.5">
+          Both are official IEEE conference sizes — Letter for US/Canada, A4 for most other regions.
+        </p>
+      </div>
+
+      <div className="mt-4">
+        <label htmlFor="page-limit" className={labelBase}>
+          Page limit
+        </label>
+        <input
+          id="page-limit"
+          type="number"
+          min={1}
+          max={50}
+          inputMode="numeric"
+          value={document.meta.pageLimit ?? ""}
+          onChange={(e) => {
+            const n = Number.parseInt(e.target.value, 10);
+            setPageLimit(Number.isFinite(n) && n > 0 ? n : null);
+          }}
+          placeholder="None"
+          className={`${inputBase} w-28`}
+        />
+        <p className="text-xs text-muted mt-1.5">
+          Your venue's limit (often 4–8 pages). We'll warn you in the top bar when the preview goes over it.
+        </p>
+      </div>
+
+      <div className="mt-4 flex items-start gap-2">
+        <input
+          id="show-page-numbers"
+          type="checkbox"
+          checked={document.meta.showPageNumbers ?? false}
+          onChange={(e) => setShowPageNumbers(e.target.checked)}
+          className="mt-0.5 flex-none"
+        />
+        <label htmlFor="show-page-numbers" className="text-sm text-ink cursor-pointer">
+          Show page numbers
+          <span className="block text-xs text-muted mt-0.5">
+            Off by default — IEEE's own conference template says "do not add page numbers"; most venues
+            add them during publication. Turn this on only if your specific conference asks for them.
+          </span>
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function BodyContentCard({ focusSectionId }: { focusSectionId?: string }) {
+  const body = useDocumentStore((s) => s.document.body);
   const { textScale, blockSpacing } = useEditorPreferences();
   const appendParagraph = useDocumentStore((s) => s.appendParagraph);
   const appendSection = useDocumentStore((s) => s.appendSection);
@@ -507,183 +676,57 @@ export function EditorPanel() {
     setActiveDragId(null);
   }
 
-  const activeDragNode = activeDragId ? findNodeById(document.body, activeDragId) : null;
-
-  const titleText = document.titleBlock.title
-    .map((n) => (n.type === "text" ? n.text : ""))
-    .join("");
-
-  const abstractWordCount = document.abstract.text.trim() === "" ? 0 : document.abstract.text.trim().split(/\s+/).length;
-  // IEEE's own guidance (verified in this project's research): abstracts run
-  // ~150 words. This is advisory, not enforced — going over doesn't block
-  // anything, it just tells you before your target venue's reviewer does.
-  const abstractOverLimit = abstractWordCount > 150;
-  const stats = useMemo(() => countDocumentStats(document), [document]);
+  const activeDragNode = activeDragId ? findNodeById(body, activeDragId) : null;
+  const focusNode = focusSectionId ? findNodeById(body, focusSectionId) : null;
+  const listNodes = focusNode ? [focusNode] : body;
+  const listContainerId = focusNode ? (findParentId(body, focusNode.id) ?? null) : null;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
-      <div className="flex-1 overflow-y-auto bg-canvas px-6 py-6">
-        <div className={`${cardBase} p-5 mb-5`}>
-        <h2 className="text-base font-semibold text-ink mb-4">Paper Details</h2>
+    <div className={`${cardBase} p-5 mb-5`}>
+      <h2 className="text-base font-semibold text-ink mb-1">{focusNode ? "Section" : "Body Content"}</h2>
+      <p className="text-xs text-muted mb-4">
+        Drag the <GripVertical size={12} className="inline -mt-0.5" aria-label="grip" /> handle to reorder
+        blocks in the same list. Use <FolderInput size={12} className="inline -mt-0.5" aria-label="move" /> to
+        place a block in a different section.
+        {!focusNode && (
+          <>
+            {" "}Expand a section (<ChevronRight size={12} className="inline -mt-0.5" aria-label="chevron" />) before
+            reordering its children.
+          </>
+        )}
+      </p>
 
-        <div className="mb-4">
-          <label htmlFor="paper-title" className={labelBase}>
-            Title
-          </label>
-          <textarea
-            id="paper-title"
-            value={titleText}
-            onChange={(e) => setTitle(e.target.value)}
-            rows={2}
-            placeholder="e.g., A Novel Approach to Efficient Edge Computing"
-            className={`${inputBase} resize-none`}
+      {/* DndContext stays outside the zoom wrapper: CSS zoom scales layout
+          but leaves pointer coordinates unscaled, so dnd-kit's hit-testing
+          desyncs whenever Appearance → Text size is not 100%. The zoom/
+          --block-gap wrapper still applies editing-view comfort only —
+          neither reaches the PagedPreview/export path. */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={collisionDetectionWithinContainer}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <div style={{ zoom: textScale, "--block-gap": `${8 * blockSpacing}px` } as CSSProperties}>
+          <SortableBlockList
+            containerId={listContainerId}
+            nodes={listNodes}
+            depth={0}
+            expandedId={focusNode?.id}
           />
         </div>
+        <DragOverlay dropAnimation={null}>
+          {activeDragNode ? (
+            <div className="max-w-sm rounded-lg border border-accent bg-surface px-3 py-2 text-sm font-medium text-ink shadow-lg cursor-grabbing">
+              <GripVertical size={14} className="mr-2 inline text-muted" aria-hidden="true" />
+              {dragOverlayLabel(activeDragNode)}
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
-        <AuthorsEditor />
-
-        <div className="mb-4">
-          <div className="flex justify-between items-baseline">
-            <label htmlFor="paper-abstract" className={labelBase}>
-              Abstract
-            </label>
-            <span
-              className={`text-xs ${abstractOverLimit ? "text-amber-600 dark:text-amber-500" : "text-muted"}`}
-            >
-              {abstractWordCount} / 150 words
-            </span>
-          </div>
-          <textarea
-            id="paper-abstract"
-            value={document.abstract.text}
-            onChange={(e) => setAbstract(e.target.value)}
-            rows={4}
-            placeholder="Summarize the problem, your approach, and key results in about 150 words."
-            className={`${inputBase} resize-none`}
-          />
-        </div>
-
-        <KeywordsInput keywords={document.keywords} onChange={setKeywords} />
-
-        <div>
-          <label htmlFor="paper-font" className={labelBase}>
-            Font
-          </label>
-          <select
-            id="paper-font"
-            value={document.meta.fontFamily ?? "times"}
-            onChange={(e) => setFontFamily(e.target.value as FontFamily)}
-            className={`${inputBase} cursor-pointer`}
-          >
-            {FONT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          {document.meta.fontFamily && document.meta.fontFamily !== "times" && (
-            <p className="text-xs text-amber-600 dark:text-amber-500 mt-1.5">
-              IEEE submissions require Times New Roman — this is for draft/preview only and won't be
-              submission-compliant.
-            </p>
-          )}
-        </div>
-
-        <div className="mt-4">
-          <label htmlFor="paper-size" className={labelBase}>
-            Paper size
-          </label>
-          <select
-            id="paper-size"
-            value={document.meta.paperSize}
-            onChange={(e) => setPaperSize(e.target.value as "letter" | "a4")}
-            className={`${inputBase} cursor-pointer`}
-          >
-            <option value="letter">US Letter (8.5 × 11 in)</option>
-            <option value="a4">A4 (210 × 297 mm)</option>
-          </select>
-          <p className="text-xs text-muted mt-1.5">
-            Both are official IEEE conference sizes — Letter for US/Canada, A4 for most other regions.
-          </p>
-        </div>
-
-        <div className="mt-4">
-          <label htmlFor="page-limit" className={labelBase}>
-            Page limit
-          </label>
-          <input
-            id="page-limit"
-            type="number"
-            min={1}
-            max={50}
-            inputMode="numeric"
-            value={document.meta.pageLimit ?? ""}
-            onChange={(e) => {
-              const n = Number.parseInt(e.target.value, 10);
-              setPageLimit(Number.isFinite(n) && n > 0 ? n : null);
-            }}
-            placeholder="None"
-            className={`${inputBase} w-28`}
-          />
-          <p className="text-xs text-muted mt-1.5">
-            Your venue's limit (often 4–8 pages). We'll warn you in the top bar when the preview goes over it.
-          </p>
-        </div>
-
-        <div className="mt-4 flex items-start gap-2">
-          <input
-            id="show-page-numbers"
-            type="checkbox"
-            checked={document.meta.showPageNumbers ?? false}
-            onChange={(e) => setShowPageNumbers(e.target.checked)}
-            className="mt-0.5 flex-none"
-          />
-          <label htmlFor="show-page-numbers" className="text-sm text-ink cursor-pointer">
-            Show page numbers
-            <span className="block text-xs text-muted mt-0.5">
-              Off by default — IEEE's own conference template says "do not add page numbers"; most venues
-              add them during publication. Turn this on only if your specific conference asks for them.
-            </span>
-          </label>
-        </div>
-      </div>
-
-      <AppearancePanel />
-
-      <div className={`${cardBase} p-5 mb-5`}>
-        <h2 className="text-base font-semibold text-ink mb-1">Body Content</h2>
-        <p className="text-xs text-muted mb-4">
-          Drag the <GripVertical size={12} className="inline -mt-0.5" aria-label="grip" /> handle to reorder
-          blocks in the same list. Use <FolderInput size={12} className="inline -mt-0.5" aria-label="move" /> to
-          place a block in a different section. Expand a section (
-          <ChevronRight size={12} className="inline -mt-0.5" aria-label="chevron" />) before reordering its children.
-        </p>
-
-        {/* DndContext stays outside the zoom wrapper: CSS zoom scales layout
-            but leaves pointer coordinates unscaled, so dnd-kit's hit-testing
-            desyncs whenever Appearance → Text size is not 100%. The zoom/
-            --block-gap wrapper still applies editing-view comfort only —
-            neither reaches the PagedPreview/export path. */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={collisionDetectionWithinContainer}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <div style={{ zoom: textScale, "--block-gap": `${8 * blockSpacing}px` } as CSSProperties}>
-            <SortableBlockList containerId={null} nodes={document.body} depth={0} />
-          </div>
-          <DragOverlay dropAnimation={null}>
-            {activeDragNode ? (
-              <div className="max-w-sm rounded-lg border border-accent bg-surface px-3 py-2 text-sm font-medium text-ink shadow-lg cursor-grabbing">
-                <GripVertical size={14} className="mr-2 inline text-muted" aria-hidden="true" />
-                {dragOverlayLabel(activeDragNode)}
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-
+      {!focusNode && (
         <div className="mt-3">
           <Menu
             trigger={
@@ -707,9 +750,29 @@ export function EditorPanel() {
             ]}
           />
         </div>
-      </div>
+      )}
+    </div>
+  );
+}
 
-      <ReferencesEditor />
+export function EditorPanel({ view = { kind: "all" } }: { view?: EditorView }) {
+  const document = useDocumentStore((s) => s.document);
+  const stats = useMemo(() => countDocumentStats(document), [document]);
+  const sectionExists = view.kind === "section" && findNodeById(document.body, view.id) !== null;
+  const effectiveKind = view.kind === "section" && !sectionExists ? "all" : view.kind;
+
+  return (
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex-1 overflow-y-auto bg-canvas px-6 py-6">
+        {(effectiveKind === "all" || effectiveKind === "details") && <PaperDetailsCard />}
+        {(effectiveKind === "all" || effectiveKind === "appearance") && (
+          <AppearancePanel defaultExpanded={effectiveKind === "appearance"} />
+        )}
+        {effectiveKind === "all" && <BodyContentCard />}
+        {effectiveKind === "section" && view.kind === "section" && <BodyContentCard focusSectionId={view.id} />}
+        {(effectiveKind === "all" || effectiveKind === "references") && (
+          <ReferencesEditor defaultExpanded={effectiveKind === "references"} />
+        )}
       </div>
       <div className="flex-none border-t border-line bg-surface px-6 py-2 text-xs text-muted flex flex-wrap gap-x-4 gap-y-1">
         <span>

@@ -15,7 +15,7 @@ const FIELD_LABELS: { key: keyof ReferenceFields; label: string; placeholder: st
   { key: "year", label: "Year", placeholder: "1988" },
 ];
 
-export function ReferencesEditor() {
+export function ReferencesEditor({ defaultExpanded = false }: { defaultExpanded?: boolean }) {
   const references = useDocumentStore((s) => s.document.references);
   const addReference = useDocumentStore((s) => s.addReference);
   const addReferenceWithFields = useDocumentStore((s) => s.addReferenceWithFields);
@@ -23,7 +23,7 @@ export function ReferencesEditor() {
   const updateReferenceField = useDocumentStore((s) => s.updateReferenceField);
   const removeReference = useDocumentStore((s) => s.removeReference);
 
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
 
   // BibTeX Import Modal State
   const [showBibtexModal, setShowBibtexModal] = useState(false);

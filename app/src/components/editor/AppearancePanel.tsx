@@ -97,8 +97,8 @@ function SliderRow({
   );
 }
 
-export function AppearancePanel() {
-  const [expanded, setExpanded] = useState(false);
+export function AppearancePanel({ defaultExpanded = false }: { defaultExpanded?: boolean }) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const meta = useDocumentStore((s) => s.document.meta);
   const setAccentColor = useDocumentStore((s) => s.setAccentColor);
   const setAccentTarget = useDocumentStore((s) => s.setAccentTarget);

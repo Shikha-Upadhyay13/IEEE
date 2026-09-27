@@ -5,7 +5,8 @@ import { resolveNumbering } from "../lib/numbering";
 import { useDocumentStore } from "../store/documentStore";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
 import { PagedPreview } from "../components/renderer/PagedPreview";
-import { EditorPanel } from "../components/editor/EditorPanel";
+import { EditorPanel, type EditorView } from "../components/editor/EditorPanel";
+import { EditorOutline } from "../components/editor/EditorOutline";
 import { ExportButton } from "../components/editor/ExportButton";
 import { ShareButton } from "../components/editor/ShareButton";
 import { VersionHistoryPanel } from "../components/editor/VersionHistoryPanel";
@@ -25,6 +26,7 @@ export function EditorPage() {
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [view, setView] = useState<EditorView>({ kind: "all" });
   // The last content known to be persisted — compared by reference (not a
   // fire-count flag) against the debounced value below, so autosave skips
   // only a genuinely unchanged state, not just "the first debounce cycle"
@@ -231,8 +233,11 @@ export function EditorPage() {
       </div>
 
       <div className="flex-1 min-h-0 flex">
-        <div className="w-1/2 min-w-0 h-full flex flex-col border-r border-line bg-surface">
-          <EditorPanel />
+        <div className="hidden lg:flex w-56 flex-none flex-col border-r border-line bg-surface">
+          <EditorOutline view={view} onChange={setView} />
+        </div>
+        <div className="flex-1 min-w-0 h-full flex flex-col border-r border-line bg-surface">
+          <EditorPanel view={view} />
         </div>
 
         {/* Light neutral backdrop (not the sidebar's white, not a heavy dark
@@ -242,7 +247,7 @@ export function EditorPage() {
           className={
             previewOpen
               ? "fixed inset-0 z-50 bg-canvas overflow-y-auto py-10"
-              : "w-1/2 min-w-0 relative overflow-y-auto bg-canvas py-10"
+              : "w-1/2 lg:w-[45%] flex-none min-w-0 relative overflow-y-auto bg-canvas py-10"
           }
         >
           {previewOpen && (
