@@ -17,7 +17,19 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronRight, GripVertical, X } from "lucide-react";
+import {
+  ChevronRight,
+  GripVertical,
+  Heading,
+  Image as ImageIcon,
+  Pilcrow,
+  Plus,
+  Sigma,
+  Table2,
+  X,
+  type LucideIcon,
+} from "lucide-react";
+import { Menu, type MenuItem } from "../ui/Menu";
 import { useDocumentStore, collectSectionOptions, collectSectionDescendantIds } from "../../store/documentStore";
 import type { BodyNode, FontFamily, InlineNode } from "../../types/document";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
@@ -27,19 +39,29 @@ import { ReferencesEditor } from "./ReferencesEditor";
 import { EquationEditor } from "./EquationEditor";
 import { AppearancePanel } from "./AppearancePanel";
 import { AuthorsEditor } from "./AuthorsEditor";
-import { cardBase, inputBase, labelBase } from "../../lib/uiClasses";
+import { btnGhost, btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
 import { useEditorPreferences } from "../../lib/useEditorPreferences";
 import { countDocumentStats } from "../../lib/countWords";
 
 type BlockType = "paragraph" | "section" | "figure" | "table" | "equation";
 
-const BLOCK_TYPE_OPTIONS: { value: BlockType; label: string }[] = [
-  { value: "section", label: "Section / heading" },
-  { value: "paragraph", label: "Paragraph" },
-  { value: "figure", label: "Figure" },
-  { value: "table", label: "Table" },
-  { value: "equation", label: "Equation" },
+const BLOCK_TYPES: { type: BlockType; label: string; description: string; icon: LucideIcon }[] = [
+  { type: "section", label: "Section", description: "Numbered heading (I, II, III…)", icon: Heading },
+  { type: "paragraph", label: "Paragraph", description: "Body text with citations", icon: Pilcrow },
+  { type: "figure", label: "Figure", description: "Image with a numbered caption", icon: ImageIcon },
+  { type: "table", label: "Table", description: "Grid with a Roman-numbered caption", icon: Table2 },
+  { type: "equation", label: "Equation", description: "Numbered LaTeX equation", icon: Sigma },
 ];
+
+function blockMenuItems(onAdd: (type: BlockType) => void): MenuItem[] {
+  return BLOCK_TYPES.map(({ type, label, description, icon }) => ({
+    id: type,
+    label,
+    description,
+    icon,
+    onSelect: () => onAdd(type),
+  }));
+}
 
 const FONT_OPTIONS: { value: FontFamily; label: string }[] = [
   { value: "times", label: "Times New Roman (IEEE default)" },
@@ -269,25 +291,17 @@ function SortableBlockItem({
             ) : (
               <SortableBlockList containerId={node.id} nodes={node.children} depth={depth + 1} />
             )}
-            <select
-              aria-label="Add block to this section"
-              value=""
-              onChange={(e) => {
-                const type = e.target.value as BlockType | "";
-                if (type) appendBlockToSection(node.id, type);
-                e.target.value = "";
-              }}
-              className={`${inputBase} py-1.5 text-xs cursor-pointer text-gray-600 dark:text-gray-300`}
-            >
-              <option value="" disabled>
-                + Add block…
-              </option>
-              {BLOCK_TYPE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            <Menu
+              trigger={
+                <>
+                  <Plus size={13} aria-hidden="true" />
+                  Add to this section
+                </>
+              }
+              triggerClassName={`${btnGhost} text-xs`}
+              width={280}
+              groups={[{ items: blockMenuItems((type) => appendBlockToSection(node.id, type)) }]}
+            />
           </div>
         )}
       </div>
@@ -668,29 +682,29 @@ export function EditorPanel() {
           </DragOverlay>
         </DndContext>
 
-        <select
-          aria-label="Add block"
-          value=""
-          onChange={(e) => {
-            const type = e.target.value as BlockType | "";
-            if (type === "paragraph") appendParagraph();
-            else if (type === "section") appendSection();
-            else if (type === "figure") appendFigure();
-            else if (type === "table") appendTable();
-            else if (type === "equation") appendEquation();
-            e.target.value = "";
-          }}
-          className={`${inputBase} mt-3 py-2.5 cursor-pointer font-medium text-gray-700 dark:text-gray-300`}
-        >
-          <option value="" disabled>
-            + Add block…
-          </option>
-          {BLOCK_TYPE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <div className="mt-3">
+          <Menu
+            trigger={
+              <>
+                <Plus size={15} aria-hidden="true" />
+                Add block
+              </>
+            }
+            triggerClassName={`${btnSecondary} w-full py-2.5`}
+            width={280}
+            groups={[
+              {
+                items: blockMenuItems((type) => {
+                  if (type === "paragraph") appendParagraph();
+                  else if (type === "section") appendSection();
+                  else if (type === "figure") appendFigure();
+                  else if (type === "table") appendTable();
+                  else appendEquation();
+                }),
+              },
+            ]}
+          />
+        </div>
       </div>
 
       <ReferencesEditor />
