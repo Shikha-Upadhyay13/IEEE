@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 import { createBlankDocument } from "../../lib/blankDocument";
 import { createSamplePaper } from "../../data/samplePaper";
+import { STARTER_TEMPLATES, type StarterTemplateId } from "../../lib/starterTemplates";
 import { btnPrimary } from "../../lib/uiClasses";
 import { BrandMark } from "../BrandMark";
 import {
@@ -24,7 +25,7 @@ interface OnboardingWizardProps {
   onClose: () => void;
 }
 
-type TemplateChoice = "sample" | "blank" | "skip";
+type TemplateChoice = "sample" | StarterTemplateId | "skip";
 
 export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -58,7 +59,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
     }
 
     try {
-      const docContent = choice === "sample" ? createSamplePaper() : createBlankDocument();
+      const docContent = choice === "sample" ? createSamplePaper() : createBlankDocument(choice);
       const title =
         choice === "sample"
           ? "Sample: Preparation of a Formatted Conference Paper"
@@ -125,8 +126,8 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                 Welcome to IEEE Paper Builder
               </h2>
               <p className="text-sm text-muted mt-1 leading-relaxed">
-                Write submission-ready IEEE conference and journal papers without fighting LaTeX margins,
-                column breaks, or equation numbering.
+                Write IEEE conference papers without fighting margins, column breaks, or equation
+                numbering.
               </p>
             </div>
 
@@ -201,25 +202,26 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                 </div>
               </button>
 
-              <button
-                type="button"
-                onClick={() => setChoice("blank")}
-                className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-start gap-3.5 ${
-                  choice === "blank"
-                    ? "border-accent bg-accent-soft/50"
-                    : "border-line hover:border-line bg-transparent"
-                }`}
-              >
-                <FilePlus2 size={22} className="flex-none mt-0.5 text-accent" aria-hidden="true" />
-                <div>
-                  <h3 className="text-sm font-semibold text-ink">
-                    Blank IEEE Conference Paper
-                  </h3>
-                  <p className="text-xs text-muted mt-1">
-                    Clean structure with standard headings: Introduction, Methodology, Results, and Conclusion.
-                  </p>
-                </div>
-              </button>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted pt-1">Or start from a structure</p>
+              <div className="grid sm:grid-cols-2 gap-2.5">
+                {STARTER_TEMPLATES.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setChoice(t.id)}
+                    aria-pressed={choice === t.id}
+                    className={`text-left p-3.5 rounded-xl border-2 transition-all flex items-start gap-3 ${
+                      choice === t.id ? "border-accent bg-accent-soft/50" : "border-line hover:border-muted/50"
+                    }`}
+                  >
+                    <FilePlus2 size={18} className="flex-none mt-0.5 text-accent" aria-hidden="true" />
+                    <div>
+                      <h3 className="text-sm font-semibold text-ink">{t.name}</h3>
+                      <p className="text-xs text-muted mt-1">{t.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
 
               <button
                 type="button"
@@ -282,7 +284,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                 <Download size={16} className="flex-none text-accent" aria-hidden="true" />
                 <div>
                   <strong className="text-ink">Export Anytime:</strong> Hit Export in the
-                  top right to generate compliant PDF files ready for IEEE Xplore submission.
+                  top right to download a PDF of exactly what the preview shows.
                 </div>
               </li>
             </ul>

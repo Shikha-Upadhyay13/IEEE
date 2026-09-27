@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Copy, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { Copy, FileText, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { createBlankDocument } from "../lib/blankDocument";
+import { STARTER_TEMPLATES, type StarterTemplateId } from "../lib/starterTemplates";
+import { Menu } from "../components/ui/Menu";
 import { relativeTime } from "../lib/relativeTime";
 import { inputBase } from "../lib/uiClasses";
 import { friendlyErrorMessage } from "../lib/friendlyError";
@@ -75,16 +77,31 @@ function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete
   );
 }
 
-function NewPaperCard({ creating, onClick }: { creating: boolean; onClick: () => void }) {
+function NewPaperCard({ creating, onCreate }: { creating: boolean; onCreate: (template: StarterTemplateId) => void }) {
   return (
-    <button
-      onClick={onClick}
+    <Menu
+      trigger={
+        <>
+          <Plus size={28} strokeWidth={1.5} aria-hidden="true" />
+          <span className="text-sm font-medium">{creating ? "Creating…" : "New paper"}</span>
+        </>
+      }
       disabled={creating}
-      className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-line flex flex-col items-center justify-center gap-2 text-muted hover:border-accent hover:text-accent hover:bg-accent-soft/50 transition-colors"
-    >
-      <Plus size={28} strokeWidth={1.5} aria-hidden="true" />
-      <span className="text-sm font-medium">{creating ? "Creating…" : "New paper"}</span>
-    </button>
+      width={320}
+      triggerClassName="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-line flex flex-col items-center justify-center gap-2 text-muted hover:border-accent hover:text-accent hover:bg-accent-soft/50 transition-colors"
+      groups={[
+        {
+          label: "Start from",
+          items: STARTER_TEMPLATES.map((t) => ({
+            id: t.id,
+            label: t.name,
+            description: t.description,
+            icon: FileText,
+            onSelect: () => onCreate(t.id),
+          })),
+        },
+      ]}
+    />
   );
 }
 
@@ -236,10 +253,10 @@ export function Dashboard() {
     return filtered;
   }, [documents, search, sortBy]);
 
-  async function handleCreate() {
+  async function handleCreate(template: StarterTemplateId) {
     if (!user) return;
     setCreating(true);
-    const blank = createBlankDocument();
+    const blank = createBlankDocument(template);
     const { data, error } = await supabase
       .from("documents")
       .insert({ owner_id: user.id, title: "Untitled paper", content: blank })
@@ -397,7 +414,7 @@ export function Dashboard() {
             <p className="text-sm text-muted">No papers match "{search}".</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-              <NewPaperCard creating={creating} onClick={handleCreate} />
+              <NewPaperCard creating={creating} onCreate={handleCreate} />
               {filteredDocuments.map((doc) => (
                 <PaperCard
                   key={doc.id}
