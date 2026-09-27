@@ -4,6 +4,7 @@ import { supabase } from "../supabaseClient";
 import { btnPrimary, inputBase, labelBase } from "../lib/uiClasses";
 import { BrandMark } from "../components/BrandMark";
 import { friendlyErrorMessage } from "../lib/friendlyError";
+import { useServiceHealth } from "../lib/useServiceHealth";
 
 const FEATURES = [
   "Drag-and-drop editing, no LaTeX required",
@@ -19,6 +20,7 @@ export function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
+  const health = useServiceHealth();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -125,6 +127,15 @@ export function LoginPage() {
                 ? "Start writing — no credit card, no LaTeX."
                 : "Enter your email and we'll send you a reset link."}
           </p>
+
+          {health === "down" && (
+            <p
+              role="status"
+              className="mb-6 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-400"
+            >
+              Service is temporarily unavailable. Sign-in may fail for a few minutes — please try again shortly.
+            </p>
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
