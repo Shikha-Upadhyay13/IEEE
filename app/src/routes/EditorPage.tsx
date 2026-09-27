@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, History, Maximize2, Redo2, Undo2, X } from "lucide-react";
+import { ArrowLeft, History, Maximize2, MessageSquareText, Redo2, Undo2, X } from "lucide-react";
+import { ReviewPanel } from "../components/editor/ReviewPanel";
 import { redo, undo, useHistoryStore } from "../store/historyStore";
 import { resolveNumbering } from "../lib/numbering";
 import { useDocumentStore } from "../store/documentStore";
@@ -29,6 +30,7 @@ export function EditorPage() {
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [view, setView] = useState<EditorView>({ kind: "all" });
+  const [reviewOpen, setReviewOpen] = useState(false);
   // The last content known to be persisted — compared by reference (not a
   // fire-count flag) against the debounced value below, so autosave skips
   // only a genuinely unchanged state, not just "the first debounce cycle"
@@ -277,6 +279,15 @@ export function EditorPage() {
             </button>
           </div>
           <ChecklistPanel pageCount={pageCount} onNavigate={navigateTo} />
+          <button
+            type="button"
+            onClick={() => setReviewOpen(true)}
+            className={`${btnSecondary} text-xs py-1.5 px-3 flex items-center gap-1.5`}
+            title="AI feedback on clarity and structure"
+          >
+            <MessageSquareText size={14} aria-hidden="true" />
+            <span>Review</span>
+          </button>
           {documentId && (
             <button
               type="button"
@@ -341,6 +352,7 @@ export function EditorPage() {
           </div>
         </div>
       </div>
+      {reviewOpen && <ReviewPanel onClose={() => setReviewOpen(false)} onNavigate={(v) => navigateTo(v)} />}
       {documentId && (
         <VersionHistoryPanel
           documentId={documentId}
