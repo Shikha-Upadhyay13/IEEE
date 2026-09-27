@@ -210,6 +210,8 @@ type DocumentStore = {
   addReferenceWithFields: (fields: ReferenceFields) => void;
   importReferences: (items: ReferenceFields[]) => void;
   updateReferenceField: (id: string, field: keyof ReferenceFields, value: string) => void;
+  markReferenceVerified: (id: string, doi: string) => void;
+  replaceReferenceFields: (id: string, fields: ReferenceFields) => void;
   removeReference: (id: string) => void;
 };
 
@@ -636,9 +638,33 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         ...state.document,
         references: state.document.references.map((ref) => {
           if (ref.id !== id) return ref;
-          const fields = { ...(ref.fields as ReferenceFields), [field]: value };
+          const fields: ReferenceFields = { ...(ref.fields as ReferenceFields), [field]: value };
+          // An edited reference is no longer the one CrossRef confirmed.
+          delete fields.verifiedAt;
           return { ...ref, fields, renderedText: generateReferenceText(fields) };
         }),
+      },
+    })),
+
+  markReferenceVerified: (id, doi) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        references: state.document.references.map((ref) =>
+          ref.id === id
+            ? { ...ref, fields: { ...ref.fields, ...(doi ? { doi } : {}), verifiedAt: new Date().toISOString() } }
+            : ref,
+        ),
+      },
+    })),
+
+  replaceReferenceFields: (id, fields) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        references: state.document.references.map((ref) =>
+          ref.id === id ? { ...ref, fields, renderedText: generateReferenceText(fields) } : ref,
+        ),
       },
     })),
 

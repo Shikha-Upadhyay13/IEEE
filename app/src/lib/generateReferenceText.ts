@@ -5,6 +5,9 @@ export type ReferenceFields = {
   year: string;
   volume: string;
   pages: string;
+  doi?: string;
+  /** ISO timestamp of the last successful CrossRef match; cleared when the details are edited. */
+  verifiedAt?: string;
 };
 
 export const emptyReferenceFields: ReferenceFields = {
