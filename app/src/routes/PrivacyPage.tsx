@@ -16,13 +16,13 @@ export function PrivacyPage() {
         <h1 className="font-display text-3xl font-semibold text-ink mb-2">
           Privacy Policy
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-10">
+        <p className="text-sm text-muted mb-10">
           Effective date: September 2026
         </p>
 
-        <div className="prose prose-gray dark:prose-invert max-w-none space-y-8 text-gray-700 dark:text-gray-300">
+        <div className="prose prose-gray dark:prose-invert max-w-none space-y-8 text-ink">
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               1. Who We Are
             </h2>
             <p>
@@ -33,7 +33,7 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               2. Data We Collect
             </h2>
             <p>We collect the following categories of data:</p>
@@ -71,7 +71,7 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               3. How We Use Your Data
             </h2>
             <ul className="list-disc pl-6 space-y-2">
@@ -91,7 +91,7 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               4. Third-Party Services
             </h2>
             <p>We use the following third-party services, each with their own privacy policies:</p>
@@ -138,7 +138,7 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               5. Data Retention
             </h2>
             <ul className="list-disc pl-6 space-y-2">
@@ -162,7 +162,7 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               6. Your Rights (GDPR)
             </h2>
             <p>
@@ -200,7 +200,7 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               7. Cookies and Local Storage
             </h2>
             <p>
@@ -211,7 +211,7 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               8. Security
             </h2>
             <p>
@@ -223,7 +223,7 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               9. Children's Privacy
             </h2>
             <p>
@@ -234,7 +234,7 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               10. Changes to This Policy
             </h2>
             <p>
@@ -245,7 +245,7 @@ export function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               11. Contact
             </h2>
             <p>

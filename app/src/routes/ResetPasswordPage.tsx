@@ -58,10 +58,10 @@ export function ResetPasswordPage() {
           <span className="font-display font-semibold text-ink tracking-tight">IEEE Paper Builder</span>
         </div>
 
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight mb-1">
+        <h2 className="text-2xl font-semibold text-ink tracking-tight mb-1">
           Set a new password
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Choose a new password for your account.</p>
+        <p className="text-sm text-muted mb-8">Choose a new password for your account.</p>
 
         {done ? (
           <p className="text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 rounded-md px-3 py-2">

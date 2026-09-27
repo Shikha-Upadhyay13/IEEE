@@ -195,13 +195,13 @@ export function LoginPage() {
                     : "Send reset link"}
             </button>
             {mode === "signup" && (
-              <p className="mt-3 text-xs text-center text-gray-500 dark:text-gray-400">
+              <p className="mt-3 text-xs text-center text-muted">
                 By creating an account, you agree to our{" "}
-                <Link to="/terms" className="underline hover:text-gray-700 dark:hover:text-gray-300">
+                <Link to="/terms" className="underline hover:text-ink">
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link to="/privacy" className="underline hover:text-gray-700 dark:hover:text-gray-300">
+                <Link to="/privacy" className="underline hover:text-ink">
                   Privacy Policy
                 </Link>
                 .
@@ -220,7 +220,7 @@ export function LoginPage() {
             </p>
           )}
 
-          <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-6 text-sm text-muted">
             {mode === "forgot" ? (
               <button
                 type="button"

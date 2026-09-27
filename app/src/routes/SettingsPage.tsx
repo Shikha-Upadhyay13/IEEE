@@ -20,7 +20,7 @@ const THEME_OPTIONS: { value: ThemeSetting; label: string }[] = [
 function ThemePreview({ mode }: { mode: ThemeSetting }) {
   if (mode === "system") {
     return (
-      <div className="w-full h-16 rounded-md overflow-hidden border border-gray-300 dark:border-gray-600 flex">
+      <div className="w-full h-16 rounded-md overflow-hidden border border-line flex">
         <div className="w-1/2 bg-canvas flex flex-col gap-1.5 p-2">
           <div className="h-1.5 w-full rounded-full bg-line" />
           <div className="h-1.5 w-2/3 rounded-full bg-line" />
@@ -84,7 +84,7 @@ export function SettingsPage() {
 
       <div className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10">
         <h1 className="font-display text-2xl font-semibold text-ink tracking-tight mb-1">Settings</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <p className="text-sm text-muted mb-6">
           Your account, appearance, and Doc Buddy preferences.
         </p>
 
@@ -97,10 +97,10 @@ export function SettingsPage() {
             {user?.email?.[0]?.toUpperCase() ?? "?"}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
+            <p className="text-base font-semibold text-ink truncate">
               {user?.email ?? "Your account"}
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">Member since {formatJoinDate(user?.created_at)}</p>
+            <p className="text-sm text-muted">Member since {formatJoinDate(user?.created_at)}</p>
           </div>
           <div className="flex items-center gap-2 flex-none">
             <Link to="/profile" className={btnSecondary}>
@@ -114,8 +114,8 @@ export function SettingsPage() {
 
         <div className="grid lg:grid-cols-3 gap-6">
           <div className={`${cardBase} p-6 lg:col-span-2`}>
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Appearance</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Applies across the whole app.</p>
+            <h2 className="text-base font-semibold text-ink mb-1">Appearance</h2>
+            <p className="text-sm text-muted mb-4">Applies across the whole app.</p>
             <div className="grid grid-cols-3 gap-3">
               {THEME_OPTIONS.map((opt) => (
                 <button
@@ -140,19 +140,19 @@ export function SettingsPage() {
                 </button>
               ))}
             </div>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+            <p className="text-xs text-muted mt-4">
               Looking for accent colors, link styling, or spacing? Those are per-paper — open any paper's
               editor and expand its Appearance panel.
             </p>
           </div>
 
           <div className={`${cardBase} p-6`}>
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Doc Buddy</h2>
+            <h2 className="text-base font-semibold text-ink mb-4">Doc Buddy</h2>
             <div className="flex items-start gap-3">
               <MessageSquare size={18} className="flex-none mt-0.5 text-accent" aria-hidden="true" />
               <div>
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Chat</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                <p className="text-sm font-medium text-ink">Chat</p>
+                <p className="text-xs text-muted leading-relaxed">
                   Groq's <span className="font-mono">openai/gpt-oss-120b</span> — free, no API key required.
                 </p>
               </div>
@@ -160,8 +160,8 @@ export function SettingsPage() {
             <div className="flex items-start gap-3 mt-4">
               <ImageIcon size={18} className="flex-none mt-0.5 text-accent" aria-hidden="true" />
               <div>
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Image generation</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                <p className="text-sm font-medium text-ink">Image generation</p>
+                <p className="text-xs text-muted leading-relaxed">
                   Right from the chat composer, via Pollinations.ai — free, no limits.
                 </p>
               </div>
@@ -169,8 +169,8 @@ export function SettingsPage() {
           </div>
 
           <div className={`${cardBase} p-6 lg:col-span-3`}>
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Data</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <h2 className="text-base font-semibold text-ink mb-1">Data</h2>
+            <p className="text-sm text-muted mb-4">
               Remove every saved Doc Buddy conversation, including any images generated inside them. Your
               papers aren't affected.
             </p>

@@ -16,13 +16,13 @@ export function TermsPage() {
         <h1 className="font-display text-3xl font-semibold text-ink mb-2">
           Terms of Service
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-10">
+        <p className="text-sm text-muted mb-10">
           Effective date: September 2026
         </p>
 
-        <div className="prose prose-gray dark:prose-invert max-w-none space-y-8 text-gray-700 dark:text-gray-300">
+        <div className="prose prose-gray dark:prose-invert max-w-none space-y-8 text-ink">
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               1. Acceptance of Terms
             </h2>
             <p>
@@ -32,7 +32,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               2. Description of Service
             </h2>
             <p>
@@ -44,7 +44,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               3. Acceptable Use
             </h2>
             <p>You agree not to:</p>
@@ -69,7 +69,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               4. No Guarantee of Format Accuracy
             </h2>
             <p>
@@ -83,7 +83,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               5. Your Content
             </h2>
             <p>
@@ -104,7 +104,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               6. AI Assistant
             </h2>
             <p>
@@ -118,7 +118,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               7. Account Suspension
             </h2>
             <p>
@@ -130,7 +130,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               8. Service Availability
             </h2>
             <p>
@@ -142,7 +142,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               9. Disclaimer of Warranties
             </h2>
             <p>
@@ -153,7 +153,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               10. Limitation of Liability
             </h2>
             <p>
@@ -164,7 +164,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               11. Changes to These Terms
             </h2>
             <p>
@@ -175,7 +175,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               12. Governing Law
             </h2>
             <p>
@@ -185,7 +185,7 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               13. Contact
             </h2>
             <p>

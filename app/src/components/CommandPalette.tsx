@@ -232,7 +232,7 @@ export function CommandPalette() {
         </div>
         <div className="max-h-80 overflow-y-auto py-1.5">
           {filtered.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500 px-4 py-6 text-center">No matches.</p>
+            <p className="text-sm text-muted px-4 py-6 text-center">No matches.</p>
           ) : (
             filtered.map((item, i) => (
               <button
@@ -243,17 +243,17 @@ export function CommandPalette() {
                 className={`w-full flex items-center gap-3 px-4 py-2 text-left text-sm transition-colors ${
                   i === selected
                     ? "bg-accent-soft text-accent"
-                    : "text-gray-700 dark:text-gray-300"
+                    : "text-ink"
                 }`}
               >
                 <item.icon size={15} className="flex-none" aria-hidden="true" />
                 <span className="flex-1 truncate">{item.label}</span>
-                {item.hint && <span className="text-[11px] text-gray-400 dark:text-gray-500">{item.hint}</span>}
+                {item.hint && <span className="text-[11px] text-muted">{item.hint}</span>}
               </button>
             ))
           )}
         </div>
-        <div className="flex items-center gap-4 px-4 py-2 border-t border-gray-100 dark:border-gray-800 text-[11px] text-gray-400 dark:text-gray-500">
+        <div className="flex items-center gap-4 px-4 py-2 border-t border-line text-[11px] text-muted">
           <span>↑↓ navigate</span>
           <span>↵ select</span>
           <span>esc close</span>
