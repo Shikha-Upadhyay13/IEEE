@@ -19,6 +19,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import {
   ChevronRight,
+  FolderInput,
   GripVertical,
   Heading,
   Image as ImageIcon,
@@ -221,28 +222,28 @@ function SortableBlockItem({
   const moveTargets = collectSectionOptions(body).filter(
     (opt) => opt.id !== node.id && !invalidTargetIds.has(opt.id)
   );
+  const moveItems: MenuItem[] = [
+    ...(containerId !== null
+      ? [{ id: "__top__", label: "Top level", description: "Outside any section", onSelect: () => moveBlockToSection(node.id, null) }]
+      : []),
+    ...moveTargets.map((opt) => ({
+      id: opt.id,
+      label: opt.label,
+      description: opt.id === containerId ? "Already here" : undefined,
+      disabled: opt.id === containerId,
+      onSelect: () => moveBlockToSection(node.id, opt.id),
+    })),
+  ];
   const moveToControl = (
-    <select
-      aria-label="Move to section"
-      value=""
-      onChange={(e) => {
-        const value = e.target.value;
-        if (value) moveBlockToSection(node.id, value === "__top__" ? null : value);
-        e.target.value = "";
-      }}
-      title="Move to…"
-      className="flex-none w-6 h-6 text-[10px] text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 bg-transparent border-none cursor-pointer focus:outline-none"
-    >
-      <option value="" disabled>
-        ⇥
-      </option>
-      {containerId !== null && <option value="__top__">Top level</option>}
-      {moveTargets.map((opt) => (
-        <option key={opt.id} value={opt.id}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
+    <Menu
+      trigger={<FolderInput size={14} aria-hidden="true" />}
+      triggerLabel="Move to section"
+      title="Move to another section"
+      triggerClassName="flex-none w-6 h-6 flex items-center justify-center rounded text-gray-300 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 aria-expanded:text-accent transition-colors"
+      align="end"
+      groups={[{ label: "Move to", items: moveItems }]}
+      emptyMessage="No other sections yet — add a section first."
+    />
   );
 
   if (node.type === "section") {
@@ -653,7 +654,8 @@ export function EditorPanel() {
         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Body Content</h2>
         <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
           Drag the <GripVertical size={12} className="inline -mt-0.5" aria-label="grip" /> handle to reorder
-          blocks in the same list. Use Move to… to place a block in a different section. Expand a section (
+          blocks in the same list. Use <FolderInput size={12} className="inline -mt-0.5" aria-label="move" /> to
+          place a block in a different section. Expand a section (
           <ChevronRight size={12} className="inline -mt-0.5" aria-label="chevron" />) before reordering its children.
         </p>
 
