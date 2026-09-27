@@ -7,6 +7,7 @@ import { useDebouncedValue } from "../lib/useDebouncedValue";
 import { PagedPreview } from "../components/renderer/PagedPreview";
 import { EditorPanel, type EditorView } from "../components/editor/EditorPanel";
 import { EditorOutline } from "../components/editor/EditorOutline";
+import { ChecklistPanel } from "../components/editor/ChecklistPanel";
 import { ExportButton } from "../components/editor/ExportButton";
 import { ShareButton } from "../components/editor/ShareButton";
 import { VersionHistoryPanel } from "../components/editor/VersionHistoryPanel";
@@ -185,6 +186,21 @@ export function EditorPage() {
         ? "text-muted"
         : "text-emerald-600 dark:text-emerald-400";
 
+  function navigateTo(next: EditorView, blockId?: string) {
+    setView(next);
+    if (!blockId) return;
+    // Wait for the newly selected view to render before looking the block up.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const el = window.document.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(blockId)}"]`);
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-accent");
+        window.setTimeout(() => el.classList.remove("ring-2", "ring-accent"), 1600);
+      }),
+    );
+  }
+
   const pageLimit = document.meta.pageLimit;
   const overPageLimit = pageCount !== null && pageLimit !== null && pageCount > pageLimit;
 
@@ -216,6 +232,7 @@ export function EditorPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <ChecklistPanel pageCount={pageCount} onNavigate={navigateTo} />
           {documentId && (
             <button
               type="button"
