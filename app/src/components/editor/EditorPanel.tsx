@@ -25,6 +25,7 @@ import { TableEditor } from "./TableEditor";
 import { ReferencesEditor } from "./ReferencesEditor";
 import { EquationEditor } from "./EquationEditor";
 import { AppearancePanel } from "./AppearancePanel";
+import { AuthorsEditor } from "./AuthorsEditor";
 import { cardBase, inputBase, labelBase } from "../../lib/uiClasses";
 import { useEditorPreferences } from "../../lib/useEditorPreferences";
 import { countDocumentStats } from "../../lib/countWords";
@@ -521,6 +522,8 @@ export function EditorPanel() {
             className={`${inputBase} resize-none`}
           />
         </div>
+
+        <AuthorsEditor />
 
         <div className="mb-4">
           <div className="flex justify-between items-baseline">
