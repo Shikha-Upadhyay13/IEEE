@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
-import { Quote } from "lucide-react";
+import { Image as ImageIcon, Link2, Quote, Table2 } from "lucide-react";
 import { Menu, type MenuItem } from "../../ui/Menu";
 import StarterKit from "@tiptap/starter-kit";
 import Superscript from "@tiptap/extension-superscript";
@@ -48,10 +48,18 @@ export function RichParagraphEditor({
     })
     .sort((a, b) => a.n - b.n)
     .map(({ id, label, description }) => ({ id, label, description, onSelect: () => insertCitation(id) }));
-  const xrefTargets = collectXrefTargets(document.body).map((t) => ({
-    ...t,
-    label: `${xrefLabelFor(document, t.targetType, t.id) ?? t.targetType} — ${truncate(t.label, 50)}`,
-  }));
+  const xrefTargets = collectXrefTargets(document.body);
+  const xrefItem = (t: (typeof xrefTargets)[number]): MenuItem => ({
+    id: `${t.targetType}:${t.id}`,
+    label: xrefLabelFor(document, t.targetType, t.id) ?? t.targetType,
+    description: truncate(t.label, 50),
+    icon: t.targetType === "figure" ? ImageIcon : Table2,
+    onSelect: () => insertXref(`${t.targetType}:${t.id}`),
+  });
+  const xrefGroups = [
+    { label: "Figures", items: xrefTargets.filter((t) => t.targetType === "figure").map(xrefItem) },
+    { label: "Tables", items: xrefTargets.filter((t) => t.targetType === "table").map(xrefItem) },
+  ].filter((g) => g.items.length > 0);
 
   const editor = useEditor({
     extensions: [
@@ -117,9 +125,6 @@ export function RichParagraphEditor({
     }`;
   const toolbarMenuBtn =
     "h-7 inline-flex items-center gap-1 rounded px-2 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 aria-expanded:bg-accent-soft aria-expanded:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent";
-  const toolbarSelect =
-    "h-7 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1.5 text-xs text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800";
-
   return (
     <div
       data-rich-paragraph-editor=""
@@ -156,24 +161,19 @@ export function RichParagraphEditor({
           groups={[{ label: "References", items: citationItems }]}
           emptyMessage="No references yet — add one in the References panel below."
         />
-        <select
-          value=""
-          onChange={(e) => insertXref(e.target.value)}
-          title="Insert a cross-reference to a figure or table"
-          className={toolbarSelect}
-        >
-          <option value="">+ Cross-ref…</option>
-          {xrefTargets.length === 0 && (
-            <option value="" disabled>
-              No figures or tables yet — add one with + Add block
-            </option>
-          )}
-          {xrefTargets.map((t) => (
-            <option key={t.id} value={`${t.targetType}:${t.id}`}>
-              {t.label}
-            </option>
-          ))}
-        </select>
+        <Menu
+          trigger={
+            <>
+              <Link2 size={13} aria-hidden="true" />
+              Cross-ref
+            </>
+          }
+          title="Insert a cross-reference to a figure or table at the cursor"
+          triggerClassName={toolbarMenuBtn}
+          width={300}
+          groups={xrefGroups}
+          emptyMessage="No figures or tables yet — add one with Add block."
+        />
       </div>
       <EditorContent
         editor={editor}
