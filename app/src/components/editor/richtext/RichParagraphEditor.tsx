@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { Image as ImageIcon, Link2, Quote, Table2 } from "lucide-react";
 import { Menu, type MenuItem } from "../../ui/Menu";
@@ -82,15 +82,22 @@ export function RichParagraphEditor({
       // notice and delete before writing their own content.
       Placeholder.configure({ placeholder: "Write your paragraph here…" }),
     ],
-    // `content` here only seeds the editor once (useEditor's default deps are
-    // []) — this component only ever writes to the store, never the reverse,
-    // so there's no external-change case to sync back in for this milestone.
+    // `content` only seeds the editor once (useEditor's default deps are []);
+    // external changes such as undo/redo are synced by the effect below.
     content: inlineNodesToTipTapDoc(content),
     onUpdate: ({ editor }) => onChange(tipTapDocToInlineNodes(editor.getJSON())),
     onFocus: () => {
       hasBeenFocused.current = true;
     },
   });
+
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    const current = JSON.stringify(tipTapDocToInlineNodes(editor.getJSON()));
+    if (current !== JSON.stringify(content)) {
+      editor.commands.setContent(inlineNodesToTipTapDoc(content), { emitUpdate: false });
+    }
+  }, [editor, content]);
 
   // Until the paragraph has been clicked into, TipTap's cursor sits at the
   // very start — inserting there would glue the chip onto the first word

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, History, Maximize2, X } from "lucide-react";
+import { ArrowLeft, History, Maximize2, Redo2, Undo2, X } from "lucide-react";
+import { redo, undo, useHistoryStore } from "../store/historyStore";
 import { resolveNumbering } from "../lib/numbering";
 import { useDocumentStore } from "../store/documentStore";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
@@ -12,7 +13,7 @@ import { ExportButton } from "../components/editor/ExportButton";
 import { ShareButton } from "../components/editor/ShareButton";
 import { VersionHistoryPanel } from "../components/editor/VersionHistoryPanel";
 import { supabase } from "../supabaseClient";
-import { btnGhost, btnPrimary, btnSecondary } from "../lib/uiClasses";
+import { btnGhost, btnIcon, btnPrimary, btnSecondary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { BrandMark } from "../components/BrandMark";
 import { extractTitleText } from "../lib/extractTitleText";
@@ -150,6 +151,27 @@ export function EditorPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pageCount, setPageCount] = useState<number | null>(null);
 
+  const canUndo = useHistoryStore((s) => s.past.length > 0);
+  const canRedo = useHistoryStore((s) => s.future.length > 0);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const key = e.key.toLowerCase();
+      const isUndo = key === "z" && !e.shiftKey;
+      const isRedo = (key === "z" && e.shiftKey) || key === "y";
+      if (!isUndo && !isRedo) return;
+      // Paragraph text and equations keep their own fine-grained undo while focused.
+      const target = e.target as HTMLElement | null;
+      if (target?.closest(".ProseMirror, math-field")) return;
+      e.preventDefault();
+      if (isUndo) undo();
+      else redo();
+    }
+    window.document.addEventListener("keydown", handleKeyDown);
+    return () => window.document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   useEffect(() => {
     if (!previewOpen) return;
     function handleKeyDown(e: KeyboardEvent) {
@@ -232,6 +254,28 @@ export function EditorPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={undo}
+              disabled={!canUndo}
+              aria-label="Undo"
+              title="Undo (Ctrl+Z)"
+              className={`${btnIcon} disabled:opacity-40`}
+            >
+              <Undo2 size={16} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={redo}
+              disabled={!canRedo}
+              aria-label="Redo"
+              title="Redo (Ctrl+Shift+Z)"
+              className={`${btnIcon} disabled:opacity-40`}
+            >
+              <Redo2 size={16} aria-hidden="true" />
+            </button>
+          </div>
           <ChecklistPanel pageCount={pageCount} onNavigate={navigateTo} />
           {documentId && (
             <button
