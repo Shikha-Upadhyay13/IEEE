@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LandingPage } from "./routes/LandingPage";
 import { LoginPage } from "./routes/LoginPage";
 import { ResetPasswordPage } from "./routes/ResetPasswordPage";
@@ -37,8 +38,9 @@ function LandingOrDashboard() {
 }
 
 function App() {
+  const location = useLocation();
   return (
-    <>
+    <ErrorBoundary resetKey={location.pathname}>
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           <Route path="/" element={<LandingOrDashboard />} />
@@ -64,7 +66,7 @@ function App() {
       </Suspense>
       <ChatLauncher />
       <CommandPalette />
-    </>
+    </ErrorBoundary>
   );
 }
 
