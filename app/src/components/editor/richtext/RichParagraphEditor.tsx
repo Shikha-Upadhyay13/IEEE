@@ -1,4 +1,7 @@
+import { useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
+import { Quote } from "lucide-react";
+import { Menu, type MenuItem } from "../../ui/Menu";
 import StarterKit from "@tiptap/starter-kit";
 import Superscript from "@tiptap/extension-superscript";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -15,11 +18,16 @@ function truncate(text: string, max: number): string {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
 
-function referenceSummary(ref: Reference): string {
+function referenceLabel(ref: Reference): { label: string; description?: string } {
   const authors = ref.fields.authors?.trim();
   const title = ref.fields.title?.trim();
-  const summary = [authors, title && `"${title}"`].filter(Boolean).join(", ") || ref.renderedText.trim();
-  return summary ? truncate(summary, 60) : "Empty reference — fill in its details under References";
+  if (authors || title) {
+    return { label: truncate(authors || title || "", 60), description: authors && title ? title : undefined };
+  }
+  const rendered = ref.renderedText.trim();
+  return rendered
+    ? { label: truncate(rendered, 60) }
+    : { label: "Empty reference", description: "Fill in its details under References" };
 }
 
 export function RichParagraphEditor({
@@ -31,12 +39,15 @@ export function RichParagraphEditor({
 }) {
   const document = useDocumentStore((s) => s.document);
   const references = document.references;
-  const citationOptions = references
+  const hasBeenFocused = useRef(false);
+  const citationItems: MenuItem[] = references
     .map((ref) => {
       const n = citationNumberFor(document, ref.id);
-      return { id: ref.id, n: n ?? 0, label: `[${n ?? "?"}] ${referenceSummary(ref)}` };
+      const { label, description } = referenceLabel(ref);
+      return { id: ref.id, n: n ?? 0, label: `[${n ?? "?"}] ${label}`, description };
     })
-    .sort((a, b) => a.n - b.n);
+    .sort((a, b) => a.n - b.n)
+    .map(({ id, label, description }) => ({ id, label, description, onSelect: () => insertCitation(id) }));
   const xrefTargets = collectXrefTargets(document.body).map((t) => ({
     ...t,
     label: `${xrefLabelFor(document, t.targetType, t.id) ?? t.targetType} — ${truncate(t.label, 50)}`,
@@ -68,31 +79,32 @@ export function RichParagraphEditor({
     // so there's no external-change case to sync back in for this milestone.
     content: inlineNodesToTipTapDoc(content),
     onUpdate: ({ editor }) => onChange(tipTapDocToInlineNodes(editor.getJSON())),
+    onFocus: () => {
+      hasBeenFocused.current = true;
+    },
   });
 
-  // .focus('end') rather than plain .focus(): if this paragraph has never
-  // been clicked into, TipTap's cursor defaults to the very start of the
-  // document — inserting there merges the citation directly into the first
-  // word with no space ("[1]Introduce the problem..."). Defaulting to the
-  // end instead means the common "pick a citation before you've clicked
-  // anywhere in this paragraph" case appends after existing text, not into it.
-  function insertCitation(refId: string) {
-    if (!refId || !editor) return;
+  // Until the paragraph has been clicked into, TipTap's cursor sits at the
+  // very start — inserting there would glue the chip onto the first word
+  // ("[1]Introduce the problem..."), so fall back to the end instead. Once
+  // the user has placed a cursor, focus() restores that exact selection.
+  function insertInline(node: { type: "citeRef" | "xref"; attrs: Record<string, string> }) {
+    if (!editor) return;
     editor
       .chain()
-      .focus("end")
-      .insertContent({ type: "citeRef", attrs: { id: generateId("cite"), refId } })
+      .focus(hasBeenFocused.current ? undefined : "end")
+      .insertContent(node)
       .run();
   }
 
+  function insertCitation(refId: string) {
+    insertInline({ type: "citeRef", attrs: { id: generateId("cite"), refId } });
+  }
+
   function insertXref(targetKey: string) {
-    if (!targetKey || !editor) return;
+    if (!targetKey) return;
     const [targetType, targetId] = targetKey.split(":");
-    editor
-      .chain()
-      .focus("end")
-      .insertContent({ type: "xref", attrs: { id: generateId("xref"), targetType, targetId } })
-      .run();
+    insertInline({ type: "xref", attrs: { id: generateId("xref"), targetType, targetId } });
   }
 
   if (!editor) return null;
@@ -103,6 +115,8 @@ export function RichParagraphEditor({
         ? "bg-accent-soft text-accent"
         : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
     }`;
+  const toolbarMenuBtn =
+    "h-7 inline-flex items-center gap-1 rounded px-2 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 aria-expanded:bg-accent-soft aria-expanded:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent";
   const toolbarSelect =
     "h-7 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1.5 text-xs text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800";
 
@@ -129,24 +143,19 @@ export function RichParagraphEditor({
           I
         </button>
         <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
-        <select
-          value=""
-          onChange={(e) => insertCitation(e.target.value)}
-          title="Insert a citation"
-          className={toolbarSelect}
-        >
-          <option value="">+ Citation…</option>
-          {references.length === 0 && (
-            <option value="" disabled>
-              No references yet — add one in the References panel below
-            </option>
-          )}
-          {citationOptions.map((opt) => (
-            <option key={opt.id} value={opt.id}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <Menu
+          trigger={
+            <>
+              <Quote size={13} aria-hidden="true" />
+              Cite
+            </>
+          }
+          title="Insert a citation at the cursor"
+          triggerClassName={toolbarMenuBtn}
+          width={320}
+          groups={[{ label: "References", items: citationItems }]}
+          emptyMessage="No references yet — add one in the References panel below."
+        />
         <select
           value=""
           onChange={(e) => insertXref(e.target.value)}
