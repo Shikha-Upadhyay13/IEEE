@@ -79,8 +79,8 @@ export function ViewPage() {
         <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
           <Lock size={22} aria-hidden="true" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Private Paper</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
+        <h2 className="text-xl font-bold text-ink">Private Paper</h2>
+        <p className="text-sm text-muted max-w-md">
           The author has not enabled public link sharing for this paper, or you may need to sign in with an account that owns it.
         </p>
         <div className="flex items-center gap-3 mt-2">
@@ -98,11 +98,11 @@ export function ViewPage() {
   if (loadState === "notfound" || !resolvedDoc) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-canvas px-6 text-center">
-        <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-800 text-gray-500 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-xl bg-line text-muted flex items-center justify-center">
           <FileQuestion size={22} aria-hidden="true" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Paper Not Found</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
+        <h2 className="text-xl font-bold text-ink">Paper Not Found</h2>
+        <p className="text-sm text-muted max-w-md">
           This paper may have been removed or the link is invalid.
         </p>
         <Link to="/" className={btnPrimary}>
@@ -121,11 +121,11 @@ export function ViewPage() {
             <BrandMark size="sm" />
             <span className="hidden sm:inline">IEEE Paper Builder</span>
           </Link>
-          <span className="text-gray-300 dark:text-gray-700">|</span>
-          <h1 className="text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-200 truncate max-w-xs sm:max-w-md">
+          <span className="text-muted/60">|</span>
+          <h1 className="text-xs sm:text-sm font-medium text-ink truncate max-w-xs sm:max-w-md">
             {paperTitle}
           </h1>
-          <span className="hidden md:inline-flex text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+          <span className="hidden md:inline-flex text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-canvas text-muted">
             Read-only
           </span>
         </div>

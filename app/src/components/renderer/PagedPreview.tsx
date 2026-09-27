@@ -65,7 +65,7 @@ export function PagedPreview({
 
   return (
     <div>
-      {status === "paginating" && <p className="text-gray-600 dark:text-gray-400">Paginating…</p>}
+      {status === "paginating" && <p className="text-muted">Paginating…</p>}
       {status === "error" && <p className="text-red-600 dark:text-red-400">Pagination failed — see console.</p>}
 
       {/* Hidden source: plain unpaginated render, read by Paged.js. */}

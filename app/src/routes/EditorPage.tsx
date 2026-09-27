@@ -163,7 +163,7 @@ export function EditorPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-canvas px-6 text-center">
         <BrandMark size="lg" className="bg-muted text-accent-fg" />
-        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm">
+        <p className="text-sm text-muted max-w-sm">
           Couldn't load that paper — it may not exist, or you may not have access.
         </p>
         <Link to="/dashboard" className={btnPrimary}>
@@ -195,16 +195,16 @@ export function EditorPage() {
         <div className="flex items-center gap-3">
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            className="inline-flex items-center gap-1 text-sm text-muted hover:text-ink transition-colors"
           >
             <ArrowLeft size={14} aria-hidden="true" />
             Dashboard
           </Link>
-          <span className="text-gray-300 dark:text-gray-700">|</span>
+          <span className="text-muted/60">|</span>
           <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
           {pageCount !== null && (
             <span
-              className={`text-xs font-medium ${overPageLimit ? "rounded bg-red-50 px-1.5 py-0.5 text-red-700 dark:bg-red-950/40 dark:text-red-400" : "text-muted"}`}
+              className={`text-xs font-medium ${overPageLimit ? "rounded bg-amber-50 px-1.5 py-0.5 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400" : "text-muted"}`}
               aria-live="polite"
               title={overPageLimit ? `Your venue allows ${pageLimit} pages — trim content or adjust the limit in Paper Details.` : undefined}
             >
@@ -249,7 +249,7 @@ export function EditorPage() {
             <button
               onClick={() => setPreviewOpen(false)}
               aria-label="Close preview"
-              className={`${btnGhost} fixed top-4 right-4 z-[60] bg-white dark:bg-gray-800 shadow-md w-auto px-3 gap-1.5 text-xs font-medium`}
+              className={`${btnGhost} fixed top-4 right-4 z-[60] bg-surface shadow-md w-auto px-3 gap-1.5 text-xs font-medium`}
             >
               <X size={14} aria-hidden="true" />
               Close preview

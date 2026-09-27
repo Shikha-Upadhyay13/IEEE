@@ -38,7 +38,7 @@ export function TableEditor({ node }: { node: Table }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-4 flex-wrap">
-        <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+        <label className="flex items-center gap-1.5 text-xs text-muted">
           <input
             type="checkbox"
             checked={node.width === "double-column"}
@@ -47,12 +47,12 @@ export function TableEditor({ node }: { node: Table }) {
           />
           Span both columns
         </label>
-        <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+        <label className="flex items-center gap-1.5 text-xs text-muted">
           Spacing
           <select
             value={node.spacing ?? "comfortable"}
             onChange={(e) => updateTableSpacing(node.id, e.target.value as TableSpacing)}
-            className="rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-600"
+            className="rounded border-line bg-surface text-ink text-xs px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-accent"
           >
             <option value="compact">Compact</option>
             <option value="comfortable">Comfortable</option>
@@ -66,11 +66,11 @@ export function TableEditor({ node }: { node: Table }) {
           {node.rows.map((row, r) => (
             <tr key={r}>
               {row.map((cell, c) => (
-                <td key={c} className="border border-gray-200 dark:border-gray-700 p-0.5">
+                <td key={c} className="border border-line p-0.5">
                   <input
                     value={cell}
                     onChange={(e) => setCell(r, c, e.target.value)}
-                    className="w-[70px] text-xs px-1 py-0.5 border-none bg-transparent text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-400 rounded"
+                    className="w-[70px] text-xs px-1 py-0.5 border-none bg-transparent text-ink focus:outline-none focus:ring-1 focus:ring-accent rounded"
                   />
                 </td>
               ))}

@@ -121,16 +121,16 @@ export function RichParagraphEditor({
     `w-7 h-7 rounded flex items-center justify-center text-sm font-semibold transition-colors ${
       active
         ? "bg-accent-soft text-accent"
-        : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+        : "text-muted hover:bg-canvas"
     }`;
   const toolbarMenuBtn =
-    "h-7 inline-flex items-center gap-1 rounded px-2 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 aria-expanded:bg-accent-soft aria-expanded:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent";
+    "h-7 inline-flex items-center gap-1 rounded px-2 text-xs font-medium text-muted hover:bg-canvas aria-expanded:bg-accent-soft aria-expanded:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent";
   return (
     <div
       data-rich-paragraph-editor=""
-      className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500"
+      className="rounded-md border border-line bg-surface focus-within:border-accent focus-within:ring-1 focus-within:ring-accent"
     >
-      <div className="flex gap-1 flex-wrap items-center px-2 py-1.5 border-b border-gray-100 dark:border-gray-800">
+      <div className="flex gap-1 flex-wrap items-center px-2 py-1.5 border-b border-line">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -147,7 +147,7 @@ export function RichParagraphEditor({
         >
           I
         </button>
-        <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
+        <div className="w-px h-4 bg-line mx-1" />
         <Menu
           trigger={
             <>
@@ -177,7 +177,7 @@ export function RichParagraphEditor({
       </div>
       <EditorContent
         editor={editor}
-        className="px-3 py-2 text-sm leading-relaxed text-gray-900 dark:text-gray-100 [&_.ProseMirror]:outline-none"
+        className="px-3 py-2 text-sm leading-relaxed text-ink [&_.ProseMirror]:outline-none"
       />
     </div>
   );

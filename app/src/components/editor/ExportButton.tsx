@@ -50,7 +50,7 @@ export function ExportButton({
   }
 
   return (
-    <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+    <div className="p-4 border-t border-line">
       <button onClick={handleExport} disabled={status === "exporting"} className={`${btnPrimary} w-full`}>
         {status === "exporting" ? "Exporting…" : "Export PDF"}
       </button>

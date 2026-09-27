@@ -79,13 +79,13 @@ export function ReferencesEditor() {
         className="w-full flex items-center gap-2 text-left"
       >
         <span
-          className="flex-none w-4 h-4 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-transform"
+          className="flex-none w-4 h-4 flex items-center justify-center text-muted transition-transform"
           style={{ transform: expanded ? "rotate(90deg)" : "none" }}
         >
           <ChevronRight size={16} aria-hidden="true" />
         </span>
-        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">References</h2>
-        <span className="text-xs text-gray-400 dark:text-gray-500">
+        <h2 className="text-base font-semibold text-ink">References</h2>
+        <span className="text-xs text-muted">
           {references.length === 0 ? "empty" : references.length}
         </span>
       </button>
@@ -93,7 +93,7 @@ export function ReferencesEditor() {
       {expanded && (
         <div className="mt-4">
           {references.length === 0 && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
+            <p className="text-xs text-muted mb-3">
               No references yet — add one manually, import from BibTeX, or look up by DOI, then cite it from any paragraph's "+ Citation…" menu.
             </p>
           )}
@@ -102,13 +102,13 @@ export function ReferencesEditor() {
             {references.map((ref, index) => {
               const fields = { ...emptyReferenceFields, ...(ref.fields as ReferenceFields) };
               return (
-                <div key={ref.id} className="rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3">
+                <div key={ref.id} className="rounded-lg border border-line bg-canvas p-3">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-gray-400 dark:text-gray-500">[{index + 1}]</span>
+                    <span className="text-xs font-semibold text-muted">[{index + 1}]</span>
                     <button
                       onClick={() => removeReference(ref.id)}
                       aria-label="Delete reference"
-                      className="w-6 h-6 flex items-center justify-center rounded text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                      className="w-6 h-6 flex items-center justify-center rounded text-muted/60 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
                     >
                       <X size={14} aria-hidden="true" />
                     </button>
@@ -130,7 +130,7 @@ export function ReferencesEditor() {
                     ))}
                   </div>
                   {ref.renderedText && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">{ref.renderedText}</p>
+                    <p className="text-xs text-muted mt-2 italic">{ref.renderedText}</p>
                   )}
                 </div>
               );
@@ -168,18 +168,18 @@ export function ReferencesEditor() {
       {/* BibTeX Import Modal */}
       {showBibtexModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-6">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Import BibTeX References</h3>
+          <div className="bg-surface border border-line rounded-2xl shadow-2xl max-w-lg w-full p-6">
+            <div className="flex items-center justify-between pb-3 border-b border-line">
+              <h3 className="text-sm font-semibold text-ink">Import BibTeX References</h3>
               <button
                 onClick={() => setShowBibtexModal(false)}
                 aria-label="Close"
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm"
+                className="text-muted hover:text-ink text-sm"
               >
                 <X size={16} aria-hidden="true" />
               </button>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 mb-2">
+            <p className="text-xs text-muted mt-3 mb-2">
               Paste one or multiple BibTeX entries exported from Google Scholar, IEEE Xplore, or DBLP:
             </p>
             <textarea
@@ -215,18 +215,18 @@ export function ReferencesEditor() {
       {/* DOI Lookup Modal */}
       {showDoiModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Add Reference by DOI</h3>
+          <div className="bg-surface border border-line rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between pb-3 border-b border-line">
+              <h3 className="text-sm font-semibold text-ink">Add Reference by DOI</h3>
               <button
                 onClick={() => setShowDoiModal(false)}
                 aria-label="Close"
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm"
+                className="text-muted hover:text-ink text-sm"
               >
                 <X size={16} aria-hidden="true" />
               </button>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 mb-2">
+            <p className="text-xs text-muted mt-3 mb-2">
               Enter any Digital Object Identifier (DOI) or DOI URL:
             </p>
             <input

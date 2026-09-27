@@ -22,7 +22,7 @@ export function CiteRefView({ node }: NodeViewProps) {
           accent
             ? ""
             : reference
-              ? "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+              ? "bg-line text-ink"
               : "bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400"
         }`}
       >
