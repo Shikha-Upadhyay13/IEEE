@@ -186,6 +186,7 @@ type DocumentStore = {
   setSpacingDensity: (spacingDensity: NonNullable<Document["meta"]["spacingDensity"]>) => void;
   appendParagraph: () => void;
   appendSection: () => void;
+  importBody: (nodes: BodyNode[], mode: "append" | "replace") => void;
   appendFigure: () => void;
   appendTable: () => void;
   appendEquation: () => void;
@@ -397,6 +398,11 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   appendSection: () =>
     set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("section")] } })),
+
+  importBody: (nodes, mode) =>
+    set((state) => ({
+      document: { ...state.document, body: mode === "replace" ? nodes : [...state.document.body, ...nodes] },
+    })),
 
   appendFigure: () =>
     set((state) => ({ document: { ...state.document, body: [...state.document.body, createBlock("figure")] } })),

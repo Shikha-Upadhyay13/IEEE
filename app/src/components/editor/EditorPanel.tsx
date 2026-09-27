@@ -19,6 +19,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import {
   ChevronRight,
+  ClipboardPaste,
   FolderInput,
   GripVertical,
   Heading,
@@ -38,6 +39,7 @@ import { FigureEditor } from "./FigureEditor";
 import { TableEditor } from "./TableEditor";
 import { ReferencesEditor } from "./ReferencesEditor";
 import { EquationEditor } from "./EquationEditor";
+import { PasteImportDialog } from "./PasteImportDialog";
 import { AppearancePanel } from "./AppearancePanel";
 import { AuthorsEditor } from "./AuthorsEditor";
 import { btnGhost, btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
@@ -649,6 +651,7 @@ function BodyContentCard({ focusSectionId }: { focusSectionId?: string }) {
   const appendEquation = useDocumentStore((s) => s.appendEquation);
   const reorderBlocks = useDocumentStore((s) => s.reorderBlocks);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const sensors = useSensors(
     // A small activation distance keeps ordinary clicks (into a text field,
@@ -727,7 +730,16 @@ function BodyContentCard({ focusSectionId }: { focusSectionId?: string }) {
       </DndContext>
 
       {!focusNode && (
-        <div className="mt-3">
+        <div className="mt-3 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setImportOpen(true)}
+            className={`${btnGhost} flex-none px-3`}
+            title="Import from Word or Google Docs"
+          >
+            <ClipboardPaste size={15} aria-hidden="true" />
+            <span className="hidden sm:inline">Import</span>
+          </button>
           <Menu
             trigger={
               <>
@@ -735,7 +747,7 @@ function BodyContentCard({ focusSectionId }: { focusSectionId?: string }) {
                 Add block
               </>
             }
-            triggerClassName={`${btnSecondary} w-full py-2.5`}
+            triggerClassName={`${btnSecondary} flex-1 py-2.5`}
             width={280}
             groups={[
               {
@@ -751,6 +763,7 @@ function BodyContentCard({ focusSectionId }: { focusSectionId?: string }) {
           />
         </div>
       )}
+      {importOpen && <PasteImportDialog onClose={() => setImportOpen(false)} />}
     </div>
   );
 }
