@@ -132,11 +132,15 @@ export function RichParagraphEditor({
         <select
           value=""
           onChange={(e) => insertCitation(e.target.value)}
-          disabled={references.length === 0}
-          title={references.length === 0 ? "Add a reference below first" : "Insert a citation"}
+          title="Insert a citation"
           className={toolbarSelect}
         >
           <option value="">+ Citation…</option>
+          {references.length === 0 && (
+            <option value="" disabled>
+              No references yet — add one in the References panel below
+            </option>
+          )}
           {citationOptions.map((opt) => (
             <option key={opt.id} value={opt.id}>
               {opt.label}
@@ -146,11 +150,15 @@ export function RichParagraphEditor({
         <select
           value=""
           onChange={(e) => insertXref(e.target.value)}
-          disabled={xrefTargets.length === 0}
-          title={xrefTargets.length === 0 ? "Add a figure or table first" : "Insert a cross-reference"}
+          title="Insert a cross-reference to a figure or table"
           className={toolbarSelect}
         >
           <option value="">+ Cross-ref…</option>
+          {xrefTargets.length === 0 && (
+            <option value="" disabled>
+              No figures or tables yet — add one with + Add block
+            </option>
+          )}
           {xrefTargets.map((t) => (
             <option key={t.id} value={`${t.targetType}:${t.id}`}>
               {t.label}
