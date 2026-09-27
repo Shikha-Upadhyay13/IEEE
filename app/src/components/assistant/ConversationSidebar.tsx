@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Folder, Plus, X } from "lucide-react";
 import { ProfileMenu } from "./ProfileMenu";
 import { CreateProjectModal } from "./CreateProjectModal";
 import { BrandMark } from "../BrandMark";
@@ -91,7 +92,7 @@ export function ConversationSidebar({
             }}
             className="w-full flex items-center gap-2 rounded-lg border border-gray-700 hover:bg-gray-800 px-3 py-2 text-sm text-white transition-colors"
           >
-            <span className="text-base leading-none">＋</span> New chat
+            <Plus size={15} aria-hidden="true" /> New chat
           </button>
         </div>
 
@@ -103,9 +104,9 @@ export function ConversationSidebar({
                 onClick={() => setCreatingProject(true)}
                 aria-label="New project"
                 title="New project"
-                className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors text-base leading-none"
+                className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
               >
-                ＋
+                <Plus size={15} aria-hidden="true" />
               </button>
             </div>
 
@@ -143,7 +144,7 @@ export function ConversationSidebar({
                   style={{ backgroundColor: p.color ?? "#6b7280" }}
                   aria-hidden="true"
                 />
-                <span className="text-sm flex-none">📁</span>
+                <Folder size={14} className="flex-none" aria-hidden="true" />
                 <span className="flex-1 truncate">{p.name}</span>
                 <button
                   onClick={(e) => {
@@ -153,7 +154,7 @@ export function ConversationSidebar({
                   aria-label={`Delete project ${p.name}`}
                   className="opacity-0 group-hover:opacity-100 flex-none w-5 h-5 flex items-center justify-center rounded text-gray-500 hover:text-red-400 hover:bg-gray-700 transition-all text-xs"
                 >
-                  ✕
+                  <X size={12} aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -208,7 +209,7 @@ export function ConversationSidebar({
                   aria-label={`Delete conversation ${c.title}`}
                   className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all text-xs"
                 >
-                  ✕
+                  <X size={12} aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -237,7 +238,7 @@ export function ConversationSidebar({
               aria-label="Close menu"
               className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-white hover:bg-gray-800"
             >
-              ✕
+              <X size={16} aria-hidden="true" />
             </button>
             <SidebarBody />
           </div>

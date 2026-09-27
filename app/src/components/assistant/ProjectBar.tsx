@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Folder } from "lucide-react";
 import type { ProjectRow } from "./ConversationSidebar";
 
 type DocumentOption = { id: string; title: string | null };
@@ -37,10 +38,10 @@ export function ProjectBar({
     <div className="flex-none px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/60">
       <div className="flex items-center gap-3">
         <span
-          className="flex-none w-9 h-9 rounded-lg flex items-center justify-center text-base bg-blue-100 dark:bg-blue-950/40"
-          style={project.color ? { backgroundColor: `${project.color}26` } : undefined}
+          className="flex-none w-9 h-9 rounded-lg flex items-center justify-center bg-accent-soft text-accent"
+          style={project.color ? { backgroundColor: `${project.color}26`, color: project.color } : undefined}
         >
-          📁
+          <Folder size={18} aria-hidden="true" />
         </span>
         {editing ? (
           <input

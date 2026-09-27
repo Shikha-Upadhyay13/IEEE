@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Folder } from "lucide-react";
 import { relativeTime } from "../../lib/relativeTime";
 import type { ProjectRow, ConversationRow } from "./ConversationSidebar";
 
@@ -23,10 +24,10 @@ export function ProjectHome({
     <div className="max-w-xl mx-auto animate-fade-in-up py-4 text-left">
       <div className="flex items-center gap-3 mb-6">
         <span
-          className="flex-none w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-blue-100 dark:bg-blue-950/40"
-          style={{ backgroundColor: project.color ? `${project.color}26` : undefined }}
+          className="flex-none w-12 h-12 rounded-xl flex items-center justify-center bg-accent-soft text-accent"
+          style={project.color ? { backgroundColor: `${project.color}26`, color: project.color } : undefined}
         >
-          📁
+          <Folder size={22} aria-hidden="true" />
         </span>
         <div className="min-w-0">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">{project.name}</h2>

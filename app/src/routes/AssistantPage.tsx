@@ -1,5 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  AlertTriangle,
+  ArrowDown,
+  ArrowLeft,
+  Check,
+  Copy,
+  ExternalLink,
+  Image as ImageIcon,
+  Menu,
+  Plus,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
@@ -714,15 +727,16 @@ export function AssistantPage() {
             type="button"
             onClick={() => setMobileSidebarOpen(true)}
             aria-label="Open chat history"
-            className="md:hidden w-8 h-8 flex-none flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-lg -ml-1"
+            className="md:hidden w-8 h-8 flex-none flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 -ml-1"
           >
-            ☰
+            <Menu size={18} aria-hidden="true" />
           </button>
           <Link
             to="/dashboard"
-            className="text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
           >
-            ← Dashboard
+            <ArrowLeft size={14} aria-hidden="true" />
+            Dashboard
           </Link>
           <span className="hidden sm:inline text-gray-300 dark:text-gray-700">|</span>
           <div className="hidden sm:flex items-center gap-2.5">
@@ -740,14 +754,14 @@ export function AssistantPage() {
 
         {projectSchemaWarning && (
           <div className="flex-none flex items-start gap-2 px-6 py-2.5 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900 text-xs text-amber-800 dark:text-amber-400">
-            <span className="flex-none">⚠️</span>
+            <AlertTriangle size={14} className="flex-none mt-px" aria-hidden="true" />
             <p className="flex-1">{projectSchemaWarning}</p>
             <button
               onClick={() => setProjectSchemaWarning(null)}
               aria-label="Dismiss"
               className="flex-none hover:text-amber-950 dark:hover:text-amber-200"
             >
-              ✕
+              <X size={14} aria-hidden="true" />
             </button>
           </div>
         )}
@@ -875,38 +889,50 @@ export function AssistantPage() {
                         href={message.imageUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
+                        className="inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
                       >
-                        ⬇ Open full size
+                        <ExternalLink size={12} aria-hidden="true" />
+                        Open full size
                       </a>
                     )}
                     {showAssistantActions && (
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => copyToClipboard(message.content, i)}
-                          className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
+                          className="inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
                         >
-                          {copiedIndex === i ? "✓ Copied" : "⧉ Copy"}
+                          {copiedIndex === i ? (
+                            <Check size={12} aria-hidden="true" />
+                          ) : (
+                            <Copy size={12} aria-hidden="true" />
+                          )}
+                          {copiedIndex === i ? "Copied" : "Copy"}
                         </button>
                         {isLastMessage && !isStreaming && (
                           <button
                             onClick={regenerateLastResponse}
-                            className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
+                            className="inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
                           >
-                            ↻ Regenerate
+                            <RotateCcw size={12} aria-hidden="true" />
+                            Regenerate
                           </button>
                         )}
                         {canInsert && (
                           <button
                             onClick={() => handleInsertIntoPaper(i, message.content)}
                             disabled={insertingIndex === i || insertedIndices.has(i)}
-                            className="text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500 transition-colors px-1"
+                            className="inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500 transition-colors px-1"
                           >
+                            {insertedIndices.has(i) ? (
+                              <Check size={12} aria-hidden="true" />
+                            ) : (
+                              <Plus size={12} aria-hidden="true" />
+                            )}
                             {insertedIndices.has(i)
-                              ? `✓ Added to ${selectedDoc.title || "paper"}`
+                              ? `Added to ${selectedDoc.title || "paper"}`
                               : insertingIndex === i
                                 ? "Adding…"
-                                : `+ Add to ${selectedDoc.title || "paper"}`}
+                                : `Add to ${selectedDoc.title || "paper"}`}
                           </button>
                         )}
                       </div>
@@ -941,7 +967,8 @@ export function AssistantPage() {
             onClick={() => scrollToLatest()}
             className="absolute bottom-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-gray-900/90 dark:bg-gray-100/90 text-white dark:text-gray-900 text-xs font-medium pl-3 pr-3.5 py-1.5 shadow-lg hover:bg-gray-900 dark:hover:bg-white transition-colors animate-fade-in"
           >
-            ↓ New messages
+            <ArrowDown size={13} aria-hidden="true" />
+            New messages
           </button>
         )}
         </div>
@@ -1031,7 +1058,8 @@ export function AssistantPage() {
                         : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}
                   >
-                    🖼️ Image
+                    <ImageIcon size={13} aria-hidden="true" />
+                    Image
                   </button>
                 </div>
               </div>
