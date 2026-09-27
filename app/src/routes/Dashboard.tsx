@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Copy, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { createBlankDocument } from "../lib/blankDocument";
@@ -42,7 +43,7 @@ function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete
         aria-label="More actions"
         className="w-7 h-7 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex items-center justify-center transition-colors"
       >
-        ⋮
+        <MoreVertical size={16} aria-hidden="true" />
       </button>
       {open && (
         <div className="absolute right-0 bottom-full mb-1 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg py-1 z-10 text-sm">
@@ -52,9 +53,10 @@ function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete
               onDuplicate();
               setOpen(false);
             }}
-            className="w-full text-left px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+            className="w-full flex items-center gap-2 text-left px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
           >
-            ⎘ Duplicate
+            <Copy size={14} aria-hidden="true" />
+            Duplicate
           </button>
           <button
             onClick={(e) => {
@@ -62,9 +64,10 @@ function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete
               onDelete();
               setOpen(false);
             }}
-            className="w-full text-left px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400"
+            className="w-full flex items-center gap-2 text-left px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400"
           >
-            ✕ Delete
+            <Trash2 size={14} aria-hidden="true" />
+            Delete
           </button>
         </div>
       )}
@@ -79,7 +82,7 @@ function NewPaperCard({ creating, onClick }: { creating: boolean; onClick: () =>
       disabled={creating}
       className="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-accent hover:text-accent hover:bg-accent-soft/50 transition-colors"
     >
-      <span className="text-3xl leading-none">+</span>
+      <Plus size={28} strokeWidth={1.5} aria-hidden="true" />
       <span className="text-sm font-medium">{creating ? "Creating…" : "New paper"}</span>
     </button>
   );

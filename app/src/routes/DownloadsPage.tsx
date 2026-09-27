@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Download, FileText, Loader2, Trash2 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { relativeTime } from "../lib/relativeTime";
 import { DashboardSidebar } from "../components/dashboard/DashboardSidebar";
@@ -144,7 +145,7 @@ export function DownloadsPage() {
                     className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden"
                   >
                     <div className="flex items-center gap-2.5 px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-                      <span className="text-lg flex-none">📄</span>
+                      <FileText size={18} className="flex-none text-muted" aria-hidden="true" />
                       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate flex-1">
                         {group.title}
                       </p>
@@ -171,14 +172,21 @@ export function DownloadsPage() {
                             disabled={downloadingId === row.id}
                             className={btnSecondary}
                           >
-                            {downloadingId === row.id ? "…" : "⬇ Download"}
+                            {downloadingId === row.id ? (
+                              <Loader2 size={14} className="animate-spin" aria-label="Downloading" />
+                            ) : (
+                              <>
+                                <Download size={14} aria-hidden="true" />
+                                Download
+                              </>
+                            )}
                           </button>
                           <button
                             onClick={() => handleDelete(row)}
                             aria-label="Delete download"
                             className="w-8 h-8 flex-none flex items-center justify-center rounded-md text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
                           >
-                            ✕
+                            <Trash2 size={15} aria-hidden="true" />
                           </button>
                         </div>
                       ))}

@@ -4,6 +4,19 @@ import { supabase } from "../../supabaseClient";
 import { createBlankDocument } from "../../lib/blankDocument";
 import { createSamplePaper } from "../../data/samplePaper";
 import { btnPrimary } from "../../lib/uiClasses";
+import { BrandMark } from "../BrandMark";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Columns2,
+  Download,
+  FilePlus2,
+  FolderOpen,
+  GripVertical,
+  ListOrdered,
+  MessageSquare,
+} from "lucide-react";
 
 interface OnboardingWizardProps {
   userId: string;
@@ -106,9 +119,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
         {/* Step 1: Welcome & Overview */}
         {step === 1 && (
           <div className="space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-accent-soft text-accent flex items-center justify-center text-2xl font-bold">
-              ⚡
-            </div>
+            <BrandMark size="lg" />
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
                 Welcome to IEEE Paper Builder
@@ -121,21 +132,21 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-                <p className="text-base mb-1">📄</p>
+                <Columns2 size={18} className="mb-1.5 text-accent" aria-hidden="true" />
                 <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100">Live 2-Column</h4>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
                   Pixel-accurate IEEE typesetting as you type.
                 </p>
               </div>
               <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-                <p className="text-base mb-1">🔢</p>
+                <ListOrdered size={18} className="mb-1.5 text-accent" aria-hidden="true" />
                 <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100">Auto Numbering</h4>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
                   Roman headings, figures, tables & equations resolved live.
                 </p>
               </div>
               <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-                <p className="text-base mb-1">📥</p>
+                <Download size={18} className="mb-1.5 text-accent" aria-hidden="true" />
                 <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100">1-Click PDF</h4>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
                   Download conference-ready PDFs in seconds.
@@ -145,7 +156,8 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
 
             <div className="flex justify-end pt-4">
               <button onClick={() => setStep(2)} className={`${btnPrimary} px-5 py-2 text-sm`}>
-                Continue →
+                Continue
+                <ArrowRight size={14} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -173,7 +185,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                     : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-transparent"
                 }`}
               >
-                <span className="text-2xl flex-none mt-0.5">🌟</span>
+                <BookOpen size={22} className="flex-none mt-0.5 text-accent" aria-hidden="true" />
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -198,7 +210,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                     : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-transparent"
                 }`}
               >
-                <span className="text-2xl flex-none mt-0.5">📝</span>
+                <FilePlus2 size={22} className="flex-none mt-0.5 text-accent" aria-hidden="true" />
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                     Blank IEEE Conference Paper
@@ -218,7 +230,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                     : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 text-gray-600 dark:text-gray-400"
                 }`}
               >
-                <span className="text-lg">📂</span>
+                <FolderOpen size={18} className="text-muted" aria-hidden="true" />
                 <span className="text-xs font-medium">I'll create papers from my dashboard later</span>
               </button>
             </div>
@@ -226,12 +238,14 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
             <div className="flex justify-between items-center pt-4">
               <button
                 onClick={() => setStep(1)}
-                className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
               >
-                ← Back
+                <ArrowLeft size={14} aria-hidden="true" />
+                Back
               </button>
               <button onClick={() => setStep(3)} className={`${btnPrimary} px-5 py-2 text-sm`}>
-                Next step →
+                Next step
+                <ArrowRight size={14} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -251,21 +265,21 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
 
             <ul className="space-y-3 pt-1">
               <li className="flex items-start gap-3 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/40 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
-                <span className="text-sm">🔀</span>
+                <GripVertical size={16} className="flex-none text-accent" aria-hidden="true" />
                 <div>
                   <strong className="text-gray-900 dark:text-gray-100">Drag to Reorder:</strong> Drag section
                   blocks to reorganize your paper. Section numerals and references update instantly.
                 </div>
               </li>
               <li className="flex items-start gap-3 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/40 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
-                <span className="text-sm">💬</span>
+                <MessageSquare size={16} className="flex-none text-accent" aria-hidden="true" />
                 <div>
                   <strong className="text-gray-900 dark:text-gray-100">AI Assistant:</strong> Ask the integrated
                   research copilot to review sections, rephrase for IEEE style, or suggest improvements.
                 </div>
               </li>
               <li className="flex items-start gap-3 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/40 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
-                <span className="text-sm">📑</span>
+                <Download size={16} className="flex-none text-accent" aria-hidden="true" />
                 <div>
                   <strong className="text-gray-900 dark:text-gray-100">Export Anytime:</strong> Hit Export in the
                   top right to generate compliant PDF files ready for IEEE Xplore submission.
@@ -276,9 +290,10 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
             <div className="flex justify-between items-center pt-4">
               <button
                 onClick={() => setStep(2)}
-                className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
               >
-                ← Back
+                <ArrowLeft size={14} aria-hidden="true" />
+                Back
               </button>
               <button
                 onClick={handleFinish}
@@ -289,7 +304,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
                   ? "Creating your paper…"
                   : choice === "skip"
                     ? "Go to Dashboard"
-                    : "Launch Editor 🚀"}
+                    : "Open the editor"}
               </button>
             </div>
           </div>
