@@ -1,6 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
-import { Image as ImageIcon, Link2, Quote, Table2 } from "lucide-react";
+import { Image as ImageIcon, Link2, Quote, Sparkles, Table2 } from "lucide-react";
+import { ParagraphAiPanel } from "./ParagraphAiPanel";
+import { PARAGRAPH_AI_ACTIONS, type ParagraphAiAction } from "../../../lib/paragraphAiActions";
 import { Menu, type MenuItem } from "../../ui/Menu";
 import StarterKit from "@tiptap/starter-kit";
 import Superscript from "@tiptap/extension-superscript";
@@ -40,6 +42,16 @@ export function RichParagraphEditor({
   const document = useDocumentStore((s) => s.document);
   const references = document.references;
   const hasBeenFocused = useRef(false);
+  const [aiAction, setAiAction] = useState<ParagraphAiAction | null>(null);
+  const hasText = content.some((n) => n.type === "text" && n.text.trim() !== "");
+  const paperTitle = document.titleBlock.title.map((n) => (n.type === "text" ? n.text : "")).join("");
+  const aiContext = `Paper title: ${paperTitle}\nAbstract: ${document.abstract.text || "(not written yet)"}`;
+  const labelFor = (node: InlineNode) =>
+    node.type === "citeRef"
+      ? `[${citationNumberFor(document, node.refId) ?? "?"}]`
+      : node.type === "xref"
+        ? (xrefLabelFor(document, node.targetType, node.targetId) ?? node.targetType)
+        : "";
   const citationItems: MenuItem[] = references
     .map((ref) => {
       const n = citationNumberFor(document, ref.id);
@@ -181,11 +193,49 @@ export function RichParagraphEditor({
           groups={xrefGroups}
           emptyMessage="No figures or tables yet — add one with Add block."
         />
+        <span className="flex-1" />
+        <Menu
+          trigger={
+            <>
+              <Sparkles size={13} aria-hidden="true" />
+              AI
+            </>
+          }
+          title={hasText ? "Improve this paragraph with AI" : "Write something first"}
+          disabled={!hasText}
+          align="end"
+          triggerClassName={toolbarMenuBtn}
+          width={260}
+          groups={[
+            {
+              items: PARAGRAPH_AI_ACTIONS.map((a) => ({
+                id: a.id,
+                label: a.label,
+                description: a.description,
+                onSelect: () => setAiAction(a.id),
+              })),
+            },
+          ]}
+        />
       </div>
       <EditorContent
         editor={editor}
         className="px-3 py-2 text-sm leading-relaxed text-ink [&_.ProseMirror]:outline-none"
       />
+      {aiAction && (
+        <ParagraphAiPanel
+          key={aiAction}
+          action={aiAction}
+          content={content}
+          context={aiContext}
+          labelFor={labelFor}
+          onAccept={(next) => {
+            onChange(next);
+            setAiAction(null);
+          }}
+          onClose={() => setAiAction(null)}
+        />
+      )}
     </div>
   );
 }

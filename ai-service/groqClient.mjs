@@ -11,6 +11,19 @@ Your replies render as real Markdown, so use it deliberately, not sparingly: **b
 
 If the user shares context about their paper (title, abstract, existing section content), use it to keep your suggestions consistent with what they've already written.`;
 
+// Shared by every in-editor task. The model only ever sees citation and
+// cross-reference placeholders, so it has no way to name a real source — the
+// rule below stops it inventing one in plain text instead.
+const NO_NEW_SOURCES = `Never add citations, references, author names, publication years, statistics, numeric results or factual claims that are not already in the text you were given. Tokens written like ⟦C1⟧ are citations and ⟦X1⟧ are cross-references to figures or tables: keep every one of them exactly once, unchanged, attached to the sentence it supports, and never create new tokens. If a sentence you write needs a source the user has not provided, write [citation needed] instead of inventing one.`;
+
+const TASK_PROMPTS = {
+  edit: `You revise a single paragraph from an academic IEEE conference paper according to the user's instruction.
+
+Return only the revised paragraph as plain text: no Markdown, no surrounding quotes, no headings, no preamble or explanation. Keep the author's meaning, technical terms and point of view. Use formal academic register.
+
+${NO_NEW_SOURCES}`,
+};
+
 /**
  * Streams a chat completion from Groq's OpenAI-compatible API back to the
  * caller as a raw Node Readable of Server-Sent Events — the frontend parses
@@ -19,16 +32,20 @@ If the user shares context about their paper (title, abstract, existing section 
  * the entire reason this service exists: to keep GROQ_API_KEY off the client
  * (a VITE_ env var ships straight into the browser bundle).
  */
-export async function streamChat({ messages, documentContext, projectInstructions }) {
+export async function streamChat({ messages, documentContext, projectInstructions, task }) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Missing GROQ_API_KEY (check ai-service/.env)");
+
+  const taskPrompt = typeof task === "string" && Object.hasOwn(TASK_PROMPTS, task) ? TASK_PROMPTS[task] : null;
 
   // projectInstructions come from the user's own Project settings (see
   // AssistantPage's ProjectHome) — standing context for every chat in that
   // project, the same role ChatGPT's own "project instructions" play.
   const systemContent = [
-    SYSTEM_PROMPT,
-    projectInstructions ? `\n\nStanding instructions for this project, set by the user — follow them:\n${projectInstructions}` : "",
+    taskPrompt ?? SYSTEM_PROMPT,
+    !taskPrompt && projectInstructions
+      ? `\n\nStanding instructions for this project, set by the user — follow them:\n${projectInstructions}`
+      : "",
     documentContext ? `\n\nHere is the user's current paper for context:\n${documentContext}` : "",
   ].join("");
 

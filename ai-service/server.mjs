@@ -109,13 +109,13 @@ const server = http.createServer(async (req, res) => {
 
     try {
       const body = JSON.parse(await readBody(req));
-      const { messages, documentContext, projectInstructions } = body;
+      const { messages, documentContext, projectInstructions, task } = body;
       if (!Array.isArray(messages) || messages.length === 0) {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: "messages (non-empty array) is required" }));
         return;
       }
-      const groqStream = await streamChat({ messages, documentContext, projectInstructions });
+      const groqStream = await streamChat({ messages, documentContext, projectInstructions, task });
       res.writeHead(200, {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
