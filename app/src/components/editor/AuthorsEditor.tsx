@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useDocumentStore } from "../../store/documentStore";
 import { btnSecondary, btnIcon, inputBase, labelBase } from "../../lib/uiClasses";
 
@@ -34,7 +35,7 @@ export function AuthorsEditor() {
               aria-label={`Remove affiliation ${i + 1}`}
               className={`${btnIcon} hover:text-red-600`}
             >
-              ✕
+              <X size={14} aria-hidden="true" />
             </button>
           </div>
         ))}
@@ -72,7 +73,7 @@ export function AuthorsEditor() {
                 aria-label={`Remove author ${i + 1}`}
                 className={`${btnIcon} hover:text-red-600`}
               >
-                ✕
+                <X size={14} aria-hidden="true" />
               </button>
             </div>
             {affiliations.length > 0 && (

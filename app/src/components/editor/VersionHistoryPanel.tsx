@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { History, X } from "lucide-react";
 import { supabase } from "../../supabaseClient";
 import { relativeTime } from "../../lib/relativeTime";
 import { btnPrimary, btnSecondary, inputBase } from "../../lib/uiClasses";
@@ -108,14 +109,15 @@ export function VersionHistoryPanel({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2">
-            <span className="text-lg">🕒</span>
+            <History size={18} className="text-muted" aria-hidden="true" />
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Version History</h2>
           </div>
           <button
             onClick={onClose}
+            aria-label="Close version history"
             className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
-            ✕
+            <X size={16} aria-hidden="true" />
           </button>
         </div>
 

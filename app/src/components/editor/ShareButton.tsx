@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link2, X } from "lucide-react";
 import { supabase } from "../../supabaseClient";
 import { btnPrimary, btnSecondary } from "../../lib/uiClasses";
 
@@ -90,7 +91,7 @@ export function ShareButton({ documentId }: ShareButtonProps) {
         className={`${btnSecondary} text-xs py-1.5 px-3 flex items-center gap-1.5`}
         title="Share paper"
       >
-        <span className="text-sm">🔗</span>
+        <Link2 size={14} aria-hidden="true" />
         <span>Share</span>
       </button>
 
@@ -104,9 +105,10 @@ export function ShareButton({ documentId }: ShareButtonProps) {
             <button
               type="button"
               onClick={() => setOpen(false)}
+              aria-label="Close share options"
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm"
             >
-              ✕
+              <X size={16} aria-hidden="true" />
             </button>
           </div>
 

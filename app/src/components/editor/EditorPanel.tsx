@@ -17,6 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { ChevronRight, GripVertical, X } from "lucide-react";
 import { useDocumentStore, collectSectionOptions, collectSectionDescendantIds } from "../../store/documentStore";
 import type { BodyNode, FontFamily, InlineNode } from "../../types/document";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
@@ -170,7 +171,7 @@ function SortableBlockItem({
       style={dragHandleAccent ? { color: dragHandleAccent } : undefined}
       className="flex-none w-7 h-7 flex items-center justify-center rounded border border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700 cursor-grab active:cursor-grabbing touch-none"
     >
-      ⠿
+      <GripVertical size={16} aria-hidden="true" />
     </button>
   );
 
@@ -184,7 +185,7 @@ function SortableBlockItem({
       aria-label="Delete block"
       className="flex-none w-6 h-6 flex items-center justify-center rounded text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
     >
-      ✕
+      <X size={14} aria-hidden="true" />
     </button>
   );
 
@@ -246,7 +247,7 @@ function SortableBlockItem({
             className="flex-none w-5 h-5 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-transform"
             style={{ transform: expanded ? "rotate(90deg)" : "none" }}
           >
-            ▸
+            <ChevronRight size={16} aria-hidden="true" />
           </button>
           <input
             value={node.heading}
@@ -637,8 +638,9 @@ export function EditorPanel() {
       <div className={`${cardBase} p-5 mb-5`}>
         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Body Content</h2>
         <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
-          Drag the ⠿ handle to reorder blocks in the same list. Use ⇥ Move to… to place a block in a
-          different section. Expand a section (▸) before reordering its children.
+          Drag the <GripVertical size={12} className="inline -mt-0.5" aria-label="grip" /> handle to reorder
+          blocks in the same list. Use Move to… to place a block in a different section. Expand a section (
+          <ChevronRight size={12} className="inline -mt-0.5" aria-label="chevron" />) before reordering its children.
         </p>
 
         {/* DndContext stays outside the zoom wrapper: CSS zoom scales layout
@@ -659,7 +661,7 @@ export function EditorPanel() {
           <DragOverlay dropAnimation={null}>
             {activeDragNode ? (
               <div className="max-w-sm rounded-lg border border-accent bg-surface px-3 py-2 text-sm font-medium text-ink shadow-lg cursor-grabbing">
-                <span className="mr-2 text-muted">⠿</span>
+                <GripVertical size={14} className="mr-2 inline text-muted" aria-hidden="true" />
                 {dragOverlayLabel(activeDragNode)}
               </div>
             ) : null}

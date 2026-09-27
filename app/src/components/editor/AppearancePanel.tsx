@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChevronRight } from "lucide-react";
 import { useDocumentStore } from "../../store/documentStore";
 import { cardBase, btnSecondary } from "../../lib/uiClasses";
 import { useEditorPreferences } from "../../lib/useEditorPreferences";
@@ -137,7 +138,7 @@ export function AppearancePanel() {
           className="flex-none w-4 h-4 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-transform"
           style={{ transform: expanded ? "rotate(90deg)" : "none" }}
         >
-          ▸
+          <ChevronRight size={16} aria-hidden="true" />
         </span>
         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Appearance</h2>
       </button>

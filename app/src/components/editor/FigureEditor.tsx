@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent } from "react";
+import { X } from "lucide-react";
 import type { BodyNode, FigureAlign } from "../../types/document";
 import { useDocumentStore } from "../../store/documentStore";
 import { useAuth } from "../../lib/useAuth";
@@ -119,7 +120,7 @@ export function FigureEditor({ node }: { node: Figure }) {
                   aria-label="Remove image"
                   className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-600 text-xs flex items-center justify-center"
                 >
-                  ✕
+                  <X size={12} aria-hidden="true" />
                 </button>
               </div>
             ))}

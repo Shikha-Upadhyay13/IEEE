@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Download, Loader2 } from "lucide-react";
 import { btnPrimary } from "../../lib/uiClasses";
 import { exportDocumentPdf } from "../../lib/exportPdf";
 
@@ -31,7 +32,17 @@ export function ExportButton({
     return (
       <div className="flex flex-col items-end">
         <button onClick={handleExport} disabled={status === "exporting"} className={`${btnPrimary} px-4 py-2`}>
-          {status === "exporting" ? "Exporting…" : "⬇ Download PDF"}
+          {status === "exporting" ? (
+            <>
+              <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+              Exporting…
+            </>
+          ) : (
+            <>
+              <Download size={14} aria-hidden="true" />
+              Download PDF
+            </>
+          )}
         </button>
         {status === "error" && <p className="text-xs text-red-600 dark:text-red-400 mt-1">Export failed</p>}
       </div>

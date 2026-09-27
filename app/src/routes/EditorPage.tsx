@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { ArrowLeft, History, Maximize2, X } from "lucide-react";
 import { resolveNumbering } from "../lib/numbering";
 import { useDocumentStore } from "../store/documentStore";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
@@ -166,7 +167,8 @@ export function EditorPage() {
           Couldn't load that paper — it may not exist, or you may not have access.
         </p>
         <Link to="/dashboard" className={btnPrimary}>
-          ← Back to Dashboard
+          <ArrowLeft size={14} aria-hidden="true" />
+          Back to Dashboard
         </Link>
       </div>
     );
@@ -193,9 +195,10 @@ export function EditorPage() {
         <div className="flex items-center gap-3">
           <Link
             to="/dashboard"
-            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
           >
-            ← Dashboard
+            <ArrowLeft size={14} aria-hidden="true" />
+            Dashboard
           </Link>
           <span className="text-gray-300 dark:text-gray-700">|</span>
           <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
@@ -218,7 +221,7 @@ export function EditorPage() {
               className={`${btnSecondary} text-xs py-1.5 px-3 flex items-center gap-1.5`}
               title="Version history"
             >
-              <span>🕒</span>
+              <History size={14} aria-hidden="true" />
               <span>History</span>
             </button>
           )}
@@ -248,7 +251,8 @@ export function EditorPage() {
               aria-label="Close preview"
               className={`${btnGhost} fixed top-4 right-4 z-[60] bg-white dark:bg-gray-800 shadow-md w-auto px-3 gap-1.5 text-xs font-medium`}
             >
-              ✕ Close preview
+              <X size={14} aria-hidden="true" />
+              Close preview
             </button>
           )}
 
@@ -262,7 +266,8 @@ export function EditorPage() {
             {!previewOpen && (
               <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded bg-gray-900/0 opacity-0 transition-all group-hover:bg-gray-900/10 group-hover:opacity-100">
                 <span className="inline-flex items-center gap-2 rounded-full bg-gray-900/85 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur">
-                  🔍 Click to preview full screen
+                  <Maximize2 size={14} aria-hidden="true" />
+                  Click to preview full screen
                 </span>
               </div>
             )}

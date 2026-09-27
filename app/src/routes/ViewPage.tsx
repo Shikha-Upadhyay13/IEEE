@@ -6,6 +6,8 @@ import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { btnPrimary, btnSecondary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
+import { BrandMark } from "../components/BrandMark";
+import { ArrowRight, FileQuestion, Lock, Pencil } from "lucide-react";
 import type { Document } from "../types/document";
 
 export function ViewPage() {
@@ -74,8 +76,8 @@ export function ViewPage() {
   if (loadState === "unauthorized") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-canvas px-6 text-center">
-        <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl font-bold">
-          🔒
+        <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+          <Lock size={22} aria-hidden="true" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Private Paper</h2>
         <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
@@ -96,8 +98,8 @@ export function ViewPage() {
   if (loadState === "notfound" || !resolvedDoc) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-canvas px-6 text-center">
-        <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-800 text-gray-500 flex items-center justify-center text-2xl font-bold">
-          📄
+        <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-800 text-gray-500 flex items-center justify-center">
+          <FileQuestion size={22} aria-hidden="true" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Paper Not Found</h2>
         <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
@@ -116,7 +118,7 @@ export function ViewPage() {
       <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-2.5 bg-surface border-b border-line shadow-xs">
         <div className="flex items-center gap-3 min-w-0">
           <Link to="/" className="flex items-center gap-1.5 text-accent font-semibold text-sm">
-            <span>⚡</span>
+            <BrandMark size="sm" />
             <span className="hidden sm:inline">IEEE Paper Builder</span>
           </Link>
           <span className="text-gray-300 dark:text-gray-700">|</span>
@@ -131,7 +133,8 @@ export function ViewPage() {
         <div className="flex items-center gap-2 flex-none">
           {isOwner ? (
             <Link to={`/editor/${documentId}`} className={`${btnPrimary} text-xs py-1.5 px-3`}>
-              ✎ Edit Paper
+              <Pencil size={13} aria-hidden="true" />
+              Edit Paper
             </Link>
           ) : (
             <>
@@ -139,7 +142,8 @@ export function ViewPage() {
                 Sign In
               </Link>
               <Link to="/login" className={`${btnPrimary} text-xs py-1.5 px-3`}>
-                Create Your Paper →
+                Create Your Paper
+                <ArrowRight size={13} aria-hidden="true" />
               </Link>
             </>
           )}

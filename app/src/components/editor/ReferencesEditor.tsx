@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChevronRight, FileDown, Search, X } from "lucide-react";
 import { useDocumentStore } from "../../store/documentStore";
 import { emptyReferenceFields, type ReferenceFields } from "../../lib/generateReferenceText";
 import { parseBibtex } from "../../lib/bibtex";
@@ -81,7 +82,7 @@ export function ReferencesEditor() {
           className="flex-none w-4 h-4 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-transform"
           style={{ transform: expanded ? "rotate(90deg)" : "none" }}
         >
-          ▸
+          <ChevronRight size={16} aria-hidden="true" />
         </span>
         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">References</h2>
         <span className="text-xs text-gray-400 dark:text-gray-500">
@@ -109,7 +110,7 @@ export function ReferencesEditor() {
                       aria-label="Delete reference"
                       className="w-6 h-6 flex items-center justify-center rounded text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
                     >
-                      ✕
+                      <X size={14} aria-hidden="true" />
                     </button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -147,7 +148,7 @@ export function ReferencesEditor() {
               }}
               className={`${btnSecondary} text-xs py-1.5 px-3 flex items-center gap-1.5`}
             >
-              <span>📥</span>
+              <FileDown size={14} aria-hidden="true" />
               <span>Import BibTeX</span>
             </button>
             <button
@@ -157,7 +158,7 @@ export function ReferencesEditor() {
               }}
               className={`${btnSecondary} text-xs py-1.5 px-3 flex items-center gap-1.5`}
             >
-              <span>🔍</span>
+              <Search size={14} aria-hidden="true" />
               <span>Add by DOI</span>
             </button>
           </div>
@@ -172,9 +173,10 @@ export function ReferencesEditor() {
               <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Import BibTeX References</h3>
               <button
                 onClick={() => setShowBibtexModal(false)}
+                aria-label="Close"
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm"
               >
-                ✕
+                <X size={16} aria-hidden="true" />
               </button>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 mb-2">
@@ -218,9 +220,10 @@ export function ReferencesEditor() {
               <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Add Reference by DOI</h3>
               <button
                 onClick={() => setShowDoiModal(false)}
+                aria-label="Close"
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm"
               >
-                ✕
+                <X size={16} aria-hidden="true" />
               </button>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 mb-2">
