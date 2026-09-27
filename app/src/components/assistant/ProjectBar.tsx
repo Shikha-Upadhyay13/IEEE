@@ -35,7 +35,7 @@ export function ProjectBar({
   }
 
   return (
-    <div className="flex-none px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/60">
+    <div className="flex-none px-6 py-4 border-b border-line bg-canvas">
       <div className="flex items-center gap-3">
         <span
           className="flex-none w-9 h-9 rounded-lg flex items-center justify-center bg-accent-soft text-accent"
@@ -56,24 +56,24 @@ export function ProjectBar({
                 setEditing(false);
               }
             }}
-            className="flex-1 min-w-0 text-base font-semibold text-gray-900 dark:text-gray-100 bg-transparent border-b border-gray-400 dark:border-gray-500 focus:outline-none"
+            className="flex-1 min-w-0 text-base font-semibold text-ink bg-transparent border-b border-muted focus:outline-none"
           />
         ) : (
           <button
             onClick={() => setEditing(true)}
             title="Click to rename"
-            className="flex-1 min-w-0 text-left text-base font-semibold text-gray-900 dark:text-gray-100 hover:underline truncate"
+            className="flex-1 min-w-0 text-left text-base font-semibold text-ink hover:underline truncate"
           >
             {project.name}
           </button>
         )}
-        <span className="flex-none text-xs text-gray-400 dark:text-gray-500">
+        <span className="flex-none text-xs text-muted">
           {conversationCount} {conversationCount === 1 ? "chat" : "chats"}
         </span>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mt-3 pl-12">
-        <label htmlFor="project-default-paper" className="text-xs text-gray-500 dark:text-gray-400 flex-none">
+        <label htmlFor="project-default-paper" className="text-xs text-muted flex-none">
           Default paper
         </label>
         <select
@@ -81,7 +81,7 @@ export function ProjectBar({
           value={project.default_document_id ?? ""}
           onChange={(e) => onSetDefaultPaper(e.target.value || null)}
           title="Every new chat in this project attaches this paper automatically"
-          className="text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-2.5 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-400 max-w-52"
+          className="text-sm rounded-md border border-line bg-surface text-ink px-2.5 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent max-w-52"
         >
           <option value="">None</option>
           {documentOptions.map((doc) => (
@@ -92,7 +92,7 @@ export function ProjectBar({
         </select>
         <button
           onClick={onDelete}
-          className="ml-auto text-xs text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+          className="ml-auto text-xs text-muted hover:text-red-600 dark:hover:text-red-400 transition-colors"
         >
           Delete project
         </button>

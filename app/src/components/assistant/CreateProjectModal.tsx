@@ -31,9 +31,9 @@ export function CreateProjectModal({
       <form
         onSubmit={handleSubmit}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white dark:bg-gray-900 rounded-xl shadow-xl max-w-sm w-full p-5 animate-fade-in-up"
+        className="bg-surface rounded-xl shadow-xl max-w-sm w-full p-5 animate-fade-in-up"
       >
-        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">New project</h3>
+        <h3 className="text-base font-semibold text-ink mb-4">New project</h3>
 
         <label htmlFor="new-project-name" className={labelBase}>
           Name
@@ -57,7 +57,7 @@ export function CreateProjectModal({
               aria-label={`Color ${swatch}`}
               aria-pressed={color === swatch}
               className={`w-7 h-7 rounded-full border-2 transition-all ${
-                color === swatch ? "border-gray-900 dark:border-gray-100 scale-110" : "border-transparent hover:scale-105"
+                color === swatch ? "border-ink scale-110" : "border-transparent hover:scale-105"
               }`}
               style={{ backgroundColor: swatch }}
             />

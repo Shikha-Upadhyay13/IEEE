@@ -94,7 +94,7 @@ function extractSseFrames(buffer: string): { frames: string[]; rest: string } {
 // messaging widget.
 function RoleLabel({ role }: { role: "user" | "assistant" }) {
   return (
-    <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-0.5">
+    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted px-0.5">
       {role === "user" ? "You" : "Doc Buddy"}
     </span>
   );
@@ -105,7 +105,7 @@ function RoleLabel({ role }: { role: "user" | "assistant" }) {
 // animation specifically is one of the most recognizable "AI is typing"
 // clichés, on top of already being a chat-bubble idiom.
 function ThinkingIndicator() {
-  return <p className="font-serif text-[15px] italic text-gray-400 dark:text-gray-500 animate-pulse">Thinking…</p>;
+  return <p className="font-serif text-[15px] italic text-muted animate-pulse">Thinking…</p>;
 }
 
 export function AssistantPage() {
@@ -722,30 +722,30 @@ export function AssistantPage() {
       />
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="flex-none flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur">
+        <div className="flex-none flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-line bg-surface/80 backdrop-blur">
           <button
             type="button"
             onClick={() => setMobileSidebarOpen(true)}
             aria-label="Open chat history"
-            className="md:hidden w-8 h-8 flex-none flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 -ml-1"
+            className="md:hidden w-8 h-8 flex-none flex items-center justify-center rounded-md text-muted hover:bg-canvas -ml-1"
           >
             <Menu size={18} aria-hidden="true" />
           </button>
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+            className="inline-flex items-center gap-1 text-sm text-muted hover:text-ink transition-colors"
           >
             <ArrowLeft size={14} aria-hidden="true" />
             Dashboard
           </Link>
-          <span className="hidden sm:inline text-gray-300 dark:text-gray-700">|</span>
+          <span className="hidden sm:inline text-muted/60">|</span>
           <div className="hidden sm:flex items-center gap-2.5">
             <BrandMark size="sm" />
             <div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-none tracking-tight">
+              <p className="text-sm font-semibold text-ink leading-none tracking-tight">
                 Doc Buddy
               </p>
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-none mt-0.5">
+              <p className="text-[11px] text-muted leading-none mt-0.5">
                 Drafting &amp; revision support
               </p>
             </div>
@@ -791,10 +791,10 @@ export function AssistantPage() {
               ) : (
                 <div className="text-center py-12 animate-fade-in-up">
                   <BrandMark size="lg" className="mx-auto mb-5 rounded-xl" />
-                  <p className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1 tracking-tight">
+                  <p className="text-xl font-semibold text-ink mb-1 tracking-tight">
                     What are you writing today?
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
+                  <p className="text-sm text-muted mb-8">
                     Ask for help drafting or refining any part of your paper's content — or switch to image mode
                     below to generate a figure or illustration.
                   </p>
@@ -802,17 +802,17 @@ export function AssistantPage() {
                       own table of contents, instead of an icon-per-card grid —
                       the empty state should feel like it belongs to this app
                       specifically, not a generic prompt-suggestion widget. */}
-                  <div className="max-w-md mx-auto text-left border-t border-gray-200 dark:border-gray-800">
+                  <div className="max-w-md mx-auto text-left border-t border-line">
                     {STARTER_PROMPTS.map(({ numeral, text }) => (
                       <button
                         key={text}
                         onClick={() => sendMessage(text)}
-                        className="group w-full flex items-baseline gap-4 py-3.5 border-b border-gray-200 dark:border-gray-800 text-left transition-colors"
+                        className="group w-full flex items-baseline gap-4 py-3.5 border-b border-line text-left transition-colors"
                       >
-                        <span className="flex-none font-serif text-sm text-gray-400 dark:text-gray-500 w-5">
+                        <span className="flex-none font-serif text-sm text-muted w-5">
                           {numeral}
                         </span>
-                        <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 group-hover:translate-x-0.5 transition-all">
+                        <span className="text-sm text-muted group-hover:text-ink group-hover:translate-x-0.5 transition-all">
                           {text}
                         </span>
                       </button>
@@ -845,7 +845,7 @@ export function AssistantPage() {
                   <RoleLabel role={message.role} />
                   <div className={`flex flex-col gap-1.5 max-w-[85%] ${message.role === "user" ? "items-end" : "items-start"}`}>
                     {message.imageUrl ? (
-                      <div className="relative w-64 aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800">
+                      <div className="relative w-64 aspect-square rounded-lg overflow-hidden border border-line bg-canvas">
                         {message.imageError ? (
                           <p className="p-4 text-sm text-red-600 dark:text-red-400">
                             Image generation failed — try a different prompt.
@@ -860,20 +860,20 @@ export function AssistantPage() {
                           />
                         )}
                         {i === pendingImageIndex && !message.imageError && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-gray-100/90 dark:bg-gray-800/90">
-                            <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-600 border-t-gray-800 dark:border-t-gray-200 rounded-full animate-spin" />
+                          <div className="absolute inset-0 flex items-center justify-center bg-canvas">
+                            <div className="w-6 h-6 border-2 border-line border-t-ink rounded-full animate-spin" />
                           </div>
                         )}
                       </div>
                     ) : message.role === "user" ? (
-                      <div className="rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-gray-900 dark:text-gray-100">
+                      <div className="rounded-lg border border-line bg-canvas px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-ink">
                         {message.content}
                       </div>
                     ) : (
                       <div
-                        className={`pl-4 py-0.5 border-l-2 border-gray-200 dark:border-gray-800 font-serif text-[15px] leading-relaxed text-gray-800 dark:text-gray-200 ${
+                        className={`pl-4 py-0.5 border-l-2 border-line font-serif text-[15px] leading-relaxed text-ink ${
                           isStreaming && isLastMessage && message.content
-                            ? "after:content-['|'] after:inline-block after:ml-0.5 after:font-sans after:text-gray-400 dark:after:text-gray-500 after:animate-caret-blink"
+                            ? "after:content-['|'] after:inline-block after:ml-0.5 after:font-sans after:text-muted after:animate-caret-blink"
                             : ""
                         }`}
                       >
@@ -889,7 +889,7 @@ export function AssistantPage() {
                         href={message.imageUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
+                        className="inline-flex items-center gap-1 text-[11px] text-muted hover:text-ink transition-colors px-1"
                       >
                         <ExternalLink size={12} aria-hidden="true" />
                         Open full size
@@ -899,7 +899,7 @@ export function AssistantPage() {
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => copyToClipboard(message.content, i)}
-                          className="inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
+                          className="inline-flex items-center gap-1 text-[11px] text-muted hover:text-ink transition-colors px-1"
                         >
                           {copiedIndex === i ? (
                             <Check size={12} aria-hidden="true" />
@@ -911,7 +911,7 @@ export function AssistantPage() {
                         {isLastMessage && !isStreaming && (
                           <button
                             onClick={regenerateLastResponse}
-                            className="inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors px-1"
+                            className="inline-flex items-center gap-1 text-[11px] text-muted hover:text-ink transition-colors px-1"
                           >
                             <RotateCcw size={12} aria-hidden="true" />
                             Regenerate
@@ -921,7 +921,7 @@ export function AssistantPage() {
                           <button
                             onClick={() => handleInsertIntoPaper(i, message.content)}
                             disabled={insertingIndex === i || insertedIndices.has(i)}
-                            className="inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 disabled:hover:text-gray-400 dark:disabled:hover:text-gray-500 transition-colors px-1"
+                            className="inline-flex items-center gap-1 text-[11px] text-muted hover:text-ink disabled:hover:text-ink transition-colors px-1"
                           >
                             {insertedIndices.has(i) ? (
                               <Check size={12} aria-hidden="true" />
@@ -943,7 +943,7 @@ export function AssistantPage() {
                           <button
                             key={suggestion}
                             onClick={() => sendMessage(suggestion)}
-                            className="text-[11px] text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-full px-2.5 py-1 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                            className="text-[11px] text-muted border border-line rounded-full px-2.5 py-1 hover:border-muted hover:text-ink transition-colors"
                           >
                             {suggestion}
                           </button>
@@ -965,7 +965,7 @@ export function AssistantPage() {
         {showJumpToLatest && (
           <button
             onClick={() => scrollToLatest()}
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-gray-900/90 dark:bg-gray-100/90 text-white dark:text-gray-900 text-xs font-medium pl-3 pr-3.5 py-1.5 shadow-lg hover:bg-gray-900 dark:hover:bg-white transition-colors animate-fade-in"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-ink/90 text-surface text-xs font-medium pl-3 pr-3.5 py-1.5 shadow-lg hover:bg-ink transition-colors animate-fade-in"
           >
             <ArrowDown size={13} aria-hidden="true" />
             New messages
@@ -979,7 +979,7 @@ export function AssistantPage() {
               pill-plus-circle composer is the other half (with the avatar
               thread above) of what makes a page read as an AI-chat-widget
               clone on sight, independent of color or copy. */}
-          <div className="max-w-3xl mx-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm focus-within:border-gray-400 dark:focus-within:border-gray-600 transition-colors">
+          <div className="max-w-3xl mx-auto rounded-xl border border-line bg-surface shadow-sm focus-within:border-accent/60 transition-colors">
             <textarea
               ref={textareaRef}
               value={input}
@@ -993,23 +993,23 @@ export function AssistantPage() {
               }}
               rows={1}
               placeholder={imageMode ? "Describe an image to generate…" : "Ask for help with your paper's content…"}
-              className="w-full resize-none bg-transparent text-sm leading-relaxed px-4 pt-3 pb-1.5 focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600 text-gray-900 dark:text-gray-100 transition-[height] duration-100 ease-out"
+              className="w-full resize-none bg-transparent text-sm leading-relaxed px-4 pt-3 pb-1.5 focus:outline-none placeholder:text-muted text-ink transition-[height] duration-100 ease-out"
             />
-            <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center justify-between px-3 py-2 border-t border-line">
               <div ref={attachMenuRef} className="relative">
                 {attachMenuOpen && (
-                  <div className="absolute bottom-full left-0 mb-2 w-60 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto z-10">
+                  <div className="absolute bottom-full left-0 mb-2 w-60 bg-surface border border-line rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto z-10">
                     <button
                       onClick={() => {
                         selectContextDocument("");
                         setAttachMenuOpen(false);
                       }}
-                      className="w-full text-left text-sm px-3 py-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      className="w-full text-left text-sm px-3 py-1.5 text-muted hover:bg-canvas"
                     >
                       No paper attached
                     </button>
                     {documentOptions.length === 0 && (
-                      <p className="text-xs text-gray-400 dark:text-gray-600 px-3 py-1.5">No papers yet.</p>
+                      <p className="text-xs text-muted px-3 py-1.5">No papers yet.</p>
                     )}
                     {documentOptions.map((doc) => (
                       <button
@@ -1018,10 +1018,10 @@ export function AssistantPage() {
                           selectContextDocument(doc.id);
                           setAttachMenuOpen(false);
                         }}
-                        className={`w-full text-left text-sm px-3 py-1.5 truncate hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                        className={`w-full text-left text-sm px-3 py-1.5 truncate hover:bg-canvas ${
                           selectedDoc?.id === doc.id
                             ? "text-accent font-medium"
-                            : "text-gray-700 dark:text-gray-300"
+                            : "text-ink"
                         }`}
                       >
                         {doc.title || "Untitled paper"}
@@ -1037,7 +1037,7 @@ export function AssistantPage() {
                     className={`inline-flex items-center gap-1.5 max-w-48 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                       selectedDoc
                         ? "text-accent bg-accent-soft"
-                        : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        : "text-muted hover:bg-canvas"
                     }`}
                   >
                     <span className="flex-none">📎</span>
@@ -1055,7 +1055,7 @@ export function AssistantPage() {
                     className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                       imageMode
                         ? "text-accent bg-accent-soft"
-                        : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        : "text-muted hover:bg-canvas"
                     }`}
                   >
                     <ImageIcon size={13} aria-hidden="true" />
@@ -1068,7 +1068,7 @@ export function AssistantPage() {
                   key="stop"
                   type="button"
                   onClick={stopGenerating}
-                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-xs font-semibold px-3 py-1.5 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors animate-fade-in"
+                  className="flex-none inline-flex items-center gap-1.5 rounded-md bg-line text-ink text-xs font-semibold px-3 py-1.5 hover:bg-muted/30 transition-colors animate-fade-in"
                 >
                   <span className="w-2 h-2 bg-current" /> Stop
                 </button>
@@ -1085,7 +1085,7 @@ export function AssistantPage() {
               )}
             </div>
           </div>
-          <p className="text-center text-[11px] text-gray-400 dark:text-gray-600 mt-2">
+          <p className="text-center text-[11px] text-muted mt-2">
             AI can be wrong — review anything you paste into your paper.
           </p>
         </form>

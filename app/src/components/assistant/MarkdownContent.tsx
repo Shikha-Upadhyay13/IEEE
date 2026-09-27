@@ -57,7 +57,7 @@ const components: Components = {
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="underline decoration-gray-400 dark:decoration-gray-600 hover:decoration-gray-800 dark:hover:decoration-gray-300 not-italic"
+      className="underline decoration-muted hover:decoration-ink not-italic"
     >
       {children}
     </a>
@@ -70,16 +70,16 @@ const components: Components = {
   h2: ({ children }) => <h2 className="text-base font-bold not-italic mt-4 mb-2">{children}</h2>,
   h3: ({ children }) => <h3 className="text-[15px] font-bold not-italic mt-3 mb-1.5">{children}</h3>,
   blockquote: ({ children }) => (
-    <blockquote className="border-l-2 border-gray-300 dark:border-gray-700 pl-3 not-italic text-gray-600 dark:text-gray-400 my-2">
+    <blockquote className="border-l-2 border-line pl-3 not-italic text-muted my-2">
       {children}
     </blockquote>
   ),
-  hr: () => <hr className="my-3 border-gray-200 dark:border-gray-800" />,
+  hr: () => <hr className="my-3 border-line" />,
   code: ({ className, children }) =>
     isCodeBlock(className, children) ? (
       <CodeBlock>{children}</CodeBlock>
     ) : (
-      <code className="font-mono not-italic text-[0.9em] bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded px-1 py-0.5">
+      <code className="font-mono not-italic text-[0.9em] bg-canvas text-ink rounded px-1 py-0.5">
         {children}
       </code>
     ),
@@ -89,11 +89,11 @@ const components: Components = {
     </div>
   ),
   th: ({ children }) => (
-    <th className="border border-gray-300 dark:border-gray-700 px-2 py-1 text-left font-semibold bg-gray-50 dark:bg-gray-800">
+    <th className="border border-line px-2 py-1 text-left font-semibold bg-canvas">
       {children}
     </th>
   ),
-  td: ({ children }) => <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">{children}</td>,
+  td: ({ children }) => <td className="border border-line px-2 py-1">{children}</td>,
 };
 
 export function MarkdownContent({ text }: { text: string }) {

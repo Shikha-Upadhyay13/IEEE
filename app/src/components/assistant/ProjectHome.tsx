@@ -30,8 +30,8 @@ export function ProjectHome({
           <Folder size={22} aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">{project.name}</h2>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <h2 className="text-xl font-semibold text-ink truncate">{project.name}</h2>
+          <p className="text-sm text-muted">
             {conversations.length} {conversations.length === 1 ? "chat" : "chats"} in this project
           </p>
         </div>
@@ -40,7 +40,7 @@ export function ProjectHome({
       <div className="mb-6">
         <label
           htmlFor="project-instructions"
-          className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+          className="text-xs font-semibold uppercase tracking-wide text-muted"
         >
           Project instructions
         </label>
@@ -53,13 +53,13 @@ export function ProjectHome({
           }}
           rows={3}
           placeholder="Give Doc Buddy standing context for every chat in this project — tone, terminology, constraints…"
-          className="w-full mt-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 resize-none placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+          className="w-full mt-1.5 text-sm rounded-lg border border-line bg-surface text-ink px-3 py-2 resize-none placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
 
       {conversations.length > 0 && (
         <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">
             Recent chats
           </p>
           <div className="flex flex-col gap-1.5">
@@ -67,17 +67,17 @@ export function ProjectHome({
               <button
                 key={c.id}
                 onClick={() => onSelectConversation(c.id)}
-                className="text-left rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
+                className="text-left rounded-lg border border-line px-3 py-2 hover:border-accent transition-colors"
               >
-                <span className="block text-sm text-gray-800 dark:text-gray-200 truncate">{c.title}</span>
-                <span className="block text-xs text-gray-400 dark:text-gray-500">{relativeTime(c.updated_at)}</span>
+                <span className="block text-sm text-ink truncate">{c.title}</span>
+                <span className="block text-xs text-muted">{relativeTime(c.updated_at)}</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      <p className="text-sm text-gray-400 dark:text-gray-500 text-center">
+      <p className="text-sm text-muted text-center">
         Type below to start a new chat in this project.
       </p>
     </div>
