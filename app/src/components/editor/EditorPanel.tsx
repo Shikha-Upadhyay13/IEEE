@@ -455,6 +455,7 @@ export function EditorPanel() {
   const setFontFamily = useDocumentStore((s) => s.setFontFamily);
   const setPaperSize = useDocumentStore((s) => s.setPaperSize);
   const setShowPageNumbers = useDocumentStore((s) => s.setShowPageNumbers);
+  const setPageLimit = useDocumentStore((s) => s.setPageLimit);
   const { textScale, blockSpacing } = useEditorPreferences();
   const appendParagraph = useDocumentStore((s) => s.appendParagraph);
   const appendSection = useDocumentStore((s) => s.appendSection);
@@ -587,6 +588,29 @@ export function EditorPanel() {
           </select>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
             Both are official IEEE conference sizes — Letter for US/Canada, A4 for most other regions.
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <label htmlFor="page-limit" className={labelBase}>
+            Page limit
+          </label>
+          <input
+            id="page-limit"
+            type="number"
+            min={1}
+            max={50}
+            inputMode="numeric"
+            value={document.meta.pageLimit ?? ""}
+            onChange={(e) => {
+              const n = Number.parseInt(e.target.value, 10);
+              setPageLimit(Number.isFinite(n) && n > 0 ? n : null);
+            }}
+            placeholder="None"
+            className={`${inputBase} w-28`}
+          />
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+            Your venue's limit (often 4–8 pages). We'll warn you in the top bar when the preview goes over it.
           </p>
         </div>
 

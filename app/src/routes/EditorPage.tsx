@@ -181,6 +181,9 @@ export function EditorPage() {
         ? "text-muted"
         : "text-emerald-600 dark:text-emerald-400";
 
+  const pageLimit = document.meta.pageLimit;
+  const overPageLimit = pageCount !== null && pageLimit !== null && pageCount > pageLimit;
+
   return (
     <div className="h-screen flex flex-col">
       {/* Top bar spans both panes — mirrors the reference layout's header:
@@ -197,8 +200,13 @@ export function EditorPage() {
           <span className="text-gray-300 dark:text-gray-700">|</span>
           <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
           {pageCount !== null && (
-            <span className="text-xs font-medium text-muted" aria-live="polite">
-              {pageCount} {pageCount === 1 ? "page" : "pages"}
+            <span
+              className={`text-xs font-medium ${overPageLimit ? "rounded bg-red-50 px-1.5 py-0.5 text-red-700 dark:bg-red-950/40 dark:text-red-400" : "text-muted"}`}
+              aria-live="polite"
+              title={overPageLimit ? `Your venue allows ${pageLimit} pages — trim content or adjust the limit in Paper Details.` : undefined}
+            >
+              {pageLimit ? `${pageCount} / ${pageLimit} pages` : `${pageCount} ${pageCount === 1 ? "page" : "pages"}`}
+              {overPageLimit && ` — ${pageCount - pageLimit} over limit`}
             </span>
           )}
         </div>
