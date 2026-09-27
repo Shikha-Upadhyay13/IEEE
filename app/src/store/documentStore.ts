@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Document, BodyNode, InlineNode, TableSpacing, FigureImage, FigureAlign, FontFamily } from "../types/document";
+import type { Document, BodyNode, InlineNode, TableSpacing, FigureImage, FigureAlign, FontFamily, Author } from "../types/document";
 import { samplePaper } from "../data/samplePaper";
 import { generateId } from "../lib/id";
 import { emptyReferenceFields, generateReferenceText, type ReferenceFields } from "../lib/generateReferenceText";
@@ -167,6 +167,14 @@ type DocumentStore = {
   documentId: string | null;
   loadDocument: (id: string, doc: Document) => void;
   setTitle: (text: string) => void;
+  addAuthor: () => void;
+  updateAuthor: (id: string, patch: Partial<Pick<Author, "name" | "email">>) => void;
+  removeAuthor: (id: string) => void;
+  addAffiliation: () => void;
+  updateAffiliation: (id: string, text: string) => void;
+  removeAffiliation: (id: string) => void;
+  toggleAuthorAffiliation: (authorId: string, affiliationId: string) => void;
+  setPageLimit: (pageLimit: number | null) => void;
   setAbstract: (text: string) => void;
   setKeywords: (commaSeparated: string) => void;
   setFontFamily: (fontFamily: FontFamily) => void;
@@ -220,6 +228,105 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         titleBlock: { ...state.document.titleBlock, title: [{ type: "text", text }] },
       },
     })),
+
+  addAuthor: () =>
+    set((state) => {
+      const { authors, affiliations } = state.document.titleBlock;
+      // New authors join the first affiliation by default — the common case
+      // (a single lab or department) then needs no extra clicks.
+      const affiliationRefs = affiliations[0] ? [affiliations[0].id] : [];
+      return {
+        document: {
+          ...state.document,
+          titleBlock: {
+            ...state.document.titleBlock,
+            authors: [...authors, { id: generateId("author"), name: "", affiliationRefs }],
+          },
+        },
+      };
+    }),
+
+  updateAuthor: (id, patch) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        titleBlock: {
+          ...state.document.titleBlock,
+          authors: state.document.titleBlock.authors.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+        },
+      },
+    })),
+
+  removeAuthor: (id) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        titleBlock: {
+          ...state.document.titleBlock,
+          authors: state.document.titleBlock.authors.filter((a) => a.id !== id),
+        },
+      },
+    })),
+
+  addAffiliation: () =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        titleBlock: {
+          ...state.document.titleBlock,
+          affiliations: [...state.document.titleBlock.affiliations, { id: generateId("aff"), text: "" }],
+        },
+      },
+    })),
+
+  updateAffiliation: (id, text) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        titleBlock: {
+          ...state.document.titleBlock,
+          affiliations: state.document.titleBlock.affiliations.map((aff) => (aff.id === id ? { ...aff, text } : aff)),
+        },
+      },
+    })),
+
+  removeAffiliation: (id) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        titleBlock: {
+          ...state.document.titleBlock,
+          affiliations: state.document.titleBlock.affiliations.filter((aff) => aff.id !== id),
+          authors: state.document.titleBlock.authors.map((a) => ({
+            ...a,
+            affiliationRefs: a.affiliationRefs.filter((ref) => ref !== id),
+          })),
+        },
+      },
+    })),
+
+  toggleAuthorAffiliation: (authorId, affiliationId) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        titleBlock: {
+          ...state.document.titleBlock,
+          authors: state.document.titleBlock.authors.map((a) => {
+            if (a.id !== authorId) return a;
+            const has = a.affiliationRefs.includes(affiliationId);
+            return {
+              ...a,
+              affiliationRefs: has
+                ? a.affiliationRefs.filter((ref) => ref !== affiliationId)
+                : [...a.affiliationRefs, affiliationId],
+            };
+          }),
+        },
+      },
+    })),
+
+  setPageLimit: (pageLimit) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, pageLimit } } })),
 
   setAbstract: (text) =>
     set((state) => ({ document: { ...state.document, abstract: { text } } })),
