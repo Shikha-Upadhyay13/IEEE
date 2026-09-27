@@ -28,6 +28,8 @@ import { ProjectBar } from "../components/assistant/ProjectBar";
 import { ProjectHome } from "../components/assistant/ProjectHome";
 import { MarkdownContent } from "../components/assistant/MarkdownContent";
 import { BrandMark } from "../components/BrandMark";
+import { CitationCheck } from "../components/assistant/CitationCheck";
+import { prepareAssistantTextForPaper } from "../lib/citationGuardrail";
 
 const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL ?? "http://localhost:3002";
 
@@ -269,9 +271,21 @@ export function AssistantPage() {
       return;
     }
     const doc = data.content as Document;
+    const prepared = prepareAssistantTextForPaper(content);
+    if (prepared.paragraphs.length === 0) {
+      setInsertingIndex(null);
+      return;
+    }
     const updatedDoc: Document = {
       ...doc,
-      body: [...doc.body, { type: "paragraph", id: generateId("p"), content: [{ type: "text", text: content }] }],
+      body: [
+        ...doc.body,
+        ...prepared.paragraphs.map((text): Document["body"][number] => ({
+          type: "paragraph",
+          id: generateId("p"),
+          content: [{ type: "text", text }],
+        })),
+      ],
     };
     const { error: updateError } = await supabase
       .from("documents")
@@ -884,6 +898,7 @@ export function AssistantPage() {
                         )}
                       </div>
                     )}
+                    {showAssistantActions && !(isStreaming && isLastMessage) && <CitationCheck text={message.content} />}
                     {message.imageUrl && !message.imageError && i !== pendingImageIndex && (
                       <a
                         href={message.imageUrl}
