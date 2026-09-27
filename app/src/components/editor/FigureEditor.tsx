@@ -4,6 +4,7 @@ import { useDocumentStore } from "../../store/documentStore";
 import { useAuth } from "../../lib/useAuth";
 import { supabase } from "../../supabaseClient";
 import { generateId } from "../../lib/id";
+import { friendlyErrorMessage } from "../../lib/friendlyError";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 
 type Figure = Extract<BodyNode, { type: "figure" }>;
@@ -43,7 +44,7 @@ export function FigureEditor({ node }: { node: Figure }) {
       addFigureImage(node.id, { url: data.publicUrl, alt: file.name });
     } catch (err) {
       console.error("Figure upload failed:", err);
-      setUploadError(err instanceof Error ? err.message : "Upload failed");
+      setUploadError(friendlyErrorMessage(err, "Upload failed"));
     } finally {
       setUploading(false);
     }

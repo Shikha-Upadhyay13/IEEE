@@ -5,6 +5,7 @@ import { useAuth } from "../lib/useAuth";
 import { createBlankDocument } from "../lib/blankDocument";
 import { relativeTime } from "../lib/relativeTime";
 import { inputBase } from "../lib/uiClasses";
+import { friendlyErrorMessage } from "../lib/friendlyError";
 import { DashboardSidebar } from "../components/dashboard/DashboardSidebar";
 import { PaperThumbnail } from "../components/dashboard/PaperThumbnail";
 import { OnboardingWizard } from "../components/dashboard/OnboardingWizard";
@@ -164,6 +165,9 @@ export function Dashboard() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOrder>("updated");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -176,6 +180,7 @@ export function Dashboard() {
         .order("updated_at", { ascending: false });
       if (!cancelled) {
         if (error) console.error("Failed to load documents:", error);
+        setLoadError(error ? friendlyErrorMessage(error, "Couldn't load your papers.") : null);
         const docs = data ?? [];
         setDocuments(docs);
         setLoading(false);
@@ -210,7 +215,7 @@ export function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, reloadToken]);
 
   const filteredDocuments = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -240,6 +245,7 @@ export function Dashboard() {
     setCreating(false);
     if (error) {
       console.error("Failed to create document:", error);
+      setActionError(friendlyErrorMessage(error, "Couldn't create a new paper."));
       return;
     }
     navigate(`/editor/${data.id}`);
@@ -248,7 +254,10 @@ export function Dashboard() {
   async function handleRename(id: string, title: string) {
     setDocuments((docs) => docs.map((d) => (d.id === id ? { ...d, title } : d)));
     const { error } = await supabase.from("documents").update({ title }).eq("id", id);
-    if (error) console.error("Failed to rename document:", error);
+    if (error) {
+      console.error("Failed to rename document:", error);
+      setActionError(friendlyErrorMessage(error, "Couldn't rename that paper."));
+    }
   }
 
   async function handleDuplicate(id: string, title: string | null) {
@@ -273,6 +282,7 @@ export function Dashboard() {
       setDocuments((docs) => [copy, ...docs]);
     } catch (err) {
       console.error("Failed to duplicate document:", err);
+      setActionError(friendlyErrorMessage(err, "Couldn't duplicate that paper."));
     } finally {
       setDuplicatingId(null);
     }
@@ -291,6 +301,7 @@ export function Dashboard() {
     if (error) {
       console.error("Failed to delete document:", error);
       setDocuments(previous); // roll back
+      setActionError(friendlyErrorMessage(error, "Couldn't delete that paper."));
     }
   }
 
@@ -334,6 +345,36 @@ export function Dashboard() {
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {(loadError || actionError) && (
+            <div
+              role="alert"
+              className="mb-6 flex items-start justify-between gap-3 rounded-md border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-400"
+            >
+              <span>{loadError ?? actionError}</span>
+              {loadError ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoading(true);
+                    setReloadToken((t) => t + 1);
+                  }}
+                  className="flex-none font-medium underline hover:no-underline"
+                >
+                  Try again
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setActionError(null)}
+                  aria-label="Dismiss"
+                  className="flex-none font-medium underline hover:no-underline"
+                >
+                  Dismiss
+                </button>
+              )}
             </div>
           )}
 

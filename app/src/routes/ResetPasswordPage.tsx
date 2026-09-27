@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { btnPrimary, inputBase, labelBase } from "../lib/uiClasses";
 import { BrandMark } from "../components/BrandMark";
+import { friendlyErrorMessage } from "../lib/friendlyError";
 
 // Reached only via the link Supabase emails from LoginPage's "Forgot
 // password?" flow — the recovery token lives in the URL fragment, and
@@ -42,7 +43,7 @@ export function ResetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyErrorMessage(error));
       return;
     }
     setDone(true);

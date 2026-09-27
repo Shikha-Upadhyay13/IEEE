@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { btnPrimary, inputBase, labelBase } from "../lib/uiClasses";
 import { BrandMark } from "../components/BrandMark";
+import { friendlyErrorMessage } from "../lib/friendlyError";
 
 const FEATURES = [
   "Drag-and-drop editing, no LaTeX required",
@@ -52,7 +53,7 @@ export function LoginPage() {
         navigate("/dashboard");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(friendlyErrorMessage(err));
     } finally {
       setBusy(false);
     }
