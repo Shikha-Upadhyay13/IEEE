@@ -186,6 +186,11 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
     linkStyleVars["--ieee-link-color"] = document.meta.accentColor;
   }
 
+  const affiliationIds = new Set(document.titleBlock.affiliations.map((aff) => aff.id));
+  const unaffiliatedAuthors = document.titleBlock.authors.filter(
+    (a) => !a.affiliationRefs.some((ref) => affiliationIds.has(ref)),
+  );
+
   return (
     <div
       className="ieee-paper"
@@ -208,6 +213,12 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
                 </div>
               ))}
             <div className="ieee-affiliation">{aff.text}</div>
+          </div>
+        ))}
+        {unaffiliatedAuthors.map((a) => (
+          <div className="ieee-author-group" key={a.id}>
+            <div className="ieee-author-name">{a.name}</div>
+            {a.email && <div className="ieee-affiliation">{a.email}</div>}
           </div>
         ))}
       </div>
