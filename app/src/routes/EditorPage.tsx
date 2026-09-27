@@ -144,6 +144,7 @@ export function EditorPage() {
   // classNames change) so toggling this never remounts it and re-triggers
   // Paged.js pagination.
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [pageCount, setPageCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (!previewOpen) return;
@@ -195,6 +196,11 @@ export function EditorPage() {
           </Link>
           <span className="text-gray-300 dark:text-gray-700">|</span>
           <span className={`text-xs font-medium ${saveLabelClass}`}>{saveLabel}</span>
+          {pageCount !== null && (
+            <span className="text-xs font-medium text-muted" aria-live="polite">
+              {pageCount} {pageCount === 1 ? "page" : "pages"}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {documentId && (
@@ -252,7 +258,7 @@ export function EditorPage() {
                 </span>
               </div>
             )}
-            <PagedPreview document={resolvedDoc} />
+            <PagedPreview document={resolvedDoc} onPaginated={setPageCount} />
           </div>
         </div>
       </div>

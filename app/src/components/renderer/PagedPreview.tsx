@@ -21,16 +21,21 @@ import ieeeTemplateCssUrl from "../../styles/ieee-template.css?url";
 export function PagedPreview({
   document,
   onReady,
+  onPaginated,
 }: {
   document: ResolvedDocument;
   /** Called once the winning run has committed its output to the visible DOM.
    *  Used by PrintView to signal the PDF export service that it's safe to
    *  snapshot — never called for a stale/superseded run. */
   onReady?: () => void;
+  /** Called with the number of rendered pages after each winning run. */
+  onPaginated?: (pageCount: number) => void;
 }) {
   const sourceRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<"idle" | "paginating" | "done" | "error">("idle");
+  const onPaginatedRef = useRef(onPaginated);
+  onPaginatedRef.current = onPaginated;
 
   useEffect(() => {
     let cancelled = false;
@@ -42,6 +47,7 @@ export function PagedPreview({
         if (cancelled) return; // stale run — discard without touching the visible DOM
         targetRef.current.replaceChildren(fragment);
         setStatus("done");
+        onPaginatedRef.current?.(targetRef.current.querySelectorAll(".pagedjs_page").length);
         onReady?.();
       } catch (err) {
         console.error("Paged.js pagination failed:", err);
