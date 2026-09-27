@@ -6,9 +6,21 @@ import { CiteRefExtension } from "./citeRefExtension";
 import { XrefExtension } from "./xrefExtension";
 import { inlineNodesToTipTapDoc, tipTapDocToInlineNodes } from "../../../lib/richtext/inlineNodeConversion";
 import { collectXrefTargets } from "../../../lib/richtext/collectTargets";
+import { citationNumberFor, xrefLabelFor } from "../../../lib/richtext/liveNumbers";
 import { useDocumentStore } from "../../../store/documentStore";
 import { generateId } from "../../../lib/id";
-import type { InlineNode } from "../../../types/document";
+import type { InlineNode, Reference } from "../../../types/document";
+
+function truncate(text: string, max: number): string {
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+function referenceSummary(ref: Reference): string {
+  const authors = ref.fields.authors?.trim();
+  const title = ref.fields.title?.trim();
+  const summary = [authors, title && `"${title}"`].filter(Boolean).join(", ") || ref.renderedText.trim();
+  return summary ? truncate(summary, 60) : "Empty reference — fill in its details under References";
+}
 
 export function RichParagraphEditor({
   content,
@@ -17,9 +29,18 @@ export function RichParagraphEditor({
   content: InlineNode[];
   onChange: (content: InlineNode[]) => void;
 }) {
-  const references = useDocumentStore((s) => s.document.references);
-  const body = useDocumentStore((s) => s.document.body);
-  const xrefTargets = collectXrefTargets(body);
+  const document = useDocumentStore((s) => s.document);
+  const references = document.references;
+  const citationOptions = references
+    .map((ref) => {
+      const n = citationNumberFor(document, ref.id);
+      return { id: ref.id, n: n ?? 0, label: `[${n ?? "?"}] ${referenceSummary(ref)}` };
+    })
+    .sort((a, b) => a.n - b.n);
+  const xrefTargets = collectXrefTargets(document.body).map((t) => ({
+    ...t,
+    label: `${xrefLabelFor(document, t.targetType, t.id) ?? t.targetType} — ${truncate(t.label, 50)}`,
+  }));
 
   const editor = useEditor({
     extensions: [
@@ -116,9 +137,9 @@ export function RichParagraphEditor({
           className={toolbarSelect}
         >
           <option value="">+ Citation…</option>
-          {references.map((ref) => (
-            <option key={ref.id} value={ref.id}>
-              {ref.id.replace(/^ref-/, "")}
+          {citationOptions.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.label}
             </option>
           ))}
         </select>
@@ -132,7 +153,7 @@ export function RichParagraphEditor({
           <option value="">+ Cross-ref…</option>
           {xrefTargets.map((t) => (
             <option key={t.id} value={`${t.targetType}:${t.id}`}>
-              [{t.targetType}] {t.label}
+              {t.label}
             </option>
           ))}
         </select>
