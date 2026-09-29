@@ -4,7 +4,7 @@
 
 Students, researchers, and professors publishing an IEEE conference paper have to manually apply IEEE's exacting format rules — fonts, margins, two-column layout, figure/table placement, citation numbering — by hand in Word or LaTeX, for every single paper. In practice this is:
 
-- **Tedious and repetitive** — the same formatting rules get re-applied from scratch each time.
+- **Tedious and repetitive** — the exact same formatting rules get re-applied from scratch each time.
 - **Error-prone** — it's easy to get spacing, font sizes, or caption placement subtly wrong, risking rejection or professor pushback.
 - **A barrier for non-technical users** — LaTeX requires learning a markup language; Word's IEEE template is fragile and breaks on paste.
 
