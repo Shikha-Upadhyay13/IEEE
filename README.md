@@ -6,7 +6,7 @@ Students, researchers, and professors publishing an IEEE conference paper have t
 
 - **Tedious and repetitive** — the exact same formatting rules get re-applied from scratch each time.
 - **Error-prone** — it's very easy to get spacing, font sizes, or caption placement subtly wrong, risking rejection or professor pushback.
-- **A barrier for non-technical users** — LaTeX requires learning a markup language; Word's IEEE template is fragile and breaks on paste.
+- **A barrier for non-technical users** — LaTeX requires learning a whole markup language; Word's IEEE template is fragile and breaks on paste.
 
 ## How we solve it
 
