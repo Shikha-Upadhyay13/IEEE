@@ -1,5 +1,6 @@
 import http from "node:http";
 import { streamChat } from "./groqClient.mjs";
+import { authConfig, verifyRequest } from "./auth.mjs";
 
 const PORT = process.env.PORT ?? 3002;
 // Explicit CORS origin allowlist from env (supports comma-separated list),
@@ -88,8 +89,13 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && req.url === "/chat") {
-    const clientIp = getClientIp(req);
-    const rateLimit = checkRateLimit(clientIp);
+    const auth = await verifyRequest(req);
+    if (!auth.ok) {
+      res.writeHead(auth.status, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: auth.error }));
+      return;
+    }
+    const rateLimit = checkRateLimit(auth.userId ? `user:${auth.userId}` : `ip:${getClientIp(req)}`);
     res.setHeader("X-RateLimit-Limit", String(RATE_LIMIT_MAX_REQUESTS));
     res.setHeader("X-RateLimit-Remaining", String(rateLimit.remaining));
     res.setHeader("X-RateLimit-Reset", String(rateLimit.resetInSeconds));
@@ -144,4 +150,9 @@ const server = http.createServer(async (req, res) => {
   res.end();
 });
 
-server.listen(PORT, () => console.log(`ai-service listening on http://localhost:${PORT}`));
+server.listen(PORT, () => {
+  console.log(`ai-service listening on http://localhost:${PORT}`);
+  const auth = authConfig();
+  if (auth.disabled) console.warn("AI_AUTH_DISABLED=true — /chat accepts unauthenticated requests. Never use this in production.");
+  else if (!auth.supabaseUrl || !auth.anonKey) console.warn("SUPABASE_URL / SUPABASE_ANON_KEY not set — /chat will reject every request.");
+});

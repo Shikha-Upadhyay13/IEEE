@@ -96,10 +96,13 @@ FRONTEND_URL=http://localhost:3000 FRONTEND_ORIGIN=http://localhost:3000 npm sta
 Runs at `http://localhost:3001`.
 
 **4. AI service (`ai-service/`)**
-Get a free API key at [console.groq.com](https://console.groq.com) (API Keys → Create API Key). Create `ai-service/.env`:
+Get a free API key at [console.groq.com](https://console.groq.com) (API Keys → Create API Key). Create `ai-service/.env` (see `ai-service/.env.example`):
 ```
 GROQ_API_KEY=<your key>
+SUPABASE_URL=<your project URL>
+SUPABASE_ANON_KEY=<your anon/publishable key>
 ```
+`/chat` only answers signed-in users: the frontend sends the Supabase access token and the service checks it with Supabase Auth before calling Groq, so the endpoint can't be used as a free Groq proxy. Rate limits are applied per user. For quick local experiments without signing in you can set `AI_AUTH_DISABLED=true` — never in production.
 ```
 cd ai-service
 npm start

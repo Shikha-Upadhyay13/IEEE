@@ -30,8 +30,7 @@ import { MarkdownContent } from "../components/assistant/MarkdownContent";
 import { BrandMark } from "../components/BrandMark";
 import { CitationCheck } from "../components/assistant/CitationCheck";
 import { prepareAssistantTextForPaper } from "../lib/citationGuardrail";
-
-const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL ?? "http://localhost:3002";
+import { AI_SERVICE_URL, aiAuthHeaders, extractSseFrames } from "../lib/aiClient";
 
 // imageUrl/imageError turn a turn into an image-generation result instead of
 // text — image generation lives inside this same conversation/composer
@@ -76,17 +75,6 @@ function deriveTitle(messages: ChatMessage[]): string {
   const firstUser = messages.find((m) => m.role === "user")?.content.trim();
   if (!firstUser) return "New chat";
   return firstUser.length > 48 ? `${firstUser.slice(0, 48)}…` : firstUser;
-}
-
-// Groq's API is OpenAI-compatible SSE: newline-delimited `data: {...}` frames,
-// terminated by a literal `data: [DONE]` — this walks the raw decoded text
-// buffer for complete frames only, carrying any trailing partial frame over
-// to the next chunk rather than assuming chunk boundaries line up with frames
-// (they don't; a chunk can split a frame anywhere, including mid-JSON).
-function extractSseFrames(buffer: string): { frames: string[]; rest: string } {
-  const parts = buffer.split("\n\n");
-  const rest = parts.pop() ?? "";
-  return { frames: parts, rest };
 }
 
 // Small-caps role labels above each turn, not per-message avatar icons —
@@ -421,7 +409,7 @@ export function AssistantPage() {
     try {
       const response = await fetch(`${AI_SERVICE_URL}/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await aiAuthHeaders()) },
         body: JSON.stringify({
           messages: nextMessages,
           documentContext,
@@ -429,6 +417,7 @@ export function AssistantPage() {
         }),
         signal: controller.signal,
       });
+      if (response.status === 401) throw new Error("Your session has expired. Sign in again to use the assistant.");
       if (!response.ok || !response.body) throw new Error(`Assistant request failed (${response.status})`);
 
       const reader = response.body.getReader();
