@@ -113,6 +113,8 @@ If any of the frontend's default service URLs don't match your setup, override t
 
 **Search and link previews.** Set `VITE_SITE_URL` (e.g. `https://your-domain.com`) in `app/.env` or the Vercel project settings. The build uses it for `robots.txt`, `sitemap.xml` (generated from `src/lib/seo/publicRoutes.ts`), the canonical URL and the absolute `og:image` link. Regenerate the preview image with `node scripts/render-og-image.mjs`.
 
+Shared paper links (`/view/:id`) get their own preview card: `vercel.json` sends link-preview bots (Slack, WhatsApp, LinkedIn, X, Discord…) to the `app/api/share.ts` Vercel Function, which reads the paper's title and abstract — only for papers the owner made public — and returns them as Open Graph tags. It uses `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (or `SUPABASE_URL` / `SUPABASE_ANON_KEY`) and `VITE_SITE_URL` from the Vercel environment; people opening the link still get the normal app.
+
 **End-to-end tests.** From `app/`, `npm run e2e` runs the Playwright suite against the Vite dev server (`npx playwright install chromium` once, or set `E2E_BROWSER_CHANNEL=msedge` / `chrome` to use an installed browser). The signed-in flow (create, reorder, cite, cross-ref, export) runs only when `E2E_EMAIL` and `E2E_PASSWORD` point at a test account; add `E2E_PDF_SERVICE=1` with pdf-service running to include the export step. In CI, set the `E2E_EMAIL`, `E2E_PASSWORD`, `E2E_SUPABASE_URL` and `E2E_SUPABASE_ANON_KEY` repository secrets to enable it.
 
 **Monitoring (optional).** Nothing is sent anywhere unless these are set:

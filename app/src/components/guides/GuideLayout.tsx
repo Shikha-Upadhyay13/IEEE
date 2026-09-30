@@ -22,6 +22,9 @@ export function GuideLayout({ heading, intro, children }: { heading: string; int
             <span className="font-display font-semibold tracking-tight">IEEE Paper Builder</span>
           </Link>
           <nav aria-label="Site" className="flex items-center gap-5 text-sm">
+            <Link to="/templates" className="hidden sm:inline text-muted hover:text-ink transition-colors">
+              Templates
+            </Link>
             <Link to="/guides" className="text-muted hover:text-ink transition-colors">
               Free tools
             </Link>

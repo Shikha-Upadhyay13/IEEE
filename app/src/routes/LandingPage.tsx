@@ -192,6 +192,9 @@ function NavBar() {
           <a href="#faq" className="hover:text-ink transition-colors">
             FAQ
           </a>
+          <Link to="/templates" className="hover:text-ink transition-colors">
+            Templates
+          </Link>
           <Link to="/guides" className="hover:text-ink transition-colors">
             Free tools
           </Link>

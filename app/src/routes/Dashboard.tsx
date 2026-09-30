@@ -6,6 +6,8 @@ import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { createBlankDocument } from "../lib/blankDocument";
 import { track } from "../lib/monitoring";
+import { takePendingTemplate, type GalleryChoice } from "../lib/pendingTemplate";
+import { createSamplePaper } from "../data/samplePaper";
 import { STARTER_TEMPLATES, type StarterTemplateId } from "../lib/starterTemplates";
 import { Menu } from "../components/ui/Menu";
 import { relativeTime } from "../lib/relativeTime";
@@ -257,13 +259,23 @@ export function Dashboard() {
     return filtered;
   }, [documents, search, sortBy]);
 
-  async function handleCreate(template: StarterTemplateId) {
+  // A template picked on the public /templates gallery before signing in.
+  useEffect(() => {
+    if (!user) return;
+    const pending = takePendingTemplate();
+    if (pending) handleCreate(pending, "gallery");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  async function handleCreate(template: StarterTemplateId | GalleryChoice, source = "dashboard") {
     if (!user) return;
     setCreating(true);
-    const blank = createBlankDocument(template);
+    const isSample = template === "sample";
+    const content = isSample ? createSamplePaper() : createBlankDocument(template);
+    const title = isSample ? "Sample: Preparation of a Formatted Conference Paper" : "Untitled paper";
     const { data, error } = await supabase
       .from("documents")
-      .insert({ owner_id: user.id, title: "Untitled paper", content: blank })
+      .insert({ owner_id: user.id, title, content })
       .select("id")
       .single();
     setCreating(false);
@@ -272,7 +284,7 @@ export function Dashboard() {
       setActionError(friendlyErrorMessage(error, "Couldn't create a new paper."));
       return;
     }
-    track("paper_created", { source: "dashboard", template });
+    track("paper_created", { source, template });
     navigate(`/editor/${data.id}`);
   }
 

@@ -1,5 +1,17 @@
 import { expect, test } from "@playwright/test";
 
+test("template gallery remembers the choice through sign-in", async ({ page }) => {
+  await page.goto("/templates");
+  await expect(page).toHaveTitle(/IEEE Paper Templates/);
+  const buttons = page.getByRole("button", { name: "Use this template" });
+  await expect(buttons).toHaveCount(4);
+  await expect(page.getByRole("button", { name: "Open the example" })).toBeVisible();
+
+  await buttons.nth(2).click();
+  await expect(page).toHaveURL(/\/login/);
+  expect(await page.evaluate(() => sessionStorage.getItem("ieee:pendingTemplate"))).toBe("survey");
+});
+
 test("guides index links to every tool", async ({ page }) => {
   await page.goto("/guides");
   await expect(page).toHaveTitle(/Free IEEE formatting tools/);

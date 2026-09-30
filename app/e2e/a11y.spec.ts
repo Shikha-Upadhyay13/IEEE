@@ -6,6 +6,7 @@ const PUBLIC_ROUTES = [
   "/login",
   "/terms",
   "/privacy",
+  "/templates",
   "/guides",
   "/guides/ieee-reference-format",
   "/guides/bibtex-to-ieee",

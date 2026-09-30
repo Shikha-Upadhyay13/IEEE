@@ -21,6 +21,14 @@ export const PUBLIC_ROUTES: PublicRoute[] = [
     priority: 1,
   },
   {
+    path: "/templates",
+    title: "IEEE Paper Templates — research, survey, experimental, project report",
+    description:
+      "Free IEEE conference paper templates for research papers, surveys, experimental papers and project reports. Edit online, export a PDF.",
+    changefreq: "monthly",
+    priority: 0.9,
+  },
+  {
     path: "/guides",
     title: "Free IEEE formatting tools",
     description:
