@@ -66,7 +66,7 @@ You'll need three processes running at once (frontend, PDF export service, AI se
 
 **1. Supabase**
 - Create a free project at [supabase.com](https://supabase.com).
-- Run the entire contents of [`supabase/schema.sql`](supabase/schema.sql) in the SQL Editor once.
+- Run the entire contents of [`supabase/schema.sql`](supabase/schema.sql) in the SQL Editor once, then each file in [`supabase/migrations/`](supabase/migrations) in order (`004_account_deletion.sql` powers self-service account deletion in Settings).
 - Grab your **Project URL** and **anon/publishable key** from Project Settings → API.
 
 > **Free-tier projects pause after about a week without activity.** When that happens the project's hostname stops resolving and every sign-in, save, and load fails with a network error (the app shows a "we can't reach our servers" message instead of a blank screen). Restore it from the Supabase dashboard (Project → Restore), then reload the app. For a live deployment, either upgrade to a paid plan or keep the project active with a scheduled ping (for example a daily cron hitting `<project URL>/auth/v1/health` with the anon key).

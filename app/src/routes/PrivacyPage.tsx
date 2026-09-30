@@ -179,7 +179,9 @@ export function PrivacyPage() {
               </li>
               <li>
                 <strong>Right to erasure ("right to be forgotten"):</strong> Request deletion of
-                your account and all associated data. To exercise this right, email us at{" "}
+                your account and all associated data. You can do this yourself at any time from
+                Settings → Your data → Delete account, which erases everything immediately. You can
+                also email us at{" "}
                 <a
                   href="mailto:support@ieeepaperbuilder.com"
                   className="text-accent hover:underline"
@@ -189,8 +191,8 @@ export function PrivacyPage() {
                 and we will complete the deletion within 30 days.
               </li>
               <li>
-                <strong>Right to data portability:</strong> Request your paper content exported as
-                JSON. Use the editor's built-in export features; for bulk exports contact us.
+                <strong>Right to data portability:</strong> Download everything on your account as
+                one JSON file from Settings → Your data → Download my data.
               </li>
               <li>
                 <strong>Right to object:</strong> Object to our processing of your data for
