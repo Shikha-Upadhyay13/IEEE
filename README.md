@@ -111,6 +111,8 @@ Runs at `http://localhost:3002`. Chat and image generation both work with this a
 
 If any of the frontend's default service URLs don't match your setup, override them via `app/.env`: `VITE_PDF_SERVICE_URL` and `VITE_AI_SERVICE_URL`.
 
+**End-to-end tests.** From `app/`, `npm run e2e` runs the Playwright suite against the Vite dev server (`npx playwright install chromium` once, or set `E2E_BROWSER_CHANNEL=msedge` / `chrome` to use an installed browser). The signed-in flow (create, reorder, cite, cross-ref, export) runs only when `E2E_EMAIL` and `E2E_PASSWORD` point at a test account; add `E2E_PDF_SERVICE=1` with pdf-service running to include the export step. In CI, set the `E2E_EMAIL`, `E2E_PASSWORD`, `E2E_SUPABASE_URL` and `E2E_SUPABASE_ANON_KEY` repository secrets to enable it.
+
 **Monitoring (optional).** Nothing is sent anywhere unless these are set:
 - `app/.env`: `VITE_SENTRY_DSN` for frontend crash reports; `VITE_POSTHOG_KEY` (and optionally `VITE_POSTHOG_HOST`) for product analytics.
 - `ai-service/.env` and the `pdf-service` environment: `SENTRY_DSN` (optionally `SENTRY_ENVIRONMENT`).

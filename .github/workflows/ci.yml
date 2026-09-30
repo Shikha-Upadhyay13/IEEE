@@ -8,7 +8,7 @@ on:
 
 jobs:
   app:
-    name: Frontend — typecheck + tests + lint
+    name: Frontend — typecheck + tests + lint + build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -28,13 +28,57 @@ jobs:
         run: npm ci
 
       - name: TypeScript typecheck
-        run: npx tsc --noEmit
+        run: npx tsc -b
 
       - name: Run unit tests
         run: npm test
 
       - name: Lint
         run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
+  e2e:
+    name: Frontend — Playwright end-to-end
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    env:
+      # Public pages only need a syntactically valid Supabase config. The
+      # signed-in flow runs when the E2E_* secrets point at a test project.
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL || 'http://127.0.0.1:54321' }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY || 'ci-placeholder-key' }}
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: npm run e2e
+
+      - name: Upload traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: app/test-results
+          retention-days: 7
 
   ai-service:
     name: AI Service — Node.js smoke test
@@ -56,6 +100,9 @@ jobs:
 
       - name: Syntax check
         run: node --check server.mjs && node --check groqClient.mjs
+
+      - name: Unit tests
+        run: npm test
 
   pdf-service:
     name: PDF Service — Node.js smoke test
