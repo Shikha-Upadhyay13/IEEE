@@ -1,3 +1,4 @@
+import { usePageMeta } from "../lib/usePageMeta";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Copy, FileText, MoreVertical, Plus, Trash2 } from "lucide-react";
@@ -179,6 +180,7 @@ function PaperCard({
 }
 
 export function Dashboard() {
+  usePageMeta({ title: "Your papers", noindex: true });
   const { user } = useAuth();
   const [documents, setDocuments] = useState<DocumentRow[]>([]);
   const [loading, setLoading] = useState(true);

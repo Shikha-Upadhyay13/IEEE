@@ -1,7 +1,10 @@
+import { usePageMeta } from "../lib/usePageMeta";
+import { findPublicRoute } from "../lib/seo/publicRoutes";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
 export function PrivacyPage() {
+  usePageMeta(findPublicRoute("/privacy") ?? {});
   return (
     <div className="min-h-screen bg-canvas py-16 px-6">
       <div className="max-w-3xl mx-auto">

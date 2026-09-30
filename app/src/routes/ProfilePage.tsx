@@ -1,3 +1,4 @@
+import { usePageMeta } from "../lib/usePageMeta";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { useAuth } from "../lib/useAuth";
@@ -7,6 +8,7 @@ import { formatJoinDate } from "../lib/formatJoinDate";
 import { DashboardSidebar } from "../components/dashboard/DashboardSidebar";
 
 export function ProfilePage() {
+  usePageMeta({ title: "My account", noindex: true });
   const { user } = useAuth();
   const navigate = useNavigate();
 

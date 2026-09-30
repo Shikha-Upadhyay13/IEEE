@@ -1,3 +1,4 @@
+import { usePageMeta } from "../lib/usePageMeta";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Download, Image as ImageIcon, MessageSquare, Trash2 } from "lucide-react";
@@ -48,6 +49,7 @@ function ThemePreview({ mode }: { mode: ThemeSetting }) {
 }
 
 export function SettingsPage() {
+  usePageMeta({ title: "Settings", noindex: true });
   const { user } = useAuth();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();

@@ -1,3 +1,5 @@
+import { usePageMeta } from "../lib/usePageMeta";
+import { findPublicRoute } from "../lib/seo/publicRoutes";
 import { useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Check } from "lucide-react";
@@ -15,6 +17,7 @@ const FEATURES = [
 ];
 
 export function LoginPage() {
+  usePageMeta(findPublicRoute("/login") ?? {});
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

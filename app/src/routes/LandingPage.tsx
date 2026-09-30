@@ -1,3 +1,5 @@
+import { usePageMeta } from "../lib/usePageMeta";
+import { findPublicRoute } from "../lib/seo/publicRoutes";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -225,6 +227,7 @@ function useHeroScale() {
 }
 
 export function LandingPage() {
+  usePageMeta(findPublicRoute("/") ?? {});
   const resolvedSample = useMemo(() => resolveNumbering(samplePaper), []);
   const { containerRef: heroRef, scale: heroScale } = useHeroScale();
 
@@ -260,6 +263,8 @@ export function LandingPage() {
         {/* The actual renderer running in the browser, not a mockup image. */}
         <figure ref={heroRef} className="w-full min-w-0 mx-auto" style={{ maxWidth: HERO_PAGE_WIDTH }}>
           <div
+            aria-hidden="true"
+            inert
             className="relative mx-auto rounded-lg border border-line overflow-hidden bg-muted/20 shadow-sm"
             style={{ width: 816 * heroScale, height: HERO_PAGE_HEIGHT * (heroScale / HERO_PAGE_SCALE) }}
           >

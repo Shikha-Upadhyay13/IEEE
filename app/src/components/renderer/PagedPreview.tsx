@@ -44,7 +44,7 @@ export function PagedPreview({
       setStatus("paginating");
       try {
         const fragment = await paginate(sourceRef.current.innerHTML, [ieeeTemplateCssUrl]);
-        if (cancelled) return; // stale run — discard without touching the visible DOM
+        if (cancelled || !targetRef.current) return; // stale run or unmounted — discard
         targetRef.current.replaceChildren(fragment);
         setStatus("done");
         onPaginatedRef.current?.(targetRef.current.querySelectorAll(".pagedjs_page").length);

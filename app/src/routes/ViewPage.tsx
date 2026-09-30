@@ -9,6 +9,7 @@ import { LoadingScreen } from "../components/LoadingScreen";
 import { BrandMark } from "../components/BrandMark";
 import { ArrowRight, FileQuestion, Lock, Pencil } from "lucide-react";
 import type { Document } from "../types/document";
+import { usePageMeta } from "../lib/usePageMeta";
 
 export function ViewPage() {
   const { documentId } = useParams<{ documentId: string }>();
@@ -18,6 +19,11 @@ export function ViewPage() {
   const [paperTitle, setPaperTitle] = useState<string>("IEEE Paper");
   const [isOwner, setIsOwner] = useState(false);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "unauthorized" | "notfound">("loading");
+  usePageMeta({
+    title: loadState === "ready" ? paperTitle : "Shared paper",
+    description: "A paper written and formatted in IEEE conference style with IEEE Paper Builder.",
+    noindex: true,
+  });
 
   useEffect(() => {
     if (!documentId) return;

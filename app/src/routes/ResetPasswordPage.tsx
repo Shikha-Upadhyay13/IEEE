@@ -1,3 +1,4 @@
+import { usePageMeta } from "../lib/usePageMeta";
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
@@ -12,6 +13,7 @@ import { friendlyErrorMessage } from "../lib/friendlyError";
 // token-parsing of our own needed; a plain supabase.auth.updateUser call is
 // enough to actually change the password under that session.
 export function ResetPasswordPage() {
+  usePageMeta({ title: "Reset password", noindex: true });
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");

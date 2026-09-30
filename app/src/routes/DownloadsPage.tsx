@@ -1,3 +1,4 @@
+import { usePageMeta } from "../lib/usePageMeta";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Download, FileText, Loader2, Trash2 } from "lucide-react";
@@ -23,6 +24,7 @@ type ExportGroup = { key: string; title: string; documentId: string | null; rows
 const COLLAPSED_ROW_LIMIT = 3;
 
 export function DownloadsPage() {
+  usePageMeta({ title: "Downloads", noindex: true });
   const navigate = useNavigate();
   const [exports, setExports] = useState<ExportRow[]>([]);
   const [loading, setLoading] = useState(true);

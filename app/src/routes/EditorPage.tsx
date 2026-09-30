@@ -18,6 +18,7 @@ import { btnGhost, btnIcon, btnPrimary, btnSecondary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { BrandMark } from "../components/BrandMark";
 import { extractTitleText } from "../lib/extractTitleText";
+import { usePageMeta } from "../lib/usePageMeta";
 import type { Document } from "../types/document";
 
 export function EditorPage() {
@@ -45,6 +46,7 @@ export function EditorPage() {
   // the unmount flush below, which must not act on a stale closed-over value.
   const latestDocument = useRef(document);
   latestDocument.current = document;
+  usePageMeta({ title: (document && extractTitleText(document)) || "Untitled paper", noindex: true });
 
   useEffect(() => {
     if (!documentId) return;

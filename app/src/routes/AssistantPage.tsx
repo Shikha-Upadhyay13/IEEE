@@ -1,3 +1,4 @@
+import { usePageMeta } from "../lib/usePageMeta";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -99,6 +100,7 @@ function ThinkingIndicator() {
 }
 
 export function AssistantPage() {
+  usePageMeta({ title: "Doc Buddy", noindex: true });
   const { user } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
