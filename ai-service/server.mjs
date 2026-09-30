@@ -1,6 +1,9 @@
 import http from "node:http";
 import { streamChat } from "./groqClient.mjs";
 import { authConfig, verifyRequest } from "./auth.mjs";
+import { captureError, initMonitoring } from "./monitoring.mjs";
+
+await initMonitoring("ai-service");
 
 const PORT = process.env.PORT ?? 3002;
 // Explicit CORS origin allowlist from env (supports comma-separated list),
@@ -130,10 +133,12 @@ const server = http.createServer(async (req, res) => {
       groqStream.pipe(res);
       groqStream.on("error", (err) => {
         console.error("Groq stream error:", err);
+        captureError(err, { route: "/chat", stage: "stream", task });
         res.end();
       });
     } catch (err) {
       console.error("Chat request failed:", err);
+      captureError(err, { route: "/chat" });
       // Headers may already be flushed if the failure happened mid-stream —
       // guard so we don't crash the process trying to send a second response.
       if (!res.headersSent) {

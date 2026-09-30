@@ -8,6 +8,7 @@
     "start": "node server.mjs"
   },
   "dependencies": {
+    "@sentry/node": "^11.1.0",
     "playwright": "^1.61.1"
   }
 }

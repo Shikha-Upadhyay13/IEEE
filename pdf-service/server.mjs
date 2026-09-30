@@ -1,5 +1,8 @@
 import http from "node:http";
 import { renderPdf } from "./render.mjs";
+import { captureError, initMonitoring } from "./monitoring.mjs";
+
+await initMonitoring("pdf-service");
 
 const PORT = process.env.PORT ?? 3001;
 // Explicit CORS origin allowlist from env (supports comma-separated list),
@@ -140,6 +143,7 @@ const server = http.createServer(async (req, res) => {
         return;
       }
       if (err.isTimeout) {
+        captureError(err, { route: "/export", reason: "timeout" });
         res.writeHead(504, { "Content-Type": "application/json" });
         res.end(
           JSON.stringify({
@@ -149,6 +153,7 @@ const server = http.createServer(async (req, res) => {
         return;
       }
       console.error("Export failed:", err);
+      captureError(err, { route: "/export" });
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Export failed", detail: String(err) }));
     }
