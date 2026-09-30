@@ -68,7 +68,8 @@ export function TableEditor({ node }: { node: Table }) {
               {row.map((cell, c) => (
                 <td key={c} className="border border-line p-0.5">
                   <input
-                    value={cell}
+                    aria-label={`Row ${r + 1}, column ${c + 1}`}
+                  value={cell}
                     onChange={(e) => setCell(r, c, e.target.value)}
                     className="w-[70px] text-xs px-1 py-0.5 border-none bg-transparent text-ink focus:outline-none focus:ring-1 focus:ring-accent rounded"
                   />

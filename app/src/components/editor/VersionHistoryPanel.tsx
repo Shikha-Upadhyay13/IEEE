@@ -129,6 +129,7 @@ export function VersionHistoryPanel({
           <div className="flex items-center gap-2">
             <input
               type="text"
+              aria-label="Snapshot name"
               value={snapshotLabel}
               onChange={(e) => setSnapshotLabel(e.target.value)}
               placeholder="e.g. Before conference submission"

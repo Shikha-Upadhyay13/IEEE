@@ -282,7 +282,8 @@ function SortableBlockItem({
             <ChevronRight size={16} aria-hidden="true" />
           </button>
           <input
-            value={node.heading}
+            aria-label="Section heading"
+          value={node.heading}
             onChange={(e) => updateSectionHeading(node.id, e.target.value)}
             className={`${inputBase} font-semibold`}
           />

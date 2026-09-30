@@ -338,7 +338,8 @@ export function ReferencesEditor({ defaultExpanded = false }: { defaultExpanded?
               Paste one or multiple BibTeX entries exported from Google Scholar, IEEE Xplore, or DBLP:
             </p>
             <textarea
-              value={bibtexInput}
+                aria-label="BibTeX entries"
+                value={bibtexInput}
               onChange={(e) => setBibtexInput(e.target.value)}
               rows={8}
               placeholder={`@article{smith2023,\n  author = {Smith, John and Davis, Robert},\n  title = {Autonomous Mobile Robot Navigation},\n  journal = {IEEE Transactions on Robotics},\n  year = {2023},\n  volume = {39},\n  pages = {1012--1028}\n}`}
@@ -386,7 +387,8 @@ export function ReferencesEditor({ defaultExpanded = false }: { defaultExpanded?
             </p>
             <input
               type="text"
-              value={doiInput}
+                aria-label="DOI"
+                value={doiInput}
               onChange={(e) => setDoiInput(e.target.value)}
               placeholder="e.g. 10.1109/TRO.2023.1001 or https://doi.org/..."
               className={`${inputBase} text-xs w-full`}

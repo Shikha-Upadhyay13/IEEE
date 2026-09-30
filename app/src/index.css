@@ -54,6 +54,24 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Zero-specificity fallback so every keyboard-focusable control shows a
+   focus indicator; components with their own ring classes still win. */
+:where(a, button, summary, select, [role="button"], [role="menuitem"], [role="tab"], [tabindex]):focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;

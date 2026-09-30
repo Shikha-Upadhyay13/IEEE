@@ -19,7 +19,7 @@ export function ProfilePage() {
     <div className={`${pageShell} flex flex-col md:flex-row`}>
       <DashboardSidebar onSignOut={handleSignOut} />
 
-      <div className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10">
+      <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10 focus:outline-none">
         <div className="max-w-2xl">
           <h1 className="font-display text-2xl font-semibold text-ink tracking-tight mb-1">My account</h1>
           <p className="text-sm text-muted mb-6">Account details for the signed-in session.</p>
@@ -56,7 +56,7 @@ export function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

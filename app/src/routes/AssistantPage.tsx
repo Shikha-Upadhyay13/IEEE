@@ -985,8 +985,9 @@ export function AssistantPage() {
               clone on sight, independent of color or copy. */}
           <div className="max-w-3xl mx-auto rounded-xl border border-line bg-surface shadow-sm focus-within:border-accent/60 transition-colors">
             <textarea
-              ref={textareaRef}
-              value={input}
+                ref={textareaRef}
+                aria-label={imageMode ? "Image description" : "Message Doc Buddy"}
+                value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {

@@ -121,7 +121,7 @@ export function SettingsPage() {
     <div className={`${pageShell} flex flex-col md:flex-row`}>
       <DashboardSidebar onSignOut={handleSignOut} />
 
-      <div className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10">
+      <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10 focus:outline-none">
         <h1 className="font-display text-2xl font-semibold text-ink tracking-tight mb-1">Settings</h1>
         <p className="text-sm text-muted mb-6">
           Your account, appearance, and Doc Buddy preferences.
@@ -273,7 +273,7 @@ export function SettingsPage() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
       {ConfirmDialog}
     </div>
   );

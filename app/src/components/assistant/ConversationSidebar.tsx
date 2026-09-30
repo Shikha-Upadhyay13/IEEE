@@ -179,6 +179,7 @@ export function ConversationSidebar({
                 {editingId === c.id ? (
                   <input
                     autoFocus
+                    aria-label="Conversation title"
                     value={draftTitle}
                     onChange={(e) => setDraftTitle(e.target.value)}
                     onBlur={() => commitRename(c.id)}

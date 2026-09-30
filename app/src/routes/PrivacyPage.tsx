@@ -7,7 +7,7 @@ export function PrivacyPage() {
       <div className="max-w-3xl mx-auto">
         <Link
           to="/"
-          className="text-sm text-accent hover:underline mb-8 inline-flex items-center gap-1"
+          className="text-sm text-accent underline underline-offset-2 hover:no-underline mb-8 inline-flex items-center gap-1"
         >
           <ArrowLeft size={14} aria-hidden="true" />
           Back to home
@@ -103,7 +103,7 @@ export function PrivacyPage() {
                   href="https://supabase.com/privacy"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent hover:underline ml-1"
+                  className="text-accent underline underline-offset-2 hover:no-underline ml-1"
                 >
                   Supabase Privacy Policy
                   <ExternalLink size={12} className="inline ml-0.5 -mt-0.5" aria-hidden="true" />
@@ -117,7 +117,7 @@ export function PrivacyPage() {
                   href="https://groq.com/privacy-policy/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent hover:underline ml-1"
+                  className="text-accent underline underline-offset-2 hover:no-underline ml-1"
                 >
                   Groq Privacy Policy
                   <ExternalLink size={12} className="inline ml-0.5 -mt-0.5" aria-hidden="true" />
@@ -184,7 +184,7 @@ export function PrivacyPage() {
                 also email us at{" "}
                 <a
                   href="mailto:support@ieeepaperbuilder.com"
-                  className="text-accent hover:underline"
+                  className="text-accent underline underline-offset-2 hover:no-underline"
                 >
                   support@ieeepaperbuilder.com
                 </a>{" "}
@@ -254,7 +254,7 @@ export function PrivacyPage() {
               For privacy-related questions or to exercise your rights, contact us at:{" "}
               <a
                 href="mailto:support@ieeepaperbuilder.com"
-                className="text-accent hover:underline"
+                className="text-accent underline underline-offset-2 hover:no-underline"
               >
                 support@ieeepaperbuilder.com
               </a>

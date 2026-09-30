@@ -148,7 +148,8 @@ function PaperCard({
           {editing ? (
             <input
               autoFocus
-              value={draftTitle}
+              aria-label="Paper title"
+            value={draftTitle}
               onChange={(e) => setDraftTitle(e.target.value)}
               onBlur={commitRename}
               onKeyDown={(e) => {
@@ -338,7 +339,7 @@ export function Dashboard() {
     <div className="min-h-screen flex flex-col md:flex-row bg-canvas">
       <DashboardSidebar onSignOut={handleSignOut} />
 
-      <div className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10">
+      <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10 focus:outline-none">
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-end mb-6">
             <div>
@@ -350,7 +351,8 @@ export function Dashboard() {
           {!loading && documents.length > 0 && (
             <div className="flex items-center gap-3 mb-6">
               <input
-                value={search}
+                aria-label="Search your papers"
+              value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search your papers…"
                 className={`${inputBase} max-w-xs`}
@@ -431,7 +433,7 @@ export function Dashboard() {
           )}
           {duplicatingId && <p className="text-xs text-muted mt-4">Duplicating…</p>}
         </div>
-      </div>
+      </main>
       {ConfirmDialog}
       {user && (
         <OnboardingWizard

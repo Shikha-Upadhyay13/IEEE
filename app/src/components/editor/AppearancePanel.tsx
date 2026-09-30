@@ -69,6 +69,7 @@ function SliderRow({
       <div className="flex items-center gap-2">
         <input
           type="range"
+          aria-label={label}
           min={min}
           max={max}
           step={step}

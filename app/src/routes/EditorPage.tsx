@@ -308,9 +308,14 @@ export function EditorPage() {
         <div className="hidden lg:flex w-56 flex-none flex-col border-r border-line bg-surface">
           <EditorOutline view={view} onChange={setView} />
         </div>
-        <div className="flex-1 min-w-0 h-full flex flex-col border-r border-line bg-surface">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          aria-label="Paper editor"
+          className="flex-1 min-w-0 h-full flex flex-col border-r border-line bg-surface focus:outline-none"
+        >
           <EditorPanel view={view} />
-        </div>
+        </main>
 
         {/* Light neutral backdrop (not the sidebar's white, not a heavy dark
             gray) so the white page reads as the clear focal point — same

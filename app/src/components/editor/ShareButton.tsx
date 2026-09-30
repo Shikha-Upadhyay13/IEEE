@@ -125,8 +125,10 @@ export function ShareButton({ documentId }: ShareButtonProps) {
                 type="button"
                 onClick={handleTogglePublic}
                 disabled={loading}
-                aria-pressed={isPublic}
-                className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                role="switch"
+                aria-checked={isPublic}
+                aria-label="Public link access"
+                className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
                   isPublic ? "bg-accent" : "bg-line"
                 }`}
               >
@@ -144,7 +146,8 @@ export function ShareButton({ documentId }: ShareButtonProps) {
                   <input
                     type="text"
                     readOnly
-                    value={shareUrl}
+                    aria-label="Share link"
+                  value={shareUrl}
                     className="flex-1 bg-transparent text-[11px] text-muted outline-none px-1 select-all"
                   />
                   <button

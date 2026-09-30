@@ -232,6 +232,7 @@ export function LandingPage() {
     <div className="min-h-screen bg-canvas text-ink">
       <NavBar />
 
+      <main id="main-content" tabIndex={-1} className="focus:outline-none">
       <section className="max-w-6xl mx-auto px-6 pt-16 pb-20 grid lg:grid-cols-[1fr_auto] gap-14 items-center">
         <div className="min-w-0">
           <p className="text-sm font-medium text-accent mb-4">For IEEE conference papers</p>
@@ -356,6 +357,7 @@ export function LandingPage() {
           </Link>
         </div>
       </section>
+      </main>
 
       <footer className="border-t border-line py-8 text-center text-xs text-muted">
         <p>IEEE Paper Builder is an independent tool and is not affiliated with or endorsed by IEEE.</p>

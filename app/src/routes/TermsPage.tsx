@@ -7,7 +7,7 @@ export function TermsPage() {
       <div className="max-w-3xl mx-auto">
         <Link
           to="/"
-          className="text-sm text-accent hover:underline mb-8 inline-flex items-center gap-1"
+          className="text-sm text-accent underline underline-offset-2 hover:no-underline mb-8 inline-flex items-center gap-1"
         >
           <ArrowLeft size={14} aria-hidden="true" />
           Back to home
@@ -96,7 +96,7 @@ export function TermsPage() {
             <p className="mt-3">
               We do not use your paper content to train AI models, sell your data, or share it with
               third parties except as described in our{" "}
-              <Link to="/privacy" className="text-accent hover:underline">
+              <Link to="/privacy" className="text-accent underline underline-offset-2 hover:no-underline">
                 Privacy Policy
               </Link>
               .
@@ -192,7 +192,7 @@ export function TermsPage() {
               Questions about these Terms? Contact us at:{" "}
               <a
                 href="mailto:support@ieeepaperbuilder.com"
-                className="text-accent hover:underline"
+                className="text-accent underline underline-offset-2 hover:no-underline"
               >
                 support@ieeepaperbuilder.com
               </a>

@@ -222,6 +222,7 @@ export function CommandPalette() {
           </span>
           <input
             ref={inputRef}
+            aria-label="Search papers and commands"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);

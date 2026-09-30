@@ -46,6 +46,7 @@ export function ProjectBar({
         {editing ? (
           <input
             autoFocus
+            aria-label="Project name"
             value={draftName}
             onChange={(e) => setDraftName(e.target.value)}
             onBlur={commitRename}

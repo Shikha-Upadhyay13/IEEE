@@ -10,6 +10,7 @@ import { RequireAuth } from "./components/RequireAuth";
 import { ChatLauncher } from "./components/ChatLauncher";
 import { CommandPalette } from "./components/CommandPalette";
 import { LoadingScreen } from "./components/LoadingScreen";
+import { SkipLink } from "./components/SkipLink";
 import { useAuth } from "./lib/useAuth";
 
 // Everything behind a sign-in wall (plus the headless print route) is
@@ -41,6 +42,7 @@ function App() {
   const location = useLocation();
   return (
     <ErrorBoundary resetKey={location.pathname}>
+      <SkipLink />
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           <Route path="/" element={<LandingOrDashboard />} />
