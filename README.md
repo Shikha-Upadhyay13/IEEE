@@ -110,3 +110,9 @@ npm start
 Runs at `http://localhost:3002`. Chat and image generation both work with this alone — image generation (Pollinations.ai) needs no API key at all.
 
 If any of the frontend's default service URLs don't match your setup, override them via `app/.env`: `VITE_PDF_SERVICE_URL` and `VITE_AI_SERVICE_URL`.
+
+**Monitoring (optional).** Nothing is sent anywhere unless these are set:
+- `app/.env`: `VITE_SENTRY_DSN` for frontend crash reports; `VITE_POSTHOG_KEY` (and optionally `VITE_POSTHOG_HOST`) for product analytics.
+- `ai-service/.env` and the `pdf-service` environment: `SENTRY_DSN` (optionally `SENTRY_ENVIRONMENT`).
+
+Analytics only records these events, never paper content (autocapture and session recording are off): `signed_up`, `paper_created`, `citation_inserted`, `pdf_exported`, `pdf_export_failed`. Build a PostHog funnel from `signed_up` → `paper_created` → `citation_inserted` → `pdf_exported` to track time from signup to first export.

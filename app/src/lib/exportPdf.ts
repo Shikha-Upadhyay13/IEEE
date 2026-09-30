@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { track } from "./monitoring";
 
 const PDF_SERVICE_URL = import.meta.env.VITE_PDF_SERVICE_URL ?? "http://localhost:3001";
 
@@ -40,14 +41,21 @@ export async function exportDocumentPdf(documentId: string, title: string): Prom
   // headless script), so it can't call this RPC itself. See
   // ARCHITECTURE.md §5.3 and supabase/schema.sql.
   const { data: token, error: tokenError } = await supabase.rpc("create_export_token", { doc_id: documentId });
-  if (tokenError || !token) throw tokenError ?? new Error("No token returned");
+  if (tokenError || !token) {
+    track("pdf_export_failed", { stage: "token" });
+    throw tokenError ?? new Error("No token returned");
+  }
 
   const response = await fetch(`${PDF_SERVICE_URL}/export`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ documentId, token }),
   });
-  if (!response.ok) throw new Error(`Export failed: ${response.status}`);
+  if (!response.ok) {
+    track("pdf_export_failed", { stage: "render", status: response.status });
+    throw new Error(`Export failed: ${response.status}`);
+  }
+  track("pdf_exported");
 
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);

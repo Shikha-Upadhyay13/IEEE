@@ -23,6 +23,7 @@ import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { useTheme, type ThemeSetting } from "../lib/useTheme";
 import { createBlankDocument } from "../lib/blankDocument";
+import { track } from "../lib/monitoring";
 import { useDocumentStore } from "../store/documentStore";
 import { extractTitleText } from "../lib/extractTitleText";
 import { exportDocumentPdf } from "../lib/exportPdf";
@@ -105,6 +106,7 @@ export function CommandPalette() {
       console.error("Failed to create paper from command palette:", error);
       return;
     }
+    track("paper_created", { source: "command_palette", template: "conference" });
     navigate(`/editor/${data.id}`);
   }
 

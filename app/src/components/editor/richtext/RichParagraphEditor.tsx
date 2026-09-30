@@ -14,6 +14,7 @@ import { collectXrefTargets } from "../../../lib/richtext/collectTargets";
 import { citationNumberFor, xrefLabelFor } from "../../../lib/richtext/liveNumbers";
 import { useDocumentStore } from "../../../store/documentStore";
 import { generateId } from "../../../lib/id";
+import { track } from "../../../lib/monitoring";
 import type { InlineNode, Reference } from "../../../types/document";
 
 function truncate(text: string, max: number): string {
@@ -126,6 +127,7 @@ export function RichParagraphEditor({
 
   function insertCitation(refId: string) {
     insertInline({ type: "citeRef", attrs: { id: generateId("cite"), refId } });
+    track("citation_inserted");
   }
 
   function insertXref(targetKey: string) {

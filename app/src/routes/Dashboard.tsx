@@ -4,6 +4,7 @@ import { Copy, FileText, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { createBlankDocument } from "../lib/blankDocument";
+import { track } from "../lib/monitoring";
 import { STARTER_TEMPLATES, type StarterTemplateId } from "../lib/starterTemplates";
 import { Menu } from "../components/ui/Menu";
 import { relativeTime } from "../lib/relativeTime";
@@ -268,6 +269,7 @@ export function Dashboard() {
       setActionError(friendlyErrorMessage(error, "Couldn't create a new paper."));
       return;
     }
+    track("paper_created", { source: "dashboard", template });
     navigate(`/editor/${data.id}`);
   }
 

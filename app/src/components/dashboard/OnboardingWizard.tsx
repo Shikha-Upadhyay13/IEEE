@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 import { createBlankDocument } from "../../lib/blankDocument";
+import { track } from "../../lib/monitoring";
 import { createSamplePaper } from "../../data/samplePaper";
 import { STARTER_TEMPLATES, type StarterTemplateId } from "../../lib/starterTemplates";
 import { btnPrimary } from "../../lib/uiClasses";
@@ -79,6 +80,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
         throw error ?? new Error("Failed to create starter paper");
       }
 
+      track("paper_created", { source: "onboarding", template: choice });
       navigate(`/editor/${data.id}`);
     } catch (err) {
       console.error("Failed to initialize paper from onboarding wizard:", err);

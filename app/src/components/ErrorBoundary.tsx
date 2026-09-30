@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { BrandMark } from "./BrandMark";
 import { btnPrimary, btnSecondary, btnGhost } from "../lib/uiClasses";
+import { captureError } from "../lib/monitoring";
 
 type Props = {
   children: ReactNode;
@@ -24,6 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("Unhandled UI error:", error, info.componentStack);
+    captureError(error, { componentStack: info.componentStack });
   }
 
   static getDerivedStateFromProps(props: Props, state: State): Partial<State> | null {

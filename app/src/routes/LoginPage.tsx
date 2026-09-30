@@ -6,6 +6,7 @@ import { btnPrimary, inputBase, labelBase } from "../lib/uiClasses";
 import { BrandMark } from "../components/BrandMark";
 import { friendlyErrorMessage } from "../lib/friendlyError";
 import { useServiceHealth } from "../lib/useServiceHealth";
+import { track } from "../lib/monitoring";
 
 const FEATURES = [
   "Drag-and-drop editing, no LaTeX required",
@@ -42,6 +43,7 @@ export function LoginPage() {
       } else if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
+        track("signed_up");
         // With email confirmation disabled, signUp returns an active session
         // immediately — the user is already logged in, nothing to check.
         // With it enabled, no session comes back until they click the link.
