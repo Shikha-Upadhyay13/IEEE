@@ -1,7 +1,16 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-const PUBLIC_ROUTES = ["/", "/login", "/terms", "/privacy"];
+const PUBLIC_ROUTES = [
+  "/",
+  "/login",
+  "/terms",
+  "/privacy",
+  "/guides",
+  "/guides/ieee-reference-format",
+  "/guides/bibtex-to-ieee",
+  "/guides/ieee-abstract-word-count",
+];
 
 for (const route of PUBLIC_ROUTES) {
   test(`no serious accessibility violations on ${route}`, async ({ page }) => {

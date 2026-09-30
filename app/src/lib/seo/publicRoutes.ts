@@ -21,6 +21,38 @@ export const PUBLIC_ROUTES: PublicRoute[] = [
     priority: 1,
   },
   {
+    path: "/guides",
+    title: "Free IEEE formatting tools",
+    description:
+      "Free browser tools for IEEE papers: reference formatter, BibTeX to IEEE converter and abstract word counter. No account needed.",
+    changefreq: "monthly",
+    priority: 0.8,
+  },
+  {
+    path: "/guides/ieee-reference-format",
+    title: "IEEE Reference Formatter — free IEEE citation generator",
+    description:
+      "Format journal and conference references in IEEE style from a DOI or by hand, with author initials and punctuation done right.",
+    changefreq: "monthly",
+    priority: 0.8,
+  },
+  {
+    path: "/guides/bibtex-to-ieee",
+    title: "BibTeX to IEEE Converter — free, in your browser",
+    description:
+      "Paste BibTeX from Google Scholar, Zotero or a .bib file and get a numbered IEEE reference list. Nothing is uploaded.",
+    changefreq: "monthly",
+    priority: 0.8,
+  },
+  {
+    path: "/guides/ieee-abstract-word-count",
+    title: "IEEE Abstract Word Counter — check the 150–250 word limit",
+    description:
+      "Count your abstract's words against IEEE limits and catch citations, equations and figure references that don't belong.",
+    changefreq: "monthly",
+    priority: 0.8,
+  },
+  {
     path: "/login",
     title: "Sign in",
     description: "Sign in or create a free account to start writing your IEEE conference paper.",

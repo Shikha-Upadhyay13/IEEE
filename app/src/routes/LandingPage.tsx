@@ -192,6 +192,9 @@ function NavBar() {
           <a href="#faq" className="hover:text-ink transition-colors">
             FAQ
           </a>
+          <Link to="/guides" className="hover:text-ink transition-colors">
+            Free tools
+          </Link>
         </nav>
         <div className="flex items-center gap-3">
           <Link to="/login" className="text-sm font-medium text-muted hover:text-ink transition-colors">
@@ -373,6 +376,10 @@ export function LandingPage() {
           <span aria-hidden="true">·</span>
           <Link to="/privacy" className="hover:text-ink underline underline-offset-2 transition-colors">
             Privacy Policy
+          </Link>
+          <span aria-hidden="true">·</span>
+          <Link to="/guides" className="hover:text-ink underline underline-offset-2 transition-colors">
+            Free IEEE tools
           </Link>
         </p>
       </footer>

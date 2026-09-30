@@ -28,6 +28,16 @@ const ProfilePage = lazy(() => import("./routes/ProfilePage").then((m) => ({ def
 const SettingsPage = lazy(() => import("./routes/SettingsPage").then((m) => ({ default: m.SettingsPage })));
 const DownloadsPage = lazy(() => import("./routes/DownloadsPage").then((m) => ({ default: m.DownloadsPage })));
 const ViewPage = lazy(() => import("./routes/ViewPage").then((m) => ({ default: m.ViewPage })));
+const GuidesIndexPage = lazy(() => import("./routes/guides/GuidesIndexPage").then((m) => ({ default: m.GuidesIndexPage })));
+const ReferenceFormatterPage = lazy(() =>
+  import("./routes/guides/ReferenceFormatterPage").then((m) => ({ default: m.ReferenceFormatterPage }))
+);
+const BibtexConverterPage = lazy(() =>
+  import("./routes/guides/BibtexConverterPage").then((m) => ({ default: m.BibtexConverterPage }))
+);
+const AbstractCounterPage = lazy(() =>
+  import("./routes/guides/AbstractCounterPage").then((m) => ({ default: m.AbstractCounterPage }))
+);
 
 // Signed-in visitors who land on the public "/" marketing page should go
 // straight to their papers instead of seeing the pitch again.
@@ -53,6 +63,10 @@ function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/guides" element={<GuidesIndexPage />} />
+          <Route path="/guides/ieee-reference-format" element={<ReferenceFormatterPage />} />
+          <Route path="/guides/bibtex-to-ieee" element={<BibtexConverterPage />} />
+          <Route path="/guides/ieee-abstract-word-count" element={<AbstractCounterPage />} />
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="/editor/:documentId" element={<RequireAuth><EditorPage /></RequireAuth>} />
           <Route path="/assistant" element={<RequireAuth><AssistantPage /></RequireAuth>} />
