@@ -7,6 +7,7 @@ import type {
 } from "../../types/document";
 import "../../styles/ieee-template.css";
 import { FONT_STACKS, getGeometry, layoutVariables } from "../../lib/formats/formats";
+import { affiliationFootnote, authorLine } from "../../lib/formats/journal";
 
 // Real math rendering (KaTeX) rather than displaying the stored LaTeX as
 // literal text. throwOnError: false so a mid-edit/incomplete expression
@@ -148,6 +149,13 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
     linkStyleVars["--ieee-link-color"] = document.meta.accentColor;
   }
 
+  const isJournal = document.meta.template === "ieee-journal";
+  const footnote = isJournal ? affiliationFootnote(document.titleBlock, document.meta.journal?.received) : [];
+  const biographies = document.titleBlock.authors.flatMap((author) => {
+    const bio = document.biographies?.find((b) => b.authorId === author.id);
+    return bio && author.name.trim() && bio.text.trim() ? [{ author, bio }] : [];
+  });
+
   const affiliationIds = new Set(document.titleBlock.affiliations.map((aff) => aff.id));
   const unaffiliatedAuthors = document.titleBlock.authors.filter(
     (a) => !a.affiliationRefs.some((ref) => affiliationIds.has(ref)),
@@ -164,26 +172,30 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
         <InlineContent nodes={document.titleBlock.title as ResolvedInlineNode[]} />
       </h1>
 
-      <div className="ieee-authors-block">
-        {document.titleBlock.affiliations.map((aff) => (
-          <div className="ieee-author-group" key={aff.id}>
-            {document.titleBlock.authors
-              .filter((a) => a.affiliationRefs.includes(aff.id))
-              .map((a) => (
-                <div className="ieee-author-name" key={a.id}>
-                  {a.name}
-                </div>
-              ))}
-            <div className="ieee-affiliation">{aff.text}</div>
-          </div>
-        ))}
-        {unaffiliatedAuthors.map((a) => (
-          <div className="ieee-author-group" key={a.id}>
-            <div className="ieee-author-name">{a.name}</div>
-            {a.email && <div className="ieee-affiliation">{a.email}</div>}
-          </div>
-        ))}
-      </div>
+      {isJournal ? (
+        <p className="ieee-journal-authors">{authorLine(document.titleBlock)}</p>
+      ) : (
+        <div className="ieee-authors-block">
+          {document.titleBlock.affiliations.map((aff) => (
+            <div className="ieee-author-group" key={aff.id}>
+              {document.titleBlock.authors
+                .filter((a) => a.affiliationRefs.includes(aff.id))
+                .map((a) => (
+                  <div className="ieee-author-name" key={a.id}>
+                    {a.name}
+                  </div>
+                ))}
+              <div className="ieee-affiliation">{aff.text}</div>
+            </div>
+          ))}
+          {unaffiliatedAuthors.map((a) => (
+            <div className="ieee-author-group" key={a.id}>
+              <div className="ieee-author-name">{a.name}</div>
+              {a.email && <div className="ieee-affiliation">{a.email}</div>}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="ieee-columns">
         <p className="ieee-abstract">
@@ -195,6 +207,14 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
           <span className="ieee-run-in-heading">Index Terms—</span>
           {document.keywords.join(", ")}
         </p>
+
+        {isJournal && footnote.length > 0 && (
+          <div className="ieee-first-footnote">
+            {footnote.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        )}
 
         {document.body.map((node) => (
           <BodyNodeRenderer key={node.id} node={node} />
@@ -210,6 +230,20 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
             </li>
           ))}
         </ol>
+
+        {isJournal &&
+          biographies.map(({ author, bio }) => (
+            <div className="ieee-biography" key={author.id}>
+              {bio.photoUrl ? (
+                <img className="ieee-biography-photo" src={bio.photoUrl} alt={`Photograph of ${author.name}`} />
+              ) : (
+                <div className="ieee-biography-photo ieee-biography-photo-empty">Photo</div>
+              )}
+              <p>
+                <strong>{author.name}</strong> {bio.text}
+              </p>
+            </div>
+          ))}
       </div>
     </div>
   );

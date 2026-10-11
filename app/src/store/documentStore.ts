@@ -182,6 +182,9 @@ type DocumentStore = {
   setMode: (mode: NonNullable<Document["meta"]["mode"]>) => void;
   setDraftWatermark: (draftWatermark: boolean) => void;
   setCopyrightNotice: (copyrightNotice: Document["meta"]["copyrightNotice"]) => void;
+  setJournalInfo: (journal: Document["meta"]["journal"]) => void;
+  /** Upserts the biography for one author; an empty text with no photo removes it. */
+  setBiography: (authorId: string, patch: { text?: string; photoUrl?: string | undefined }) => void;
   setPaperSize: (paperSize: PaperSize) => void;
   setShowPageNumbers: (showPageNumbers: boolean) => void;
   setAccentColor: (accentColor: string | null) => void;
@@ -364,6 +367,20 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   setCopyrightNotice: (copyrightNotice) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, copyrightNotice } } })),
+
+  setJournalInfo: (journal) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, journal } } })),
+
+  setBiography: (authorId, patch) =>
+    set((state) => {
+      const current = state.document.biographies ?? [];
+      const existing = current.find((b) => b.authorId === authorId) ?? { authorId, text: "" };
+      const next = { ...existing, ...patch };
+      if (next.photoUrl === undefined) delete next.photoUrl;
+      const rest = current.filter((b) => b.authorId !== authorId);
+      const biographies = next.text.trim() || next.photoUrl ? [...rest, next] : rest;
+      return { document: { ...state.document, biographies } };
+    }),
 
   setPaperSize: (paperSize) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, paperSize } } })),

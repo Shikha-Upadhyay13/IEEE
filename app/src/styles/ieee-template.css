@@ -295,6 +295,57 @@
   color: var(--ieee-link-color, inherit);
 }
 
+/* --- Journal / Transactions format --- */
+
+.ieee-journal-authors {
+  font-size: 11pt;
+  text-align: center;
+  margin: 0 0 12pt 0;
+}
+
+/* Approximates IEEEtran's first-page footnote: kept in the first column
+   right after the index terms, set off by a short rule. */
+.ieee-first-footnote {
+  font-size: 8pt;
+  line-height: 1.2;
+  text-align: justify;
+  border-top: 0.5pt solid #000;
+  padding-top: 3pt;
+  margin: 0 0 8pt 0;
+  width: 100%;
+}
+.ieee-first-footnote p {
+  margin: 0 0 2pt 0;
+  text-indent: 3.5mm;
+}
+
+/* Biographies: 1in × 1.25in photo floated left, 8pt text, name in bold. */
+.ieee-biography {
+  font-size: 8pt;
+  line-height: 1.2;
+  text-align: justify;
+  margin: 12pt 0 0 0;
+  break-inside: avoid;
+  overflow: hidden;
+}
+.ieee-biography p {
+  margin: 0;
+}
+.ieee-biography-photo {
+  float: left;
+  width: 1in;
+  height: 1.25in;
+  object-fit: cover;
+  margin: 0 6pt 2pt 0;
+}
+.ieee-biography-photo-empty {
+  border: 0.5pt dashed #999;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* --- Peer-review draft format (single column, 12pt, 1.5 spacing) --- */
 
 .ieee-paper[data-format="ieee-peer-review"] .ieee-title {

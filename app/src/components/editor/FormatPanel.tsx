@@ -7,6 +7,7 @@ import { createSnapshot } from "../../lib/versions";
 import { friendlyErrorMessage } from "../../lib/friendlyError";
 import { useConfirm } from "../ConfirmDialog";
 import { CopyrightNoticeFields } from "./CopyrightNoticeFields";
+import { JournalFields } from "./JournalFields";
 import { inputBase, labelBase } from "../../lib/uiClasses";
 import type { FontFamily } from "../../types/document";
 
@@ -212,6 +213,7 @@ export function FormatPanel() {
       </Field>
 
       {meta.template === "ieee-conference" && <CopyrightNoticeFields />}
+      {meta.template === "ieee-journal" && <JournalFields />}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { Document } from "../../types/document";
 import { copyrightText, cssString } from "./copyright";
+import { journalHeader } from "./journal";
 
 export type PaperSize = Document["meta"]["paperSize"];
 
@@ -96,12 +97,25 @@ export const IEEE_PEER_REVIEW: FormatSpec = {
   },
 };
 
+/**
+ * IEEE Transactions / Journals (IEEEtran journal): same two-column grid as
+ * conferences, plus a running head with the page number, a first-page
+ * affiliation footnote and author biographies.
+ */
+export const IEEE_JOURNAL: FormatSpec = {
+  id: "ieee-journal",
+  label: "IEEE Journal / Transactions",
+  description: "Two-column journal article with running heads, affiliation footnote and author biographies.",
+  geometry: IEEE_CONFERENCE.geometry,
+};
+
 export const FORMATS: Record<FormatId, FormatSpec> = {
   "ieee-conference": IEEE_CONFERENCE,
+  "ieee-journal": IEEE_JOURNAL,
   "ieee-peer-review": IEEE_PEER_REVIEW,
 };
 
-export const FORMAT_LIST: FormatSpec[] = [IEEE_CONFERENCE, IEEE_PEER_REVIEW];
+export const FORMAT_LIST: FormatSpec[] = [IEEE_CONFERENCE, IEEE_JOURNAL, IEEE_PEER_REVIEW];
 
 export function getFormat(meta: Pick<Document["meta"], "template">): FormatSpec {
   return FORMATS[meta.template] ?? IEEE_CONFERENCE;
@@ -130,11 +144,12 @@ export function layoutVariables(geometry: PageGeometry): Record<string, string> 
 export function buildPageCss(
   meta: Pick<
     Document["meta"],
-    "template" | "paperSize" | "showPageNumbers" | "fontFamily" | "draftWatermark" | "copyrightNotice"
+    "template" | "paperSize" | "showPageNumbers" | "fontFamily" | "draftWatermark" | "copyrightNotice" | "journal"
   >
 ): string {
   const pageNumberFont = paperFontStack(meta);
   const g = getGeometry(meta);
+  const isJournal = meta.template === "ieee-journal";
   const rules = [
     `size: ${g.size};`,
     `margin-top: ${g.margin.top};`,
@@ -142,12 +157,16 @@ export function buildPageCss(
     `margin-left: ${g.margin.left};`,
     `margin-right: ${g.margin.right};`,
   ];
-  if (meta.showPageNumbers) {
+  if (isJournal) {
+    const head = `font-family: ${pageNumberFont}; font-size: 7pt; vertical-align: bottom; padding-bottom: 12pt;`;
+    rules.push(`@top-left { content: ${cssString(journalHeader(meta.journal))}; ${head} }`);
+    rules.push(`@top-right { content: counter(page); ${head} }`);
+  } else if (meta.showPageNumbers) {
     rules.push(`@bottom-center { content: counter(page); font-family: ${pageNumberFont}; font-size: 8pt; }`);
   }
   if (meta.draftWatermark) {
     rules.push(
-      `@top-right { content: "DRAFT — not for submission"; font-family: Arial, Helvetica, sans-serif; font-size: 8pt; color: #b91c1c; letter-spacing: 0.05em; }`
+      `${isJournal ? "@bottom-center" : "@top-right"} { content: "DRAFT — not for submission"; font-family: Arial, Helvetica, sans-serif; font-size: 8pt; color: #b91c1c; letter-spacing: 0.05em; }`
     );
   }
   const css = [`@page { ${rules.join(" ")} }`];

@@ -126,6 +126,13 @@ export const ReferenceSchema = z.object({
 });
 export type Reference = z.infer<typeof ReferenceSchema>;
 
+export const BiographySchema = z.object({
+  authorId: z.string(),
+  text: z.string(),
+  photoUrl: z.string().optional(),
+});
+export type Biography = z.infer<typeof BiographySchema>;
+
 // IEEE conference submissions require Times New Roman — this is the only
 // meta field a user can actually override, and "times" is always the
 // default: everything downstream (numbering.ts, IEEEConferenceTemplate)
@@ -139,7 +146,7 @@ export const DocumentSchema = z.object({
   schemaVersion: z.literal(1),
   meta: z.object({
     // The paper's IEEE format; see lib/formats/formats.ts.
-    template: z.enum(["ieee-conference", "ieee-peer-review"]),
+    template: z.enum(["ieee-conference", "ieee-peer-review", "ieee-journal"]),
     // Which styling is allowed; see lib/formats/modes.ts. Absent on papers
     // created before modes existed, which infer the mode from their settings.
     mode: z.enum(["submission", "draft", "custom"]).optional(),
@@ -158,6 +165,17 @@ export const DocumentSchema = z.object({
     paperSize: z.enum(["letter", "a4"]),
     pageLimit: z.number().int().positive().nullable(),
     fontFamily: FontFamilySchema.optional(),
+    // Journal running head and first-page footnote; see lib/formats/journal.ts.
+    journal: z
+      .object({
+        name: z.string(),
+        volume: z.string(),
+        number: z.string(),
+        date: z.string(),
+        received: z.string(),
+      })
+      .nullable()
+      .optional(),
     // IEEE's own template text says explicitly "Do not add page numbers" —
     // most conferences add them during publication, not on the submitted
     // manuscript. Optional and defaulted to false so the guaranteed-
@@ -208,6 +226,8 @@ export const DocumentSchema = z.object({
   keywords: z.array(z.string()),
   body: z.array(BodyNodeSchema),
   references: z.array(ReferenceSchema),
+  // Author biographies printed after the references in journal papers.
+  biographies: z.array(BiographySchema).optional(),
 });
 export type Document = z.infer<typeof DocumentSchema>;
 
