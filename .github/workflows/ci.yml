@@ -99,7 +99,7 @@ jobs:
         run: npm install
 
       - name: Syntax check
-        run: node --check server.mjs && node --check groqClient.mjs
+        run: node --check server.mjs && node --check groqClient.mjs && node --check chatRequest.mjs
 
       - name: Unit tests
         run: npm test

@@ -1,6 +1,7 @@
 import http from "node:http";
 import { streamChat } from "./groqClient.mjs";
 import { authConfig, verifyRequest } from "./auth.mjs";
+import { HttpError, parseChatRequest, readBody } from "./chatRequest.mjs";
 import { captureError, initMonitoring } from "./monitoring.mjs";
 
 await initMonitoring("ai-service");
@@ -56,15 +57,6 @@ function checkRateLimit(ip) {
   return { limited: false, remaining: RATE_LIMIT_MAX_REQUESTS - record.count, resetInSeconds };
 }
 
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    let data = "";
-    req.on("data", (chunk) => (data += chunk));
-    req.on("end", () => resolve(data));
-    req.on("error", reject);
-  });
-}
-
 const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin;
   if (origin && ALLOWED_ORIGINS.has(origin)) {
@@ -116,14 +108,11 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    let task;
     try {
-      const body = JSON.parse(await readBody(req));
-      const { messages, documentContext, projectInstructions, task } = body;
-      if (!Array.isArray(messages) || messages.length === 0) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "messages (non-empty array) is required" }));
-        return;
-      }
+      const request = parseChatRequest(await readBody(req));
+      const { messages, documentContext, projectInstructions } = request;
+      task = request.task;
       const groqStream = await streamChat({ messages, documentContext, projectInstructions, task });
       res.writeHead(200, {
         "Content-Type": "text/event-stream",
@@ -137,13 +126,18 @@ const server = http.createServer(async (req, res) => {
         res.end();
       });
     } catch (err) {
+      if (err instanceof HttpError) {
+        res.writeHead(err.status, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message }));
+        return;
+      }
       console.error("Chat request failed:", err);
-      captureError(err, { route: "/chat" });
+      captureError(err, { route: "/chat", task });
       // Headers may already be flushed if the failure happened mid-stream —
       // guard so we don't crash the process trying to send a second response.
       if (!res.headersSent) {
         res.writeHead(500, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Chat request failed", detail: String(err) }));
+        res.end(JSON.stringify({ error: "Chat request failed" }));
       } else {
         res.end();
       }
