@@ -1,7 +1,7 @@
 import { usePageMeta } from "../lib/usePageMeta";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Copy, FileText, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Archive, ArchiveRestore, Copy, FileText, MoreVertical, Plus, Trash2, Undo2, type LucideIcon } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { deleteDocument, updateDocument } from "../lib/documentWrites";
@@ -18,8 +18,8 @@ import { DashboardSidebar } from "../components/dashboard/DashboardSidebar";
 import { PaperThumbnail } from "../components/dashboard/PaperThumbnail";
 import { OnboardingWizard } from "../components/dashboard/OnboardingWizard";
 import { useConfirm } from "../components/ConfirmDialog";
+import { PAPER_VIEWS, loadPapers, parsePaperView, setArchived, setTrashed, type PaperRow } from "../lib/paperLists";
 
-type DocumentRow = { id: string; title: string | null; updated_at: string };
 type SortOrder = "updated" | "title";
 
 const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
@@ -27,7 +27,9 @@ const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
   { value: "title", label: "Title (A–Z)" },
 ];
 
-function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
+type CardAction = { label: string; icon: LucideIcon; onSelect: () => void; danger?: boolean };
+
+function CardMenu({ actions }: { actions: CardAction[] }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -53,29 +55,23 @@ function CardMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete
         <MoreVertical size={16} aria-hidden="true" />
       </button>
       {open && (
-        <div className="absolute right-0 bottom-full mb-1 w-36 bg-surface border border-line rounded-lg shadow-lg py-1 z-10 text-sm">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDuplicate();
-              setOpen(false);
-            }}
-            className="w-full flex items-center gap-2 text-left px-3 py-1.5 hover:bg-canvas text-ink"
-          >
-            <Copy size={14} aria-hidden="true" />
-            Duplicate
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-              setOpen(false);
-            }}
-            className="w-full flex items-center gap-2 text-left px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400"
-          >
-            <Trash2 size={14} aria-hidden="true" />
-            Delete
-          </button>
+        <div className="absolute right-0 bottom-full mb-1 w-44 bg-surface border border-line rounded-lg shadow-lg py-1 z-10 text-sm">
+          {actions.map(({ label, icon: Icon, onSelect, danger }) => (
+            <button
+              key={label}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect();
+                setOpen(false);
+              }}
+              className={`w-full flex items-center gap-2 text-left px-3 py-1.5 ${
+                danger ? "hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400" : "hover:bg-canvas text-ink"
+              }`}
+            >
+              <Icon size={14} aria-hidden="true" />
+              {label}
+            </button>
+          ))}
         </div>
       )}
     </div>
@@ -114,14 +110,12 @@ function PaperCard({
   doc,
   onOpen,
   onRename,
-  onDuplicate,
-  onDelete,
+  actions,
 }: {
-  doc: DocumentRow;
-  onOpen: () => void;
-  onRename: (title: string) => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
+  doc: PaperRow;
+  onOpen?: () => void;
+  onRename?: (title: string) => void;
+  actions: CardAction[];
 }) {
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(doc.title || "Untitled paper");
@@ -129,27 +123,33 @@ function PaperCard({
   function commitRename() {
     setEditing(false);
     const trimmed = draftTitle.trim();
-    if (trimmed && trimmed !== doc.title) onRename(trimmed);
+    if (trimmed && trimmed !== doc.title) onRename?.(trimmed);
     else setDraftTitle(doc.title || "Untitled paper");
   }
 
   return (
     <div className="flex flex-col">
-      <button
-        onClick={onOpen}
-        className="group relative aspect-[8.5/11] w-full rounded-xl border border-line shadow-sm hover:shadow-md hover:border-accent transition-all overflow-hidden bg-surface"
-      >
-        <PaperThumbnail documentId={doc.id} />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-colors flex items-center justify-center">
-          <span className="text-white text-xs font-semibold bg-black/50 px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-            View paper
-          </span>
+      {onOpen ? (
+        <button
+          onClick={onOpen}
+          className="group relative aspect-[8.5/11] w-full rounded-xl border border-line shadow-sm hover:shadow-md hover:border-accent transition-all overflow-hidden bg-surface"
+        >
+          <PaperThumbnail documentId={doc.id} />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-colors flex items-center justify-center">
+            <span className="text-white text-xs font-semibold bg-black/50 px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              View paper
+            </span>
+          </div>
+        </button>
+      ) : (
+        <div className="relative aspect-[8.5/11] w-full rounded-xl border border-line overflow-hidden bg-surface opacity-60">
+          <PaperThumbnail documentId={doc.id} />
         </div>
-      </button>
+      )}
 
       <div className="flex items-start justify-between gap-1 mt-2 px-0.5">
         <div className="min-w-0">
-          {editing ? (
+          {editing && onRename ? (
             <input
               autoFocus
               aria-label="Paper title"
@@ -165,7 +165,7 @@ function PaperCard({
               }}
               className="w-full text-sm font-medium text-ink bg-surface border border-accent rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-2 focus:ring-accent"
             />
-          ) : (
+          ) : onRename ? (
             <button
               onClick={() => setEditing(true)}
               className="text-sm font-medium text-ink hover:text-accent text-left truncate block w-full"
@@ -173,10 +173,17 @@ function PaperCard({
             >
               {doc.title || "Untitled paper"}
             </button>
+          ) : (
+            <p className="text-sm font-medium text-ink truncate" title={doc.title || "Untitled paper"}>
+              {doc.title || "Untitled paper"}
+            </p>
           )}
-          <p className="text-xs text-muted mt-0.5">edited {relativeTime(doc.updated_at)}</p>
+          <p className="text-xs text-muted mt-0.5">
+            {doc.role !== "owner" && <span className="capitalize">{doc.role} · </span>}
+            edited {relativeTime(doc.updated_at)}
+          </p>
         </div>
-        <CardMenu onDuplicate={onDuplicate} onDelete={onDelete} />
+        {actions.length > 0 && <CardMenu actions={actions} />}
       </div>
     </div>
   );
@@ -185,7 +192,10 @@ function PaperCard({
 export function Dashboard() {
   usePageMeta({ title: "Your papers", noindex: true });
   const { user } = useAuth();
-  const [documents, setDocuments] = useState<DocumentRow[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = parsePaperView(searchParams.get("view"));
+  const viewInfo = PAPER_VIEWS.find((v) => v.id === view)!;
+  const [documents, setDocuments] = useState<PaperRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
@@ -202,22 +212,21 @@ export function Dashboard() {
     if (!user) return;
     let cancelled = false;
     async function load() {
-      // Shared papers are readable by anyone, so row-level security alone
-      // would also return other people's public papers here.
-      const { data, error } = await supabase
-        .from("documents")
-        .select("id, title, updated_at")
-        .eq("owner_id", user!.id)
-        .order("updated_at", { ascending: false });
+      let docs: PaperRow[] = [];
+      let error: unknown = null;
+      try {
+        docs = await loadPapers(view, user!.id);
+      } catch (err) {
+        error = err;
+      }
       if (!cancelled) {
         if (error) console.error("Failed to load documents:", error);
         setLoadError(error ? friendlyErrorMessage(error, "Couldn't load your papers.") : null);
-        const docs = data ?? [];
         setDocuments(docs);
         setLoading(false);
 
         // Check if user has completed onboarding
-        if (user) {
+        if (user && view === "mine" && !error) {
           const cached = localStorage.getItem(`ieee_onboarding_${user.id}`);
           if (!cached) {
             try {
@@ -246,7 +255,7 @@ export function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, [user, reloadToken]);
+  }, [user, reloadToken, view]);
 
   const filteredDocuments = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -321,7 +330,8 @@ export function Dashboard() {
         .single();
       if (insertError || !copy) throw insertError ?? new Error("Duplicate failed");
 
-      setDocuments((docs) => [copy, ...docs]);
+      if (view === "mine") setDocuments((docs) => [{ ...copy, role: "owner" }, ...docs]);
+      else setSearchParams({});
     } catch (err) {
       console.error("Failed to duplicate document:", err);
       setActionError(friendlyErrorMessage(err, "Couldn't duplicate that paper."));
@@ -330,20 +340,59 @@ export function Dashboard() {
     }
   }
 
-  async function handleDelete(id: string, title: string | null) {
-    const ok = await confirm({
-      title: "Delete this paper?",
-      message: `Delete "${title || "Untitled paper"}"? This can't be undone.`,
-      confirmLabel: "Delete",
-    });
-    if (!ok) return;
+  /** Optimistically drops the paper from the current list; puts it back if the write fails. */
+  async function moveOut(id: string, write: () => Promise<{ error: Error | null }>, failure: string) {
     const previous = documents;
-    setDocuments((docs) => docs.filter((d) => d.id !== id)); // optimistic
-    const { error } = await deleteDocument(id);
+    setDocuments((docs) => docs.filter((d) => d.id !== id));
+    const { error } = await write();
     if (error) {
-      console.error("Failed to delete document:", error);
-      setDocuments(previous); // roll back
-      setActionError(friendlyErrorMessage(error, "Couldn't delete that paper."));
+      console.error(failure, error);
+      setDocuments(previous);
+      setActionError(friendlyErrorMessage(error, failure));
+    }
+  }
+
+  async function handleDeleteForever(id: string, title: string | null) {
+    const ok = await confirm({
+      title: "Delete forever?",
+      message: `Delete "${title || "Untitled paper"}" and its history for good? This can't be undone.`,
+      confirmLabel: "Delete forever",
+    });
+    if (ok) await moveOut(id, () => deleteDocument(id), "Couldn't delete that paper.");
+  }
+
+  function actionsFor(doc: PaperRow): CardAction[] {
+    const duplicate: CardAction = {
+      label: view === "shared" ? "Make a copy" : "Duplicate",
+      icon: Copy,
+      onSelect: () => handleDuplicate(doc.id, doc.title),
+    };
+    const trash: CardAction = {
+      label: "Move to Trash",
+      icon: Trash2,
+      danger: true,
+      onSelect: () => moveOut(doc.id, () => setTrashed(doc.id, true), "Couldn't move that paper to Trash."),
+    };
+    switch (view) {
+      case "mine":
+        return [
+          duplicate,
+          { label: "Archive", icon: Archive, onSelect: () => moveOut(doc.id, () => setArchived(doc.id, true), "Couldn't archive that paper.") },
+          trash,
+        ];
+      case "archived":
+        return [
+          { label: "Unarchive", icon: ArchiveRestore, onSelect: () => moveOut(doc.id, () => setArchived(doc.id, false), "Couldn't unarchive that paper.") },
+          duplicate,
+          trash,
+        ];
+      case "trash":
+        return [
+          { label: "Restore", icon: Undo2, onSelect: () => moveOut(doc.id, () => setTrashed(doc.id, false), "Couldn't restore that paper.") },
+          { label: "Delete forever", icon: Trash2, danger: true, onSelect: () => handleDeleteForever(doc.id, doc.title) },
+        ];
+      case "shared":
+        return [duplicate];
     }
   }
 
@@ -360,11 +409,33 @@ export function Dashboard() {
 
       <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10 focus:outline-none">
         <div className="max-w-5xl mx-auto">
-          <div className="flex justify-between items-end mb-6">
+          <div className="flex justify-between items-end mb-4">
             <div>
-              <h1 className="font-display text-2xl font-semibold text-ink tracking-tight">My Papers</h1>
+              <h1 className="font-display text-2xl font-semibold text-ink tracking-tight">Papers</h1>
               <p className="text-sm text-muted">Your first paper is free forever.</p>
             </div>
+          </div>
+
+          <div role="tablist" aria-label="Paper lists" className="flex gap-1 mb-6 border-b border-line overflow-x-auto">
+            {PAPER_VIEWS.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                role="tab"
+                aria-selected={view === v.id}
+                onClick={() => {
+                  if (v.id === view) return;
+                  setLoading(true);
+                  setSearch("");
+                  setSearchParams(v.id === "mine" ? {} : { view: v.id });
+                }}
+                className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors ${
+                  view === v.id ? "border-accent text-accent font-medium" : "border-transparent text-muted hover:text-ink"
+                }`}
+              >
+                {v.label}
+              </button>
+            ))}
           </div>
 
           {!loading && documents.length > 0 && (
@@ -435,17 +506,22 @@ export function Dashboard() {
             </div>
           ) : filteredDocuments.length === 0 && search ? (
             <p className="text-sm text-muted">No papers match "{search}".</p>
+          ) : documents.length === 0 && view !== "mine" ? (
+            loadError ? null : <p className="text-sm text-muted">{viewInfo.empty}</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-              <NewPaperCard creating={creating} onCreate={handleCreate} />
+              {view === "mine" && <NewPaperCard creating={creating} onCreate={handleCreate} />}
               {filteredDocuments.map((doc) => (
                 <PaperCard
                   key={doc.id}
                   doc={doc}
-                  onOpen={() => navigate(`/editor/${doc.id}`)}
-                  onRename={(title) => handleRename(doc.id, title)}
-                  onDuplicate={() => handleDuplicate(doc.id, doc.title)}
-                  onDelete={() => handleDelete(doc.id, doc.title)}
+                  onOpen={view === "trash" ? undefined : () => navigate(`/editor/${doc.id}`)}
+                  onRename={
+                    view !== "trash" && (doc.role === "owner" || doc.role === "editor")
+                      ? (title) => handleRename(doc.id, title)
+                      : undefined
+                  }
+                  actions={actionsFor(doc)}
                 />
               ))}
             </div>

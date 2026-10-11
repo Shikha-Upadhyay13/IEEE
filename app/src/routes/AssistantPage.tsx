@@ -172,6 +172,7 @@ export function AssistantPage() {
       .from("documents")
       .select("id, title, updated_at")
       .eq("owner_id", user.id)
+      .is("deleted_at", null)
       .order("updated_at", { ascending: false })
       .then(({ data, error }) => {
         if (error) console.error("Failed to load documents for context picker:", error);

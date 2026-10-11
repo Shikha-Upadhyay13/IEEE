@@ -85,6 +85,7 @@ export function CommandPalette() {
       .from("documents")
       .select("id, title")
       .eq("owner_id", user.id)
+      .is("deleted_at", null)
       .order("updated_at", { ascending: false })
       .limit(20)
       .then(({ data, error }) => {
