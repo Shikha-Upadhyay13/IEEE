@@ -1,9 +1,10 @@
 import { usePageMeta } from "../lib/usePageMeta";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Archive, ArchiveRestore, Copy, FileText, LayoutTemplate, MoreVertical, Plus, Trash2, Undo2, type LucideIcon } from "lucide-react";
+import { Archive, ArchiveRestore, Copy, FileText, LayoutTemplate, MoreVertical, Plus, Tag, Trash2, Undo2, type LucideIcon } from "lucide-react";
 import { listTemplates, publishTemplate, templateContent, type WorkspaceTemplate } from "../lib/workspaceTemplates";
 import { canManageWorkspace } from "../lib/workspaceMembers";
+import { allTags, hasTag, parseTags } from "../lib/tags";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { deleteDocument, updateDocument } from "../lib/documentWrites";
@@ -21,7 +22,7 @@ import { PaperThumbnail } from "../components/dashboard/PaperThumbnail";
 import { OnboardingWizard } from "../components/dashboard/OnboardingWizard";
 import { useConfirm } from "../components/ConfirmDialog";
 import { currentWorkspace, useWorkspaceStore } from "../store/workspaceStore";
-import { PAPER_VIEWS, loadPapers, parsePaperView, setArchived, setTrashed, type PaperRow } from "../lib/paperLists";
+import { PAPER_VIEWS, loadPapers, parsePaperView, setArchived, setTags, setTrashed, type PaperRow } from "../lib/paperLists";
 
 type SortOrder = "updated" | "title";
 
@@ -205,6 +206,15 @@ function PaperCard({
             {doc.role !== "owner" && <span className="capitalize">{doc.role} · </span>}
             edited {relativeTime(doc.updated_at)}
           </p>
+          {doc.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {doc.tags.map((t) => (
+                <span key={t} className="rounded bg-canvas border border-line px-1.5 py-px text-[10px] text-muted">
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         {actions.length > 0 && <CardMenu actions={actions} />}
       </div>
@@ -230,6 +240,7 @@ export function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOrder>("updated");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -303,11 +314,15 @@ export function Dashboard() {
     };
   }, [user, reloadToken, view, listedWorkspaceId]);
 
+  const tagsInView = useMemo(() => allTags(documents), [documents]);
+
   const filteredDocuments = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const filtered = q
-      ? documents.filter((d) => (d.title || "Untitled paper").toLowerCase().includes(q))
-      : documents;
+    const filtered = documents.filter(
+      (d) =>
+        (!q || (d.title || "Untitled paper").toLowerCase().includes(q) || d.tags.some((t) => t.toLowerCase().includes(q))) &&
+        (!activeTag || hasTag(d, activeTag)),
+    );
     if (sortBy === "title") {
       // documents is already sorted by updated_at from the query — .toSorted
       // keeps that as the stable tiebreaker for equal titles instead of
@@ -317,7 +332,7 @@ export function Dashboard() {
       );
     }
     return filtered;
-  }, [documents, search, sortBy]);
+  }, [documents, search, sortBy, activeTag]);
 
   // A template picked on the public /templates gallery before signing in.
   useEffect(() => {
@@ -369,6 +384,19 @@ export function Dashboard() {
     }
   }
 
+  async function handleEditTags(doc: PaperRow) {
+    const input = window.prompt("Tags, separated by commas (e.g. ICRA 2027, thesis):", doc.tags.join(", "));
+    if (input === null) return;
+    const tags = parseTags(input);
+    const previous = documents;
+    setDocuments((docs) => docs.map((d) => (d.id === doc.id ? { ...d, tags } : d)));
+    const { error } = await setTags(doc.id, tags);
+    if (error) {
+      setDocuments(previous);
+      setActionError(friendlyErrorMessage(error, "Couldn't save those tags."));
+    }
+  }
+
   async function handlePublishTemplate(doc: PaperRow) {
     if (!workspace) return;
     const name = window.prompt(`Template name for ${workspace.name}:`, doc.title || "Untitled template");
@@ -409,7 +437,7 @@ export function Dashboard() {
         .single();
       if (insertError || !copy) throw insertError ?? new Error("Duplicate failed");
 
-      if (view === "mine") setDocuments((docs) => [{ ...copy, role: "owner" }, ...docs]);
+      if (view === "mine") setDocuments((docs) => [{ ...copy, tags: [], role: "owner" }, ...docs]);
       else setSearchParams({});
     } catch (err) {
       console.error("Failed to duplicate document:", err);
@@ -452,6 +480,8 @@ export function Dashboard() {
       danger: true,
       onSelect: () => moveOut(doc.id, () => setTrashed(doc.id, true), "Couldn't move that paper to Trash."),
     };
+    const tagAction: CardAction[] =
+      doc.role === "owner" || doc.role === "editor" ? [{ label: "Edit tags", icon: Tag, onSelect: () => handleEditTags(doc) }] : [];
     const publish: CardAction[] =
       teamWorkspaceId && canManageWorkspace(workspace?.role)
         ? [{ label: "Publish as template", icon: LayoutTemplate, onSelect: () => handlePublishTemplate(doc) }]
@@ -460,6 +490,7 @@ export function Dashboard() {
       case "mine":
         return [
           duplicate,
+          ...tagAction,
           ...publish,
           { label: "Archive", icon: Archive, onSelect: () => moveOut(doc.id, () => setArchived(doc.id, true), "Couldn't archive that paper.") },
           trash,
@@ -468,6 +499,7 @@ export function Dashboard() {
         return [
           { label: "Unarchive", icon: ArchiveRestore, onSelect: () => moveOut(doc.id, () => setArchived(doc.id, false), "Couldn't unarchive that paper.") },
           duplicate,
+          ...tagAction,
           trash,
         ];
       case "trash":
@@ -476,9 +508,9 @@ export function Dashboard() {
           { label: "Delete forever", icon: Trash2, danger: true, onSelect: () => handleDeleteForever(doc.id, doc.title) },
         ];
       case "shared":
-        return [duplicate];
+        return [duplicate, ...tagAction];
       case "workspace":
-        return doc.role === "owner" ? [duplicate, ...publish, trash] : [duplicate, ...publish];
+        return doc.role === "owner" ? [duplicate, ...tagAction, ...publish, trash] : [duplicate, ...tagAction, ...publish];
     }
   }
 
@@ -513,6 +545,7 @@ export function Dashboard() {
                   if (v.id === view) return;
                   setLoading(true);
                   setSearch("");
+                  setActiveTag(null);
                   setSearchParams(v.id === "mine" ? {} : { view: v.id });
                 }}
                 className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors ${
@@ -545,6 +578,27 @@ export function Dashboard() {
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {!loading && tagsInView.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 -mt-3 mb-6" aria-label="Filter by tag">
+              {tagsInView.map((t) => {
+                const active = activeTag !== null && activeTag.toLowerCase() === t.toLowerCase();
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setActiveTag(active ? null : t)}
+                    className={`rounded-full border px-2.5 py-0.5 text-xs transition-colors ${
+                      active ? "border-accent bg-accent-soft text-accent" : "border-line text-muted hover:text-ink"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
             </div>
           )}
 

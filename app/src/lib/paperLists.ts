@@ -16,9 +16,10 @@ export function parsePaperView(value: string | null): PaperView {
   return PAPER_VIEWS.some((v) => v.id === value) ? (value as PaperView) : "mine";
 }
 
-export type PaperRow = { id: string; title: string | null; updated_at: string; role: PaperRole };
+export type PaperRow = { id: string; title: string | null; updated_at: string; tags: string[]; role: PaperRole };
 
-type Row = { id: string; title: string | null; updated_at: string };
+type Row = { id: string; title: string | null; updated_at: string; tags: string[] | null };
+const COLUMNS = "id, title, updated_at, tags";
 type WorkspaceRow = Row & { owner_id: string; workspace_access: "private" | "view" | "edit" };
 
 /**
@@ -29,7 +30,7 @@ export async function loadPapers(view: PaperView, userId: string, workspaceId?: 
   if (view === "shared") return loadShared(userId);
   if (view === "workspace") return workspaceId ? loadWorkspace(userId, workspaceId) : [];
 
-  let query = supabase.from("documents").select("id, title, updated_at").eq("owner_id", userId);
+  let query = supabase.from("documents").select(COLUMNS).eq("owner_id", userId);
   if (view === "trash") query = query.not("deleted_at", "is", null);
   else {
     query = query.is("deleted_at", null);
@@ -37,7 +38,7 @@ export async function loadPapers(view: PaperView, userId: string, workspaceId?: 
   }
   const { data, error } = await query.order("updated_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return ((data ?? []) as Row[]).map((d) => ({ ...d, role: "owner" }));
+  return ((data ?? []) as Row[]).map((d) => ({ ...d, tags: d.tags ?? [], role: "owner" }));
 }
 
 async function loadShared(userId: string): Promise<PaperRow[]> {
@@ -51,19 +52,19 @@ async function loadShared(userId: string): Promise<PaperRow[]> {
   const roles = new Map(memberships.map((m) => [m.document_id as string, m.role as PaperRole]));
   const { data, error: docsError } = await supabase
     .from("documents")
-    .select("id, title, updated_at")
+    .select(COLUMNS)
     .in("id", [...roles.keys()])
     .is("deleted_at", null)
     .order("updated_at", { ascending: false });
   if (docsError) throw new Error(docsError.message);
-  return ((data ?? []) as Row[]).map((d) => ({ ...d, role: roles.get(d.id) ?? "viewer" }));
+  return ((data ?? []) as Row[]).map((d) => ({ ...d, tags: d.tags ?? [], role: roles.get(d.id) ?? "viewer" }));
 }
 
 /** Papers filed in a workspace that the user can open: their own, plus ones shared with the workspace. */
 async function loadWorkspace(userId: string, workspaceId: string): Promise<PaperRow[]> {
   const { data, error } = await supabase
     .from("documents")
-    .select("id, title, updated_at, owner_id, workspace_access")
+    .select(`${COLUMNS}, owner_id, workspace_access`)
     .eq("workspace_id", workspaceId)
     .is("deleted_at", null)
     .is("archived_at", null)
@@ -72,6 +73,7 @@ async function loadWorkspace(userId: string, workspaceId: string): Promise<Paper
   if (error) throw new Error(error.message);
   return ((data ?? []) as WorkspaceRow[]).map(({ owner_id, workspace_access, ...d }) => ({
     ...d,
+    tags: d.tags ?? [],
     role: workspaceRole(owner_id === userId, workspace_access),
   }));
 }
@@ -83,6 +85,10 @@ export function workspaceRole(isOwner: boolean, access: WorkspaceRow["workspace_
 
 export function setArchived(id: string, archived: boolean) {
   return updateDocument(id, { archived_at: archived ? new Date().toISOString() : null });
+}
+
+export function setTags(id: string, tags: string[]) {
+  return updateDocument(id, { tags });
 }
 
 export function setTrashed(id: string, trashed: boolean) {
