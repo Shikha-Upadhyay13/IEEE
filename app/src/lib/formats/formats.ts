@@ -22,6 +22,9 @@ export type FormatSpec = {
   label: string;
   description: string;
   geometry: Record<PaperSize, PageGeometry>;
+  /** "journal": author line + first-page affiliation footnote + running head. */
+  frontMatter: "conference" | "journal";
+  biographies: boolean;
 };
 
 /**
@@ -51,6 +54,8 @@ export const IEEE_CONFERENCE: FormatSpec = {
       textWidth: "180.22mm",
     },
   },
+  frontMatter: "conference",
+  biographies: false,
 };
 
 // ieee-template.css's own font-family rule is the IEEE-compliant default
@@ -95,6 +100,8 @@ export const IEEE_PEER_REVIEW: FormatSpec = {
       textWidth: "160mm",
     },
   },
+  frontMatter: "conference",
+  biographies: false,
 };
 
 /**
@@ -107,15 +114,31 @@ export const IEEE_JOURNAL: FormatSpec = {
   label: "IEEE Journal / Transactions",
   description: "Two-column journal article with running heads, affiliation footnote and author biographies.",
   geometry: IEEE_CONFERENCE.geometry,
+  frontMatter: "journal",
+  biographies: true,
+};
+
+/**
+ * IEEE Technical note / correspondence (IEEEtran technote): the journal layout
+ * set in 9pt, without author biographies.
+ */
+export const IEEE_TECHNOTE: FormatSpec = {
+  id: "ieee-technote",
+  label: "IEEE Technical Note",
+  description: "Short journal item in 9pt with running heads and affiliation footnote; no biographies.",
+  geometry: IEEE_CONFERENCE.geometry,
+  frontMatter: "journal",
+  biographies: false,
 };
 
 export const FORMATS: Record<FormatId, FormatSpec> = {
   "ieee-conference": IEEE_CONFERENCE,
   "ieee-journal": IEEE_JOURNAL,
+  "ieee-technote": IEEE_TECHNOTE,
   "ieee-peer-review": IEEE_PEER_REVIEW,
 };
 
-export const FORMAT_LIST: FormatSpec[] = [IEEE_CONFERENCE, IEEE_JOURNAL, IEEE_PEER_REVIEW];
+export const FORMAT_LIST: FormatSpec[] = [IEEE_CONFERENCE, IEEE_JOURNAL, IEEE_TECHNOTE, IEEE_PEER_REVIEW];
 
 export function getFormat(meta: Pick<Document["meta"], "template">): FormatSpec {
   return FORMATS[meta.template] ?? IEEE_CONFERENCE;
@@ -149,7 +172,7 @@ export function buildPageCss(
 ): string {
   const pageNumberFont = paperFontStack(meta);
   const g = getGeometry(meta);
-  const isJournal = meta.template === "ieee-journal";
+  const isJournal = getFormat(meta).frontMatter === "journal";
   const rules = [
     `size: ${g.size};`,
     `margin-top: ${g.margin.top};`,

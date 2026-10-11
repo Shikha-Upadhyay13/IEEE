@@ -85,7 +85,7 @@ function BiographyEditor({ authorId, name }: { authorId: string; name: string })
   );
 }
 
-export function JournalFields() {
+export function JournalFields({ biographies }: { biographies: boolean }) {
   const journal = useDocumentStore((s) => s.document.meta.journal ?? null);
   const authors = useDocumentStore((s) => s.document.titleBlock.authors);
   const setJournalInfo = useDocumentStore((s) => s.setJournalInfo);
@@ -134,14 +134,18 @@ export function JournalFields() {
         </p>
       </div>
 
-      <h4 className="text-sm font-medium text-ink mt-5">Author biographies</h4>
-      <p className="text-xs text-muted mt-0.5">
-        Printed after the references with a 1 × 1.25 in photo. Start with what follows the name.
-      </p>
-      {named.length === 0 ? (
-        <p className="text-xs text-muted mt-2">Add authors in Paper details first.</p>
-      ) : (
-        named.map((a) => <BiographyEditor key={a.id} authorId={a.id} name={a.name} />)
+      {biographies && (
+        <>
+          <h4 className="text-sm font-medium text-ink mt-5">Author biographies</h4>
+          <p className="text-xs text-muted mt-0.5">
+            Printed after the references with a 1 × 1.25 in photo. Start with what follows the name.
+          </p>
+          {named.length === 0 ? (
+            <p className="text-xs text-muted mt-2">Add authors in Paper details first.</p>
+          ) : (
+            named.map((a) => <BiographyEditor key={a.id} authorId={a.id} name={a.name} />)
+          )}
+        </>
       )}
     </div>
   );

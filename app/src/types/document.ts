@@ -146,7 +146,7 @@ export const DocumentSchema = z.object({
   schemaVersion: z.literal(1),
   meta: z.object({
     // The paper's IEEE format; see lib/formats/formats.ts.
-    template: z.enum(["ieee-conference", "ieee-peer-review", "ieee-journal"]),
+    template: z.enum(["ieee-conference", "ieee-peer-review", "ieee-journal", "ieee-technote"]),
     // Which styling is allowed; see lib/formats/modes.ts. Absent on papers
     // created before modes existed, which infer the mode from their settings.
     mode: z.enum(["submission", "draft", "custom"]).optional(),

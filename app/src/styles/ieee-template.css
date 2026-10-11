@@ -346,6 +346,27 @@
   justify-content: center;
 }
 
+/* --- Technical note format (journal layout set in 9pt) --- */
+
+.ieee-paper[data-format="ieee-technote"] .ieee-title {
+  font-size: 18pt;
+}
+.ieee-paper[data-format="ieee-technote"] .ieee-journal-authors {
+  font-size: 10pt;
+}
+.ieee-paper[data-format="ieee-technote"] .ieee-heading-1,
+.ieee-paper[data-format="ieee-technote"] .ieee-heading-2,
+.ieee-paper[data-format="ieee-technote"] .ieee-heading-3,
+.ieee-paper[data-format="ieee-technote"] .ieee-references-heading,
+.ieee-paper[data-format="ieee-technote"] .ieee-paragraph,
+.ieee-paper[data-format="ieee-technote"] .ieee-equation {
+  font-size: 9pt;
+}
+.ieee-paper[data-format="ieee-technote"] .ieee-abstract,
+.ieee-paper[data-format="ieee-technote"] .ieee-keywords {
+  font-size: 8pt;
+}
+
 /* --- Peer-review draft format (single column, 12pt, 1.5 spacing) --- */
 
 .ieee-paper[data-format="ieee-peer-review"] .ieee-title {

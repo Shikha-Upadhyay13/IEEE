@@ -213,7 +213,7 @@ export function FormatPanel() {
       </Field>
 
       {meta.template === "ieee-conference" && <CopyrightNoticeFields />}
-      {meta.template === "ieee-journal" && <JournalFields />}
+      {currentFormat.frontMatter === "journal" && <JournalFields biographies={currentFormat.biographies} />}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import type {
   ResolvedInlineNode,
 } from "../../types/document";
 import "../../styles/ieee-template.css";
-import { FONT_STACKS, getGeometry, layoutVariables } from "../../lib/formats/formats";
+import { FONT_STACKS, getFormat, getGeometry, layoutVariables } from "../../lib/formats/formats";
 import { affiliationFootnote, authorLine } from "../../lib/formats/journal";
 
 // Real math rendering (KaTeX) rather than displaying the stored LaTeX as
@@ -149,9 +149,10 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
     linkStyleVars["--ieee-link-color"] = document.meta.accentColor;
   }
 
-  const isJournal = document.meta.template === "ieee-journal";
+  const format = getFormat(document.meta);
+  const isJournal = format.frontMatter === "journal";
   const footnote = isJournal ? affiliationFootnote(document.titleBlock, document.meta.journal?.received) : [];
-  const biographies = document.titleBlock.authors.flatMap((author) => {
+  const biographies = !format.biographies ? [] : document.titleBlock.authors.flatMap((author) => {
     const bio = document.biographies?.find((b) => b.authorId === author.id);
     return bio && author.name.trim() && bio.text.trim() ? [{ author, bio }] : [];
   });
@@ -231,19 +232,18 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
           ))}
         </ol>
 
-        {isJournal &&
-          biographies.map(({ author, bio }) => (
-            <div className="ieee-biography" key={author.id}>
-              {bio.photoUrl ? (
-                <img className="ieee-biography-photo" src={bio.photoUrl} alt={`Photograph of ${author.name}`} />
-              ) : (
-                <div className="ieee-biography-photo ieee-biography-photo-empty">Photo</div>
-              )}
-              <p>
-                <strong>{author.name}</strong> {bio.text}
-              </p>
-            </div>
-          ))}
+        {biographies.map(({ author, bio }) => (
+          <div className="ieee-biography" key={author.id}>
+            {bio.photoUrl ? (
+              <img className="ieee-biography-photo" src={bio.photoUrl} alt={`Photograph of ${author.name}`} />
+            ) : (
+              <div className="ieee-biography-photo ieee-biography-photo-empty">Photo</div>
+            )}
+            <p>
+              <strong>{author.name}</strong> {bio.text}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );

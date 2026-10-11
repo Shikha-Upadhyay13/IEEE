@@ -127,7 +127,12 @@ pdf-service/                # separate deployable, NOT part of the Vite app bund
 // src/types/document.ts (shape; see Zod schema for the authoritative version)
 type Document = {
   schemaVersion: 1;
-  meta: { template: "ieee-conference"; paperSize: "letter" | "a4"; pageLimit: number | null };
+  meta: {
+    template: "ieee-conference" | "ieee-journal" | "ieee-technote" | "ieee-peer-review"; // see lib/formats/formats.ts
+    mode?: "submission" | "draft" | "custom";
+    paperSize: "letter" | "a4";
+    pageLimit: number | null;
+  };
   titleBlock: {
     title: RichTextRun[];
     authors: { id: string; name: string; affiliationRefs: string[]; email?: string }[];

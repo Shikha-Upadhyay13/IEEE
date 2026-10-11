@@ -39,4 +39,10 @@ describe("journal front matter", () => {
     expect(css).toContain("@top-right { content: counter(page)");
     expect(css).not.toContain("@bottom-center");
   });
+
+  it("gives technical notes the same running head", () => {
+    const css = buildPageCss({ template: "ieee-technote", paperSize: "a4", showPageNumbers: true });
+    expect(css).toContain("@top-left");
+    expect(css).not.toContain("@bottom-center");
+  });
 });
