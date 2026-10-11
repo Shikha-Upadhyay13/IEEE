@@ -18,6 +18,7 @@ import { DashboardSidebar } from "../components/dashboard/DashboardSidebar";
 import { PaperThumbnail } from "../components/dashboard/PaperThumbnail";
 import { OnboardingWizard } from "../components/dashboard/OnboardingWizard";
 import { useConfirm } from "../components/ConfirmDialog";
+import { currentWorkspace, useWorkspaceStore } from "../store/workspaceStore";
 import { PAPER_VIEWS, loadPapers, parsePaperView, setArchived, setTrashed, type PaperRow } from "../lib/paperLists";
 
 type SortOrder = "updated" | "title";
@@ -193,8 +194,15 @@ export function Dashboard() {
   usePageMeta({ title: "Your papers", noindex: true });
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const view = parsePaperView(searchParams.get("view"));
-  const viewInfo = PAPER_VIEWS.find((v) => v.id === view)!;
+  const workspaces = useWorkspaceStore((s) => s.workspaces);
+  const workspaceId = useWorkspaceStore((s) => s.currentId);
+  const workspace = currentWorkspace({ workspaces, currentId: workspaceId });
+  const views = PAPER_VIEWS.filter((v) => v.id !== "workspace" || (workspace && !workspace.personal));
+  const requestedView = parsePaperView(searchParams.get("view"));
+  const view = views.some((v) => v.id === requestedView) ? requestedView : "mine";
+  const viewInfo = views.find((v) => v.id === view)!;
+  // Only the Workspace tab reloads when you switch workspaces.
+  const listedWorkspaceId = view === "workspace" ? workspaceId : null;
   const [documents, setDocuments] = useState<PaperRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -215,7 +223,7 @@ export function Dashboard() {
       let docs: PaperRow[] = [];
       let error: unknown = null;
       try {
-        docs = await loadPapers(view, user!.id);
+        docs = await loadPapers(view, user!.id, listedWorkspaceId);
       } catch (err) {
         error = err;
       }
@@ -255,7 +263,7 @@ export function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, [user, reloadToken, view]);
+  }, [user, reloadToken, view, listedWorkspaceId]);
 
   const filteredDocuments = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -289,7 +297,7 @@ export function Dashboard() {
     const title = isSample ? "Sample: Preparation of a Formatted Conference Paper" : "Untitled paper";
     const { data, error } = await supabase
       .from("documents")
-      .insert({ owner_id: user.id, title, content })
+      .insert({ owner_id: user.id, title, content, workspace_id: workspaceId })
       .select("id")
       .single();
     setCreating(false);
@@ -325,7 +333,7 @@ export function Dashboard() {
       const newTitle = `${title || "Untitled paper"} (copy)`;
       const { data: copy, error: insertError } = await supabase
         .from("documents")
-        .insert({ owner_id: user.id, title: newTitle, content: original.content })
+        .insert({ owner_id: user.id, title: newTitle, content: original.content, workspace_id: workspaceId })
         .select("id, title, updated_at")
         .single();
       if (insertError || !copy) throw insertError ?? new Error("Duplicate failed");
@@ -363,7 +371,7 @@ export function Dashboard() {
 
   function actionsFor(doc: PaperRow): CardAction[] {
     const duplicate: CardAction = {
-      label: view === "shared" ? "Make a copy" : "Duplicate",
+      label: doc.role === "owner" ? "Duplicate" : "Make a copy",
       icon: Copy,
       onSelect: () => handleDuplicate(doc.id, doc.title),
     };
@@ -393,6 +401,8 @@ export function Dashboard() {
         ];
       case "shared":
         return [duplicate];
+      case "workspace":
+        return doc.role === "owner" ? [duplicate, trash] : [duplicate];
     }
   }
 
@@ -417,7 +427,7 @@ export function Dashboard() {
           </div>
 
           <div role="tablist" aria-label="Paper lists" className="flex gap-1 mb-6 border-b border-line overflow-x-auto">
-            {PAPER_VIEWS.map((v) => (
+            {views.map((v) => (
               <button
                 key={v.id}
                 type="button"
@@ -433,7 +443,7 @@ export function Dashboard() {
                   view === v.id ? "border-accent text-accent font-medium" : "border-transparent text-muted hover:text-ink"
                 }`}
               >
-                {v.label}
+                {v.id === "workspace" && workspace ? workspace.name : v.label}
               </button>
             ))}
           </div>
@@ -519,7 +529,7 @@ export function Dashboard() {
             loadError ? null : <p className="text-sm text-muted">{viewInfo.empty}</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-              {view === "mine" && <NewPaperCard creating={creating} onCreate={handleCreate} />}
+              {(view === "mine" || view === "workspace") && <NewPaperCard creating={creating} onCreate={handleCreate} />}
               {filteredDocuments.map((doc) => (
                 <PaperCard
                   key={doc.id}
