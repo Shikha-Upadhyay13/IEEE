@@ -15,13 +15,16 @@ export type AccountExport = {
   exports: Row[];
 };
 
-async function selectAll(table: string, columns = "*"): Promise<Row[]> {
-  const { data, error } = await supabase.from(table).select(columns);
+async function selectAll(table: string, ownerId?: string): Promise<Row[]> {
+  let query = supabase.from(table).select("*");
+  if (ownerId) query = query.eq("owner_id", ownerId);
+  const { data, error } = await query;
   if (error) throw new Error(`Couldn't read ${table}: ${error.message}`);
   return (data ?? []) as unknown as Row[];
 }
 
-// Row-level security already limits every select to the signed-in user's rows.
+// Row-level security limits these selects to the signed-in user's rows, except
+// documents: anyone's shared papers are readable, so those are filtered by owner.
 export async function collectAccountData(): Promise<AccountExport> {
   const {
     data: { user },
@@ -29,7 +32,7 @@ export async function collectAccountData(): Promise<AccountExport> {
   if (!user) throw new Error("You need to be signed in to export your data.");
 
   const [documents, documentVersions, projects, conversations, generatedImages, exports] = await Promise.all([
-    selectAll("documents"),
+    selectAll("documents", user.id),
     selectAll("document_versions"),
     selectAll("projects"),
     selectAll("conversations"),

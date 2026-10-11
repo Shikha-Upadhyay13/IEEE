@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Copy, FileText, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
+import { deleteDocument, updateDocument } from "../lib/documentWrites";
 import { createBlankDocument } from "../lib/blankDocument";
 import { track } from "../lib/monitoring";
 import { takePendingTemplate, type GalleryChoice } from "../lib/pendingTemplate";
@@ -198,11 +199,15 @@ export function Dashboard() {
   const { confirm, ConfirmDialog } = useConfirm();
 
   useEffect(() => {
+    if (!user) return;
     let cancelled = false;
     async function load() {
+      // Shared papers are readable by anyone, so row-level security alone
+      // would also return other people's public papers here.
       const { data, error } = await supabase
         .from("documents")
         .select("id, title, updated_at")
+        .eq("owner_id", user!.id)
         .order("updated_at", { ascending: false });
       if (!cancelled) {
         if (error) console.error("Failed to load documents:", error);
@@ -290,7 +295,7 @@ export function Dashboard() {
 
   async function handleRename(id: string, title: string) {
     setDocuments((docs) => docs.map((d) => (d.id === id ? { ...d, title } : d)));
-    const { error } = await supabase.from("documents").update({ title }).eq("id", id);
+    const { error } = await updateDocument(id, { title });
     if (error) {
       console.error("Failed to rename document:", error);
       setActionError(friendlyErrorMessage(error, "Couldn't rename that paper."));
@@ -334,7 +339,7 @@ export function Dashboard() {
     if (!ok) return;
     const previous = documents;
     setDocuments((docs) => docs.filter((d) => d.id !== id)); // optimistic
-    const { error } = await supabase.from("documents").delete().eq("id", id);
+    const { error } = await deleteDocument(id);
     if (error) {
       console.error("Failed to delete document:", error);
       setDocuments(previous); // roll back

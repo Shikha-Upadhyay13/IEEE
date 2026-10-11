@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
+import { updateDocument } from "../lib/documentWrites";
 import { useAuth } from "../lib/useAuth";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
 import { summarizeDocumentForContext } from "../lib/summarizeDocument";
@@ -165,15 +166,17 @@ export function AssistantPage() {
   const lastSavedMessagesRef = useRef<ChatMessage[] | null>(null);
 
   useEffect(() => {
+    if (!user) return;
     supabase
       .from("documents")
       .select("id, title, updated_at")
+      .eq("owner_id", user.id)
       .order("updated_at", { ascending: false })
       .then(({ data, error }) => {
         if (error) console.error("Failed to load documents for context picker:", error);
         setDocumentOptions(data ?? []);
       });
-  }, []);
+  }, [user]);
 
   function refreshConversations() {
     supabase
@@ -277,10 +280,7 @@ export function AssistantPage() {
         })),
       ],
     };
-    const { error: updateError } = await supabase
-      .from("documents")
-      .update({ content: updatedDoc })
-      .eq("id", selectedDoc.id);
+    const { error: updateError } = await updateDocument(selectedDoc.id, { content: updatedDoc });
     setInsertingIndex(null);
     if (updateError) {
       console.error("Failed to insert reply into paper:", updateError);

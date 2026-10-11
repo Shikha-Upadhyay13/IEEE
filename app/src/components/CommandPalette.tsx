@@ -86,6 +86,7 @@ export function CommandPalette() {
     supabase
       .from("documents")
       .select("id, title")
+      .eq("owner_id", user.id)
       .order("updated_at", { ascending: false })
       .limit(20)
       .then(({ data, error }) => {

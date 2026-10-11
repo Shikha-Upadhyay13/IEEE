@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, History, Maximize2, MessageSquareText, Redo2, Undo2, X } from "lucide-react";
 import { ReviewPanel } from "../components/editor/ReviewPanel";
 import { redo, undo, useHistoryStore } from "../store/historyStore";
@@ -14,6 +14,8 @@ import { ExportButton } from "../components/editor/ExportButton";
 import { ShareButton } from "../components/editor/ShareButton";
 import { VersionHistoryPanel } from "../components/editor/VersionHistoryPanel";
 import { supabase } from "../supabaseClient";
+import { updateDocument } from "../lib/documentWrites";
+import { useAuth } from "../lib/useAuth";
 import { btnGhost, btnIcon, btnPrimary, btnSecondary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { BrandMark } from "../components/BrandMark";
@@ -23,6 +25,8 @@ import type { Document } from "../types/document";
 
 export function EditorPage() {
   const { documentId } = useParams<{ documentId: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const document = useDocumentStore((s) => s.document);
   const loadedDocumentId = useDocumentStore((s) => s.documentId);
   const loadDocument = useDocumentStore((s) => s.loadDocument);
@@ -54,13 +58,19 @@ export function EditorPage() {
     setLoadState("loading");
     supabase
       .from("documents")
-      .select("content")
+      .select("content, owner_id")
       .eq("id", documentId)
       .single()
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error || !data) {
           setLoadState("error");
+          return;
+        }
+        // Shared papers are readable by everyone but only editable by their
+        // owner; send everyone else to the read-only view.
+        if (user && data.owner_id !== user.id) {
+          navigate(`/view/${documentId}`, { replace: true });
           return;
         }
         const content = data.content as Document;
@@ -83,14 +93,13 @@ export function EditorPage() {
     if (loadState !== "ready" || !documentId || loadedDocumentId !== documentId) return;
     if (debouncedForSave === lastSavedContent.current) return; // genuinely unedited since last save
     setSaveState("saving");
-    supabase
-      .from("documents")
-      .update({ title: extractTitleText(debouncedForSave), content: debouncedForSave })
-      .eq("id", documentId)
-      .then(({ error }) => {
-        if (!error) lastSavedContent.current = debouncedForSave;
+    updateDocument(documentId, { title: extractTitleText(debouncedForSave), content: debouncedForSave }).then(
+      ({ error }) => {
+        if (error) console.error("Autosave failed:", error);
+        else lastSavedContent.current = debouncedForSave;
         setSaveState(error ? "error" : "saved");
-      });
+      },
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedForSave]);
 
@@ -113,13 +122,9 @@ export function EditorPage() {
       if (!documentId || lastSavedContent.current === null) return;
       if (latestDocument.current === lastSavedContent.current) return;
       const finalContent = latestDocument.current;
-      supabase
-        .from("documents")
-        .update({ title: extractTitleText(finalContent), content: finalContent })
-        .eq("id", documentId)
-        .then(({ error }) => {
-          if (error) console.error("Final save on navigate-away failed:", error);
-        });
+      updateDocument(documentId, { title: extractTitleText(finalContent), content: finalContent }).then(({ error }) => {
+        if (error) console.error("Final save on navigate-away failed:", error);
+      });
     };
   }, [documentId]);
 

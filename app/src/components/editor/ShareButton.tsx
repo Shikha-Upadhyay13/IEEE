@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link2, X } from "lucide-react";
 import { supabase } from "../../supabaseClient";
+import { updateDocument } from "../../lib/documentWrites";
 import { btnPrimary, btnSecondary } from "../../lib/uiClasses";
 
 interface ShareButtonProps {
@@ -58,10 +59,7 @@ export function ShareButton({ documentId }: ShareButtonProps) {
     const nextState = !isPublic;
     setIsPublic(nextState); // optimistic
     try {
-      const { error } = await supabase
-        .from("documents")
-        .update({ is_public: nextState })
-        .eq("id", documentId);
+      const { error } = await updateDocument(documentId, { is_public: nextState });
 
       if (error) {
         console.error("Failed to update public status:", error);
