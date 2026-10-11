@@ -61,4 +61,12 @@ describe("vercel.json", () => {
     expect(rule.has?.[0].value).toBe(SHARE_BOT_PATTERN);
     expect(rest.at(-1)?.destination).toBe("/index.html");
   });
+
+  it("sends baseline security headers on every route", () => {
+    const global = vercelConfig.headers.find((h) => h.source === "/(.*)");
+    const keys = global?.headers.map((h) => h.key) ?? [];
+    expect(keys).toEqual(
+      expect.arrayContaining(["Strict-Transport-Security", "X-Content-Type-Options", "X-Frame-Options", "Content-Security-Policy"])
+    );
+  });
 });
