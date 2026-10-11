@@ -11,7 +11,27 @@ export type CrossrefWork = {
   "published-print"?: { "date-parts"?: number[][] };
   "published-online"?: { "date-parts"?: number[][] };
   issued?: { "date-parts"?: number[][] };
+  /** Notices that update this work (retractions, corrections), newest data from Crossref and Retraction Watch. */
+  "updated-by"?: CrossrefUpdate[];
+  /** Set when this work is itself a notice updating another work. */
+  "update-to"?: CrossrefUpdate[];
 };
+
+type CrossrefUpdate = { type?: string; DOI?: string; label?: string };
+
+const RETRACTION_TYPES = new Set(["retraction", "withdrawal", "removal"]);
+
+/** Describes why a work should not be cited as-is, or undefined if it has no retraction on record. */
+export function retractionNotice(work: CrossrefWork): string | undefined {
+  const notice = work["updated-by"]?.find((u) => RETRACTION_TYPES.has((u.type ?? "").toLowerCase()));
+  if (notice) {
+    const kind = (notice.type ?? "retraction").toLowerCase() === "withdrawal" ? "Withdrawn" : "Retracted";
+    return notice.DOI ? `${kind} — see notice ${notice.DOI}` : kind;
+  }
+  const target = work["update-to"]?.find((u) => RETRACTION_TYPES.has((u.type ?? "").toLowerCase()));
+  if (target) return `This DOI is a retraction notice${target.DOI ? ` for ${target.DOI}` : ""}, not the paper`;
+  return undefined;
+}
 
 const CROSSREF = "https://api.crossref.org/works";
 

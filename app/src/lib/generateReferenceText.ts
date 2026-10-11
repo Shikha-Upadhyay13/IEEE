@@ -8,6 +8,8 @@ export type ReferenceFields = {
   doi?: string;
   /** ISO timestamp of the last successful CrossRef match; cleared when the details are edited. */
   verifiedAt?: string;
+  /** Crossref's retraction or withdrawal notice for this work, if any. */
+  retraction?: string;
 };
 
 export const emptyReferenceFields: ReferenceFields = {

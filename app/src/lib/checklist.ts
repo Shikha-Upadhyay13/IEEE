@@ -236,6 +236,19 @@ export function runChecklist(
       fix: hyphenated ? { id: "page-range-dashes", label: "Use en dashes" } : undefined,
     });
 
+    const retracted = doc.references.flatMap((r, i) => (r.fields.retraction ? [i] : []));
+    if (retracted.length > 0) {
+      items.push({
+        id: "references-retracted",
+        label: "No retracted references",
+        status: "warn",
+        detail: `Crossref lists ${retracted.map(refName).join("; ")} as retracted or withdrawn. Only cite ${
+          retracted.length === 1 ? "it" : "them"
+        } when discussing the retraction.`,
+        target: { kind: "references" },
+      });
+    }
+
     const unverified = doc.references.filter(isUnverified).length;
     if (unverified > 0) {
       items.push({

@@ -223,6 +223,7 @@ type DocumentStore = {
   markReferenceVerified: (id: string, doi: string) => void;
   replaceReferenceFields: (id: string, fields: ReferenceFields) => void;
   removeReference: (id: string) => void;
+  setReferenceRetraction: (id: string, retraction: string | undefined) => void;
   /** Replaces hyphens in page ranges with IEEE en dashes across all references. */
   fixReferencePageRanges: () => void;
 };
@@ -701,6 +702,7 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
           const fields: ReferenceFields = { ...(ref.fields as ReferenceFields), [field]: value };
           // An edited reference is no longer the one CrossRef confirmed.
           delete fields.verifiedAt;
+          delete fields.retraction;
           return { ...ref, fields, renderedText: generateReferenceText(fields) };
         }),
       },
@@ -715,6 +717,20 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
             ? { ...ref, fields: { ...ref.fields, ...(doi ? { doi } : {}), verifiedAt: new Date().toISOString() } }
             : ref,
         ),
+      },
+    })),
+
+  setReferenceRetraction: (id, retraction) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        references: state.document.references.map((ref) => {
+          if (ref.id !== id) return ref;
+          const fields = { ...ref.fields };
+          if (retraction) fields.retraction = retraction;
+          else delete fields.retraction;
+          return { ...ref, fields };
+        }),
       },
     })),
 

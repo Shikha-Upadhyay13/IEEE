@@ -60,6 +60,16 @@ describe("runChecklist", () => {
     expect(item(doc, "references-verified").status).toBe("info");
   });
 
+  it("warns about references Crossref lists as retracted", () => {
+    const doc = makeDoc({
+      body: [para("p1", [cite("r1")])],
+      references: [{ id: "r1", fields: { title: "Bad data", retraction: "Retracted" }, renderedText: "Bad data" }],
+    });
+    const result = item(doc, "references-retracted");
+    expect(result.status).toBe("warn");
+    expect(result.detail).toContain("Bad data");
+  });
+
   it("checks references for empty entries, duplicates and IEEE style", () => {
     const doc = makeDoc({
       body: [para("p1", [cite("r1"), cite("r2"), cite("r3")])],

@@ -62,6 +62,7 @@ export function ReferencesEditor({ defaultExpanded = false }: { defaultExpanded?
   const removeReference = useDocumentStore((s) => s.removeReference);
 
   const markReferenceVerified = useDocumentStore((s) => s.markReferenceVerified);
+  const setReferenceRetraction = useDocumentStore((s) => s.setReferenceRetraction);
   const replaceReferenceFields = useDocumentStore((s) => s.replaceReferenceFields);
 
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -102,6 +103,7 @@ export function ReferencesEditor({ defaultExpanded = false }: { defaultExpanded?
     try {
       const result = await verifyReference(fields);
       if (result.status === "verified") markReferenceVerified(ref.id, result.doi);
+      if (result.status !== "not-found") setReferenceRetraction(ref.id, result.retraction);
       setChecks((c) => ({ ...c, [ref.id]: result }));
     } catch (err: unknown) {
       setChecks((c) => ({
@@ -214,6 +216,15 @@ export function ReferencesEditor({ defaultExpanded = false }: { defaultExpanded?
                       <X size={14} aria-hidden="true" />
                     </button>
                   </div>
+                  {ref.fields.retraction && (
+                    <p
+                      role="alert"
+                      className="mb-2 rounded-md border border-red-200 bg-red-50 p-2.5 text-xs text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
+                    >
+                      <span className="font-medium">{ref.fields.retraction}.</span> Only cite it if you are discussing
+                      the retraction itself.
+                    </p>
+                  )}
                   {check?.status === "mismatch" && (
                     <div className="mb-2 rounded-md border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                       <p className="font-medium mb-1">CrossRef has a close match with different details:</p>

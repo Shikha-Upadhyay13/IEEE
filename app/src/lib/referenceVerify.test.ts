@@ -41,6 +41,21 @@ describe("compareWithWork", () => {
     expect(result.crossref.venue).toBe("Proceedings of the IEEE");
   });
 
+  it("carries Crossref retraction and withdrawal notices", () => {
+    const title = "Toward unrestricted use of public genomic data";
+    const retracted = { ...work, "updated-by": [{ type: "retraction", DOI: "10.1109/notice.1" }] };
+    expect(compareWithWork(fields({ title, year: "1999" }), retracted)).toEqual({
+      status: "verified",
+      doi: "10.1109/5.771073",
+      retraction: "Retracted — see notice 10.1109/notice.1",
+    });
+    const notice = { ...work, "update-to": [{ type: "retraction", DOI: "10.1/original" }] };
+    const result = compareWithWork(fields({ title }), notice);
+    expect(result.status === "verified" && result.retraction).toContain("retraction notice for 10.1/original");
+    const corrected = { ...work, "updated-by": [{ type: "correction", DOI: "10.1/fix" }] };
+    expect(compareWithWork(fields({ title }), corrected)).toEqual({ status: "verified", doi: "10.1109/5.771073" });
+  });
+
   it("reports a clearly different paper as not found", () => {
     expect(compareWithWork(fields({ title: "Graph neural networks for traffic prediction" }), work).status).toBe(
       "not-found",

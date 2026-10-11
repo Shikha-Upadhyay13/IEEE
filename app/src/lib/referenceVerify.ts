@@ -1,9 +1,16 @@
 import type { ReferenceFields } from "./generateReferenceText";
-import { fetchCrossrefWork, searchCrossref, workToFields, workYear, type CrossrefWork } from "./doiLookup";
+import {
+  fetchCrossrefWork,
+  retractionNotice,
+  searchCrossref,
+  workToFields,
+  workYear,
+  type CrossrefWork,
+} from "./doiLookup";
 
 export type VerifyResult =
-  | { status: "verified"; doi: string }
-  | { status: "mismatch"; doi: string; differences: string[]; crossref: ReferenceFields }
+  | { status: "verified"; doi: string; retraction?: string }
+  | { status: "mismatch"; doi: string; differences: string[]; crossref: ReferenceFields; retraction?: string }
   | { status: "not-found"; reason: string };
 
 const MATCH_THRESHOLD = 0.85;
@@ -55,7 +62,11 @@ export function compareWithWork(fields: ReferenceFields, work: CrossrefWork): Ve
     differences.push(`Volume in CrossRef: ${crossref.volume} (you have ${fields.volume.trim()})`);
   }
 
-  return differences.length === 0 ? { status: "verified", doi } : { status: "mismatch", doi, differences, crossref };
+  const retraction = retractionNotice(work);
+  const extra = retraction ? { retraction } : {};
+  return differences.length === 0
+    ? { status: "verified", doi, ...extra }
+    : { status: "mismatch", doi, differences, crossref, ...extra };
 }
 
 export async function verifyReference(fields: ReferenceFields): Promise<VerifyResult> {
