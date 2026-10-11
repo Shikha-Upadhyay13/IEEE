@@ -8,6 +8,7 @@ node_modules
 # committed, same rationale as app/.gitignore's Supabase key exclusion.
 .env
 .env.*
+!.env.example
 
 # Nested clone
 IEEE/

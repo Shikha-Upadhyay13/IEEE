@@ -18,6 +18,7 @@ playwright-report
 # still shouldn't be hardcoded/committed; keep them out of version control.
 .env
 .env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
