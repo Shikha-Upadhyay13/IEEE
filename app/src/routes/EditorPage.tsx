@@ -16,7 +16,8 @@ import { ExportButton } from "../components/editor/ExportButton";
 import { ShareButton } from "../components/editor/ShareButton";
 import { VersionHistoryPanel } from "../components/editor/VersionHistoryPanel";
 import { supabase } from "../supabaseClient";
-import { updateDocument } from "../lib/documentWrites";
+import { saveDocument } from "../lib/documentWrites";
+import { createSnapshot } from "../lib/versions";
 import { parseDocument } from "../lib/parseDocument";
 import { useAuth } from "../lib/useAuth";
 import { btnGhost, btnIcon, btnPrimary, btnSecondary } from "../lib/uiClasses";
@@ -50,6 +51,13 @@ export function EditorPage() {
   // after every successful save, so the flush-on-navigate-away check below
   // (not just the debounced autosave) knows what's actually safe to skip.
   const lastSavedContent = useRef<Document | null>(null);
+  // documents.version of lastSavedContent; every save must start from it.
+  const savedVersion = useRef(0);
+  // Set when someone else saved first; autosave pauses until the user picks a side.
+  const [conflict, setConflict] = useState(false);
+  const conflictRef = useRef(false);
+  conflictRef.current = conflict;
+  const [reloadKey, setReloadKey] = useState(0);
   // Always the latest document, independent of the save debounce — read by
   // the unmount flush below, which must not act on a stale closed-over value.
   const latestDocument = useRef(document);
@@ -60,58 +68,100 @@ export function EditorPage() {
     if (!documentId) return;
     let cancelled = false;
     setLoadState("loading");
-    supabase
-      .from("documents")
-      .select("content, owner_id")
-      .eq("id", documentId)
-      .single()
-      .then(({ data, error }) => {
+    (async () => {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("content, owner_id, version")
+        .eq("id", documentId)
+        .single();
+      if (cancelled) return;
+      if (error || !data) {
+        setLoadState("error");
+        return;
+      }
+      // Owners and editors edit here; reviewers, viewers and link visitors
+      // get the read-only view.
+      if (user && data.owner_id !== user.id) {
+        const { data: role } = await supabase.rpc("document_role", { doc: documentId });
         if (cancelled) return;
-        if (error || !data) {
-          setLoadState("error");
-          return;
-        }
-        // Shared papers are readable by everyone but only editable by their
-        // owner; send everyone else to the read-only view.
-        if (user && data.owner_id !== user.id) {
+        if (role !== "editor") {
           navigate(`/view/${documentId}`, { replace: true });
           return;
         }
-        const parsed = parseDocument(data.content);
-        if (!parsed.ok) {
-          console.error("Paper failed validation:", parsed.error);
-          setLoadError(parsed.error);
-          setLoadState("error");
-          return;
-        }
-        lastSavedContent.current = parsed.document;
-        loadDocument(documentId, parsed.document);
-        setLoadState("ready");
-      });
+      }
+      const parsed = parseDocument(data.content);
+      if (!parsed.ok) {
+        console.error("Paper failed validation:", parsed.error);
+        setLoadError(parsed.error);
+        setLoadState("error");
+        return;
+      }
+      lastSavedContent.current = parsed.document;
+      savedVersion.current = data.version as number;
+      setConflict(false);
+      loadDocument(documentId, parsed.document);
+      setLoadState("ready");
+    })();
     return () => {
       cancelled = true;
     };
-    // Only re-run when navigating to a *different* document id.
+    // Only re-run when navigating to a *different* document id, or when the
+    // user chooses to load someone else's newer save.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [documentId]);
+  }, [documentId, reloadKey]);
 
   // Debounced autosave: waits for edits to pause before writing to Supabase,
   // same rationale as the pagination debounce — just a longer pause, since
   // network round-trips are more expensive than a re-layout.
   const debouncedForSave = useDebouncedValue(document, 2000);
-  useEffect(() => {
-    if (loadState !== "ready" || !documentId || loadedDocumentId !== documentId) return;
-    if (debouncedForSave === lastSavedContent.current) return; // genuinely unedited since last save
+  async function persist(id: string, content: Document, expectedVersion: number) {
     setSaveState("saving");
-    updateDocument(documentId, { title: extractTitleText(debouncedForSave), content: debouncedForSave }).then(
-      ({ error }) => {
-        if (error) console.error("Autosave failed:", error);
-        else lastSavedContent.current = debouncedForSave;
-        setSaveState(error ? "error" : "saved");
-      },
-    );
+    const result = await saveDocument(id, { title: extractTitleText(content), content }, expectedVersion);
+    if (result.status === "saved") {
+      lastSavedContent.current = content;
+      savedVersion.current = result.version;
+      setSaveState("saved");
+    } else if (result.status === "conflict") {
+      setConflict(true);
+      setSaveState("idle");
+    } else {
+      console.error("Autosave failed:", result.error);
+      setSaveState("error");
+    }
+  }
+
+  useEffect(() => {
+    if (loadState !== "ready" || !documentId || loadedDocumentId !== documentId || conflict) return;
+    if (debouncedForSave === lastSavedContent.current) return; // genuinely unedited since last save
+    void persist(documentId, debouncedForSave, savedVersion.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedForSave]);
+
+  async function keepMine() {
+    if (!documentId) return;
+    const { data } = await supabase.from("documents").select("content, version").eq("id", documentId).maybeSingle();
+    if (!data) return;
+    const { error } = await createSnapshot(documentId, "Co-author's version, replaced by Keep mine", data.content);
+    if (error) {
+      console.error("Snapshot before Keep mine failed:", error);
+      setSaveState("error");
+      return;
+    }
+    setConflict(false);
+    await persist(documentId, latestDocument.current, data.version as number);
+  }
+
+  async function loadTheirs() {
+    if (!documentId) return;
+    const { error } = await createSnapshot(documentId, "Your edits, replaced by a co-author's version", latestDocument.current);
+    if (error) {
+      console.error("Snapshot before loading their version failed:", error);
+      setSaveState("error");
+      return;
+    }
+    lastSavedContent.current = null;
+    setReloadKey((k) => k + 1);
+  }
 
   // Flush-on-navigate-away: without this, edits made within the last 2s
   // before leaving the editor (e.g. clicking "Dashboard" right after typing)
@@ -129,12 +179,14 @@ export function EditorPage() {
   // the freshly created blank document showed old sample content instead.
   useEffect(() => {
     return () => {
-      if (!documentId || lastSavedContent.current === null) return;
+      if (!documentId || lastSavedContent.current === null || conflictRef.current) return;
       if (latestDocument.current === lastSavedContent.current) return;
       const finalContent = latestDocument.current;
-      updateDocument(documentId, { title: extractTitleText(finalContent), content: finalContent }).then(({ error }) => {
-        if (error) console.error("Final save on navigate-away failed:", error);
-      });
+      saveDocument(documentId, { title: extractTitleText(finalContent), content: finalContent }, savedVersion.current).then(
+        (result) => {
+          if (result.status !== "saved") console.error("Final save on navigate-away failed:", result);
+        },
+      );
     };
   }, [documentId]);
 
@@ -254,6 +306,32 @@ export function EditorPage() {
 
   return (
     <div className="h-screen flex flex-col">
+      {conflict && (
+        <div
+          role="alert"
+          className="flex-none flex flex-wrap items-center gap-3 px-6 py-2.5 border-b border-amber-200 bg-amber-50 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-200"
+        >
+          <span className="flex-1 min-w-60">
+            This paper changed since you opened it — a co-author saved first. Your recent edits are paused, not lost.
+          </span>
+          <button
+            type="button"
+            onClick={loadTheirs}
+            title="Discards your unsaved edits. Earlier versions stay in History."
+            className={`${btnSecondary} text-xs py-1.5 px-3`}
+          >
+            Load their version
+          </button>
+          <button
+            type="button"
+            onClick={keepMine}
+            title="Replaces their changes with yours. Their version stays in History."
+            className={`${btnPrimary} text-xs py-1.5 px-3`}
+          >
+            Keep mine
+          </button>
+        </div>
+      )}
       {/* Top bar spans both panes — mirrors the reference layout's header:
           navigation/status on the left, the primary action (export) on the
           right, both reachable regardless of what's happening below. */}
