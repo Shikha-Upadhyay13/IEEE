@@ -506,6 +506,15 @@ export function Dashboard() {
             </div>
           ) : filteredDocuments.length === 0 && search ? (
             <p className="text-sm text-muted">No papers match "{search}".</p>
+          ) : view === "trash" && documents.length > 0 ? (
+            <>
+              <p className="text-xs text-muted mb-4">Papers in Trash are deleted for good 30 days after you move them here.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                {filteredDocuments.map((doc) => (
+                  <PaperCard key={doc.id} doc={doc} actions={actionsFor(doc)} />
+                ))}
+              </div>
+            </>
           ) : documents.length === 0 && view !== "mine" ? (
             loadError ? null : <p className="text-sm text-muted">{viewInfo.empty}</p>
           ) : (
@@ -515,12 +524,8 @@ export function Dashboard() {
                 <PaperCard
                   key={doc.id}
                   doc={doc}
-                  onOpen={view === "trash" ? undefined : () => navigate(`/editor/${doc.id}`)}
-                  onRename={
-                    view !== "trash" && (doc.role === "owner" || doc.role === "editor")
-                      ? (title) => handleRename(doc.id, title)
-                      : undefined
-                  }
+                  onOpen={() => navigate(`/editor/${doc.id}`)}
+                  onRename={doc.role === "owner" || doc.role === "editor" ? (title) => handleRename(doc.id, title) : undefined}
                   actions={actionsFor(doc)}
                 />
               ))}
