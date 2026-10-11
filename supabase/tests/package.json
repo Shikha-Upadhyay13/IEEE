@@ -1,0 +1,12 @@
+{
+  "name": "supabase-tests",
+  "private": true,
+  "description": "Applies schema.sql and every migration to an in-process Postgres and checks row-level security.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8"
+  }
+}
