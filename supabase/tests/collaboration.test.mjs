@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyMigration, as, createDb, createUser } from "./db.mjs";
+import { applyMigrationsFrom, as, createDb, createUser } from "./db.mjs";
 
 const CONTENT = JSON.stringify({ schemaVersion: 1 });
 
@@ -11,7 +11,7 @@ async function setup() {
     owner,
     CONTENT,
   ]);
-  await applyMigration(db, "006_workspaces_collaboration.sql");
+  await applyMigrationsFrom(db, "006");
   const users = {
     owner,
     editor: await createUser(db, "editor@uni.edu"),
@@ -74,6 +74,14 @@ test("owners share by email and roles decide what members can do", async () => {
 
   // Only the owner deletes the paper.
   assert.equal((await as(db, users.editor, (tx) => tx.query("delete from documents where id = $1 returning id", [doc]))).rows.length, 0);
+});
+
+test("creating a paper returns its id, as the app's insert-then-select does", async () => {
+  const { db, users } = await setup();
+  const { rows } = await as(db, users.editor, (tx) =>
+    tx.query("insert into documents (owner_id, title, content) values ($1, 'New', $2) returning id", [users.editor, CONTENT])
+  );
+  assert.equal(rows.length, 1);
 });
 
 test("a save based on an old version changes nothing", async () => {

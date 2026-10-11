@@ -31,18 +31,24 @@ const GRANTS = `
   grant execute on function auth.uid() to anon, authenticated;
 `;
 
+const migrationFiles = () => readdirSync(join(SUPABASE_DIR, "migrations")).filter((f) => f.endsWith(".sql")).sort();
+
 /** A fresh database with schema.sql and every migration before `stopBefore` applied. */
 export async function createDb({ stopBefore } = {}) {
   const db = new PGlite();
   await db.exec(SUPABASE_STUBS);
   await db.exec(readFileSync(join(SUPABASE_DIR, "schema.sql"), "utf8"));
-  const migrations = readdirSync(join(SUPABASE_DIR, "migrations")).filter((f) => f.endsWith(".sql")).sort();
-  for (const file of migrations) {
+  for (const file of migrationFiles()) {
     if (stopBefore && file >= stopBefore) break;
     await db.exec(readFileSync(join(SUPABASE_DIR, "migrations", file), "utf8"));
   }
   await db.exec(GRANTS);
   return db;
+}
+
+/** Applies the migrations `createDb({ stopBefore })` skipped. */
+export async function applyMigrationsFrom(db, start) {
+  for (const file of migrationFiles().filter((f) => f >= start)) await applyMigration(db, file);
 }
 
 export async function applyMigration(db, file) {
