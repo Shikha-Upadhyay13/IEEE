@@ -56,7 +56,7 @@ describe("runChecklist", () => {
       body: [para("p1", [text("See "), xref("f1"), text(" and "), cite("r1")]), fig("f1")],
       references: [ref("r1")],
     });
-    expect(checklistSummary(runChecklist(doc, 5))).toEqual({ fail: 0, warn: 0, info: 1, pass: 12 });
+    expect(checklistSummary(runChecklist(doc, 5))).toEqual({ fail: 0, warn: 0, info: 1, pass: 13 });
     expect(item(doc, "references-verified").status).toBe("info");
   });
 

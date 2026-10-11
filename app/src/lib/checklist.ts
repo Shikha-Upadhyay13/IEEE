@@ -1,6 +1,7 @@
 import type { BodyNode, Document, InlineNode } from "../types/document";
 import { getMode } from "./formats/modes";
 import { getFormat } from "./formats/formats";
+import { findUndefinedAcronyms } from "./acronyms";
 import { findDuplicateReferences, hasHyphenPageRange, isUnverified, listsTooManyAuthors } from "./referenceChecks";
 
 /** fail = blocker (stops a Submission-mode export), warn = should review, info = worth knowing. */
@@ -283,6 +284,26 @@ export function runChecklist(doc: Document, pageCount: number | null): Checklist
           ? "Every figure and table has a caption."
           : `${plural(emptyCaptions.length, "figure or table", "figures or tables")} without a caption.`,
     target: emptyCaptions[0] ? { kind: "block", id: emptyCaptions[0].id } : undefined,
+  });
+
+  const paragraphs: { id: string; text: string }[] = [];
+  walk(doc.body, (node) => {
+    if (node.type === "paragraph") paragraphs.push({ id: node.id, text: inlineText(node.content) });
+  });
+  const undefinedAcronyms = findUndefinedAcronyms(paragraphs);
+  const shown = undefinedAcronyms.slice(0, 5).map((a) => a.acronym);
+  const more = undefinedAcronyms.length - shown.length;
+  items.push({
+    id: "acronyms",
+    label: "Acronyms defined on first use",
+    status: undefinedAcronyms.length === 0 ? "pass" : "info",
+    detail:
+      undefinedAcronyms.length === 0
+        ? "Every acronym is spelled out the first time it appears."
+        : `Spell these out the first time, like "convolutional neural network (CNN)": ${shown.join(", ")}${
+            more > 0 ? ` and ${more} more` : ""
+          }.`,
+    target: undefinedAcronyms[0] ? { kind: "block", id: undefinedAcronyms[0].blockId } : undefined,
   });
 
   return items;
