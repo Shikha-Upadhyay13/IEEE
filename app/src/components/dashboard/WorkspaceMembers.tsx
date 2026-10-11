@@ -15,6 +15,7 @@ import {
   type WorkspacePerson,
 } from "../../lib/workspaceMembers";
 import type { Workspace } from "../../store/workspaceStore";
+import { deleteTemplate, listTemplates, type WorkspaceTemplate } from "../../lib/workspaceTemplates";
 import { friendlyErrorMessage } from "../../lib/friendlyError";
 import { btnPrimary, inputBase } from "../../lib/uiClasses";
 
@@ -24,6 +25,7 @@ export function WorkspaceMembers({ workspace, userId, onLeft }: { workspace: Wor
   const manage = canManageWorkspace(workspace.role);
   const [people, setPeople] = useState<WorkspacePerson[] | null>(null);
   const [invitations, setInvitations] = useState<WorkspaceInvitation[]>([]);
+  const [templates, setTemplates] = useState<WorkspaceTemplate[]>([]);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<WorkspaceMemberRole>("member");
   const [busy, setBusy] = useState(false);
@@ -33,6 +35,7 @@ export function WorkspaceMembers({ workspace, userId, onLeft }: { workspace: Wor
     try {
       setPeople(await listWorkspacePeople(workspace.id));
       setInvitations(manage ? await listWorkspaceInvitations(workspace.id) : []);
+      setTemplates(manage ? await listTemplates(workspace.id) : []);
     } catch (err) {
       setMessage({ kind: "error", text: `Couldn't load members. ${friendlyErrorMessage(err)}` });
     }
@@ -183,6 +186,28 @@ export function WorkspaceMembers({ workspace, userId, onLeft }: { workspace: Wor
             </li>
           ))}
         </ul>
+      )}
+
+      {manage && templates.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-line">
+          <p className="font-medium text-ink mb-1.5">Templates</p>
+          <ul className="space-y-1.5">
+            {templates.map((t) => (
+              <li key={t.id} className="flex items-center gap-2">
+                <span className="min-w-0 flex-1 truncate text-ink">{t.name}</span>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void run(() => deleteTemplate(t.id))}
+                  aria-label={`Delete template ${t.name}`}
+                  className="text-muted hover:text-ink"
+                >
+                  <X size={13} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {workspace.role !== "owner" && (

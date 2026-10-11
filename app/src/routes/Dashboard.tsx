@@ -1,7 +1,9 @@
 import { usePageMeta } from "../lib/usePageMeta";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Archive, ArchiveRestore, Copy, FileText, MoreVertical, Plus, Trash2, Undo2, type LucideIcon } from "lucide-react";
+import { Archive, ArchiveRestore, Copy, FileText, LayoutTemplate, MoreVertical, Plus, Trash2, Undo2, type LucideIcon } from "lucide-react";
+import { listTemplates, publishTemplate, templateContent, type WorkspaceTemplate } from "../lib/workspaceTemplates";
+import { canManageWorkspace } from "../lib/workspaceMembers";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { deleteDocument, updateDocument } from "../lib/documentWrites";
@@ -79,7 +81,38 @@ function CardMenu({ actions }: { actions: CardAction[] }) {
   );
 }
 
-function NewPaperCard({ creating, onCreate }: { creating: boolean; onCreate: (template: StarterTemplateId) => void }) {
+function NewPaperCard({
+  creating,
+  onCreate,
+  workspaceName,
+  workspaceTemplates,
+  onCreateFromTemplate,
+}: {
+  creating: boolean;
+  onCreate: (template: StarterTemplateId) => void;
+  workspaceName?: string;
+  workspaceTemplates: WorkspaceTemplate[];
+  onCreateFromTemplate: (template: WorkspaceTemplate) => void;
+}) {
+  const starterGroup = {
+    label: "Start from",
+    items: STARTER_TEMPLATES.map((t) => ({
+      id: t.id,
+      label: t.name,
+      description: t.description,
+      icon: FileText,
+      onSelect: () => onCreate(t.id),
+    })),
+  };
+  const workspaceGroup = {
+    label: `${workspaceName ?? "Workspace"} templates`,
+    items: workspaceTemplates.map((t) => ({
+      id: `ws-${t.id}`,
+      label: t.name,
+      icon: LayoutTemplate,
+      onSelect: () => onCreateFromTemplate(t),
+    })),
+  };
   return (
     <Menu
       trigger={
@@ -91,18 +124,7 @@ function NewPaperCard({ creating, onCreate }: { creating: boolean; onCreate: (te
       disabled={creating}
       width={320}
       triggerClassName="aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-line flex flex-col items-center justify-center gap-2 text-muted hover:border-accent hover:text-accent hover:bg-accent-soft/50 transition-colors"
-      groups={[
-        {
-          label: "Start from",
-          items: STARTER_TEMPLATES.map((t) => ({
-            id: t.id,
-            label: t.name,
-            description: t.description,
-            icon: FileText,
-            onSelect: () => onCreate(t.id),
-          })),
-        },
-      ]}
+      groups={workspaceTemplates.length > 0 ? [workspaceGroup, starterGroup] : [starterGroup]}
     />
   );
 }
@@ -213,6 +235,22 @@ export function Dashboard() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [templates, setTemplates] = useState<WorkspaceTemplate[]>([]);
+  const teamWorkspaceId = workspace && !workspace.personal ? workspace.id : null;
+
+  useEffect(() => {
+    if (!teamWorkspaceId) {
+      setTemplates([]);
+      return;
+    }
+    let cancelled = false;
+    listTemplates(teamWorkspaceId)
+      .then((list) => !cancelled && setTemplates(list))
+      .catch((err) => console.warn("Couldn't load workspace templates:", err));
+    return () => {
+      cancelled = true;
+    };
+  }, [teamWorkspaceId]);
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -310,6 +348,39 @@ export function Dashboard() {
     navigate(`/editor/${data.id}`);
   }
 
+  async function handleCreateFromTemplate(template: WorkspaceTemplate) {
+    if (!user) return;
+    setCreating(true);
+    try {
+      const content = await templateContent(template.id);
+      const { data, error } = await supabase
+        .from("documents")
+        .insert({ owner_id: user.id, title: template.name, content, workspace_id: workspaceId })
+        .select("id")
+        .single();
+      if (error) throw error;
+      track("paper_created", { source: "workspace-template" });
+      navigate(`/editor/${data.id}`);
+    } catch (err) {
+      console.error("Failed to create from workspace template:", err);
+      setActionError(friendlyErrorMessage(err, "Couldn't create a paper from that template."));
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function handlePublishTemplate(doc: PaperRow) {
+    if (!workspace) return;
+    const name = window.prompt(`Template name for ${workspace.name}:`, doc.title || "Untitled template");
+    if (!name?.trim()) return;
+    try {
+      await publishTemplate(workspace.id, doc.id, name);
+      setTemplates(await listTemplates(workspace.id));
+    } catch (err) {
+      setActionError(friendlyErrorMessage(err, "Couldn't publish that template."));
+    }
+  }
+
   async function handleRename(id: string, title: string) {
     setDocuments((docs) => docs.map((d) => (d.id === id ? { ...d, title } : d)));
     const { error } = await updateDocument(id, { title });
@@ -381,10 +452,15 @@ export function Dashboard() {
       danger: true,
       onSelect: () => moveOut(doc.id, () => setTrashed(doc.id, true), "Couldn't move that paper to Trash."),
     };
+    const publish: CardAction[] =
+      teamWorkspaceId && canManageWorkspace(workspace?.role)
+        ? [{ label: "Publish as template", icon: LayoutTemplate, onSelect: () => handlePublishTemplate(doc) }]
+        : [];
     switch (view) {
       case "mine":
         return [
           duplicate,
+          ...publish,
           { label: "Archive", icon: Archive, onSelect: () => moveOut(doc.id, () => setArchived(doc.id, true), "Couldn't archive that paper.") },
           trash,
         ];
@@ -402,7 +478,7 @@ export function Dashboard() {
       case "shared":
         return [duplicate];
       case "workspace":
-        return doc.role === "owner" ? [duplicate, trash] : [duplicate];
+        return doc.role === "owner" ? [duplicate, ...publish, trash] : [duplicate, ...publish];
     }
   }
 
@@ -529,7 +605,15 @@ export function Dashboard() {
             loadError ? null : <p className="text-sm text-muted">{viewInfo.empty}</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-              {(view === "mine" || view === "workspace") && <NewPaperCard creating={creating} onCreate={handleCreate} />}
+              {(view === "mine" || view === "workspace") && (
+                <NewPaperCard
+                  creating={creating}
+                  onCreate={handleCreate}
+                  workspaceName={workspace?.name}
+                  workspaceTemplates={templates}
+                  onCreateFromTemplate={handleCreateFromTemplate}
+                />
+              )}
               {filteredDocuments.map((doc) => (
                 <PaperCard
                   key={doc.id}
