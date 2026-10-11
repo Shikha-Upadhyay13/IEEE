@@ -151,6 +151,8 @@ export const DocumentSchema = z.object({
     // created before modes existed, which infer the mode from their settings.
     mode: z.enum(["submission", "draft", "custom"]).optional(),
     draftWatermark: z.boolean().optional(),
+    // Hides authors, affiliations, biographies and acknowledgments for double-blind review.
+    doubleBlind: z.boolean().optional(),
     // Camera-ready copyright line at the bottom of page 1; see lib/formats/copyright.ts.
     copyrightNotice: z
       .object({

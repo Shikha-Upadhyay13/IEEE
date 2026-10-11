@@ -7,6 +7,7 @@ import type {
   ResolvedDocument,
 } from "../types/document";
 import { effectiveMeta } from "./formats/modes";
+import { withoutAcknowledgments } from "./formats/blind";
 
 // Simple int -> Roman numeral conversion (no library needed for paper-scale numbers).
 function toRoman(num: number): string {
@@ -133,7 +134,7 @@ export function resolveNumbering(doc: Document): ResolvedDocument {
     });
   }
 
-  const resolvedBody = resolveBody(doc.body, 0);
+  const resolvedBody = resolveBody(doc.meta.doubleBlind ? withoutAcknowledgments(doc.body) : doc.body, 0);
 
   // Second pass: patch xref placeholders now that every figure/table has a number.
   const figureNumbers = new Map<string, number>();

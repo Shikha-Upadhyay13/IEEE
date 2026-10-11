@@ -184,6 +184,7 @@ type DocumentStore = {
   setDraftWatermark: (draftWatermark: boolean) => void;
   setCopyrightNotice: (copyrightNotice: Document["meta"]["copyrightNotice"]) => void;
   setJournalInfo: (journal: Document["meta"]["journal"]) => void;
+  setDoubleBlind: (doubleBlind: boolean) => void;
   /** Upserts the biography for one author; an empty text with no photo removes it. */
   setBiography: (authorId: string, patch: { text?: string; photoUrl?: string | undefined }) => void;
   setPaperSize: (paperSize: PaperSize) => void;
@@ -374,6 +375,9 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   setJournalInfo: (journal) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, journal } } })),
+
+  setDoubleBlind: (doubleBlind) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, doubleBlind } } })),
 
   setBiography: (authorId, patch) =>
     set((state) => {

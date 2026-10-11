@@ -2,6 +2,7 @@ import type { BodyNode, Document, InlineNode } from "../types/document";
 import { getMode } from "./formats/modes";
 import { getFormat } from "./formats/formats";
 import { findUndefinedAcronyms } from "./acronyms";
+import { findAuthorMentions, withoutAcknowledgments } from "./formats/blind";
 import { MIN_PHOTO_DPI, figureImages, findLowResolutionFigures } from "./figureResolution";
 import { findDuplicateReferences, hasHyphenPageRange, isUnverified, listsTooManyAuthors } from "./referenceChecks";
 
@@ -328,6 +329,24 @@ export function runChecklist(
   walk(doc.body, (node) => {
     if (node.type === "paragraph") paragraphs.push({ id: node.id, text: inlineText(node.content) });
   });
+  if (doc.meta.doubleBlind) {
+    const visible: { id: string; text: string }[] = [];
+    walk(withoutAcknowledgments(doc.body), (node) => {
+      if (node.type === "paragraph") visible.push({ id: node.id, text: inlineText(node.content) });
+    });
+    const mentions = findAuthorMentions(namedAuthors, visible);
+    items.push({
+      id: "anonymity",
+      label: "Anonymous for double-blind review",
+      status: mentions.length === 0 ? "pass" : "warn",
+      detail:
+        mentions.length === 0
+          ? "Author names are hidden and don't appear in the text."
+          : `The text mentions ${mentions.map((m) => m.name).join(", ")}. Refer to your own earlier work in the third person.`,
+      target: mentions[0] ? { kind: "block", id: mentions[0].blockId } : undefined,
+    });
+  }
+
   const undefinedAcronyms = findUndefinedAcronyms(paragraphs);
   const shown = undefinedAcronyms.slice(0, 5).map((a) => a.acronym);
   const more = undefinedAcronyms.length - shown.length;

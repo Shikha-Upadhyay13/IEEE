@@ -168,6 +168,20 @@ describe("runChecklist", () => {
     expect(low?.detail).toContain("171 dpi");
   });
 
+  it("checks double-blind papers for author names outside the acknowledgments", () => {
+    const doc = makeDoc({
+      body: [
+        para("p1", [text("We extend Lovelace's engine.")]),
+        { type: "section", id: "ack", heading: "Acknowledgment", level: 1, children: [para("p2", [text("Thanks to Lovelace.")])] },
+      ],
+    });
+    expect(runChecklist(doc, 4).some((i) => i.id === "anonymity")).toBe(false);
+    doc.meta.doubleBlind = true;
+    const result = item(doc, "anonymity");
+    expect(result.status).toBe("warn");
+    expect(result.target).toEqual({ kind: "block", id: "p1" });
+  });
+
   it("fails empty captions", () => {
     const doc = makeDoc({ body: [para("p1", [xref("f1")]), fig("f1", [text(" ")])] });
     expect(item(doc, "captions").status).toBe("fail");

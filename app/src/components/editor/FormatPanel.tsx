@@ -43,6 +43,7 @@ export function FormatPanel() {
   const setPaperSize = useDocumentStore((s) => s.setPaperSize);
   const setShowPageNumbers = useDocumentStore((s) => s.setShowPageNumbers);
   const setDraftWatermark = useDocumentStore((s) => s.setDraftWatermark);
+  const setDoubleBlind = useDocumentStore((s) => s.setDoubleBlind);
   const { confirm, ConfirmDialog } = useConfirm();
   const [switchError, setSwitchError] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
@@ -193,6 +194,21 @@ export function FormatPanel() {
             ) : (
               <LockNote property="showPageNumbers" />
             )}
+          </span>
+        </label>
+
+        <label className="flex items-start gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            checked={meta.doubleBlind ?? false}
+            onChange={(e) => setDoubleBlind(e.target.checked)}
+            className="mt-0.5 flex-none"
+          />
+          <span>
+            Double-blind review
+            <span className="block text-xs text-muted mt-0.5">
+              Hides authors, affiliations, biographies and the Acknowledgment section. Your details stay saved.
+            </span>
           </span>
         </label>
 

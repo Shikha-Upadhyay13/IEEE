@@ -151,8 +151,10 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
 
   const format = getFormat(document.meta);
   const isJournal = format.frontMatter === "journal";
-  const footnote = isJournal ? affiliationFootnote(document.titleBlock, document.meta.journal?.received) : [];
-  const biographies = !format.biographies ? [] : document.titleBlock.authors.flatMap((author) => {
+  const blind = document.meta.doubleBlind === true;
+  const footnote =
+    isJournal && !blind ? affiliationFootnote(document.titleBlock, document.meta.journal?.received) : [];
+  const biographies = !format.biographies || blind ? [] : document.titleBlock.authors.flatMap((author) => {
     const bio = document.biographies?.find((b) => b.authorId === author.id);
     return bio && author.name.trim() && bio.text.trim() ? [{ author, bio }] : [];
   });
@@ -173,7 +175,14 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
         <InlineContent nodes={document.titleBlock.title as ResolvedInlineNode[]} />
       </h1>
 
-      {isJournal ? (
+      {blind ? (
+        <div className="ieee-authors-block">
+          <div className="ieee-author-group">
+            <div className="ieee-author-name">Anonymous Authors</div>
+            <div className="ieee-affiliation">Paper under double-blind review</div>
+          </div>
+        </div>
+      ) : isJournal ? (
         <p className="ieee-journal-authors">{authorLine(document.titleBlock)}</p>
       ) : (
         <div className="ieee-authors-block">
