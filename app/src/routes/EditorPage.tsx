@@ -513,6 +513,7 @@ export function EditorPage() {
             setCommentsOpen(false);
             navigateTo({ kind: "all" }, blockId);
           }}
+          onAcceptSuggestion={(blockId, content) => useDocumentStore.getState().updateParagraphContent(blockId, content)}
         />
       )}
       {documentId && (

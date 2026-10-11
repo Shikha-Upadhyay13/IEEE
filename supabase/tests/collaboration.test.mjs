@@ -84,6 +84,27 @@ test("creating a paper returns its id, as the app's insert-then-select does", as
   assert.equal(rows.length, 1);
 });
 
+test("reviewers suggest edits and only editors decide them", async () => {
+  const { db, doc, users } = await setup();
+  await as(db, users.owner, async (tx) => {
+    await tx.query("select invite_to_document($1, 'reviewer@uni.edu', 'reviewer')", [doc]);
+    await tx.query("select invite_to_document($1, 'viewer@uni.edu', 'viewer')", [doc]);
+  });
+  const proposed = JSON.stringify([{ type: "text", text: "Better" }]);
+  const { rows } = await as(db, users.reviewer, (tx) =>
+    tx.query("insert into suggestions (document_id, block_id, proposed) values ($1, 'p1', $2) returning id", [doc, proposed])
+  );
+  const id = rows[0].id;
+  await assert.rejects(
+    as(db, users.viewer, (tx) => tx.query("insert into suggestions (document_id, block_id, proposed) values ($1, 'p1', $2)", [doc, proposed])),
+    /row-level security/
+  );
+
+  const decide = (user) => as(db, user, (tx) => tx.query("update suggestions set status = 'accepted' where id = $1 returning decided_by", [id]));
+  assert.equal((await decide(users.reviewer)).rows.length, 0);
+  assert.deepEqual((await decide(users.owner)).rows, [{ decided_by: users.owner }]);
+});
+
 test("a save based on an old version changes nothing", async () => {
   const { db, doc, users } = await setup();
   await as(db, users.owner, (tx) => update(tx, doc));

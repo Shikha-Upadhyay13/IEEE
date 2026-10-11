@@ -17,7 +17,8 @@ import { listPeople, type PaperRole, type Person } from "../../lib/sharing";
 import { relativeTime } from "../../lib/relativeTime";
 import { friendlyErrorMessage } from "../../lib/friendlyError";
 import { btnPrimary, btnSecondary, inputBase } from "../../lib/uiClasses";
-import type { BodyNode } from "../../types/document";
+import type { BodyNode, InlineNode } from "../../types/document";
+import { SuggestionsList } from "./SuggestionsList";
 
 const REFRESH_MS = 30_000;
 
@@ -29,9 +30,12 @@ interface CommentsPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigate?: (blockId: string) => void;
+  onAcceptSuggestion?: (blockId: string, content: InlineNode[]) => void;
 }
 
-export function CommentsPanel({ documentId, body, role, userId, isOpen, onClose, onNavigate }: CommentsPanelProps) {
+export function CommentsPanel({ documentId, body, role, userId, isOpen, onClose, onNavigate, onAcceptSuggestion }: CommentsPanelProps) {
+  const [tab, setTab] = useState<"comments" | "suggestions">("comments");
+  const [suggestionCount, setSuggestionCount] = useState<number | null>(null);
   const [comments, setComments] = useState<Comment[] | null>(null);
   const [people, setPeople] = useState<Person[]>([]);
   const [filter, setFilter] = useState<"open" | "resolved">("open");
@@ -105,7 +109,7 @@ export function CommentsPanel({ documentId, body, role, userId, isOpen, onClose,
           <div className="flex items-center gap-2">
             <MessageSquare size={18} className="text-muted" aria-hidden="true" />
             <h2 id="comments-title" className="text-base font-semibold text-ink">
-              Comments
+              Feedback
             </h2>
           </div>
           <button
@@ -117,103 +121,134 @@ export function CommentsPanel({ documentId, body, role, userId, isOpen, onClose,
           </button>
         </div>
 
-        {mayComment && (
-          <form onSubmit={post} className="p-4 border-b border-line bg-canvas space-y-2">
-            <select
-              value={anchor}
-              onChange={(e) => setAnchor(e.target.value)}
-              aria-label="What this comment is about"
-              className={`${inputBase} text-xs py-1.5 cursor-pointer`}
-            >
-              <option value="">The whole paper</option>
-              {anchors.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.label}
-                </option>
-              ))}
-            </select>
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              rows={3}
-              maxLength={10000}
-              placeholder="Add a comment. Type @name to mention a co-author."
-              aria-label="New comment"
-              className={`${inputBase} text-xs resize-y`}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) post(e);
-              }}
-            />
-            <div className="flex justify-end">
-              <button type="submit" disabled={busy || !draft.trim()} className={`${btnPrimary} text-xs py-1.5 px-3`}>
-                Comment
-              </button>
-            </div>
-          </form>
-        )}
-
-        <div role="tablist" aria-label="Comment filter" className="flex gap-1 px-4 pt-3 border-b border-line">
-          {(["open", "resolved"] as const).map((f) => (
+        <div role="tablist" aria-label="Feedback type" className="grid grid-cols-2 border-b border-line text-xs">
+          {(["comments", "suggestions"] as const).map((t) => (
             <button
-              key={f}
+              key={t}
               type="button"
               role="tab"
-              aria-selected={filter === f}
-              onClick={() => setFilter(f)}
-              className={`px-2.5 py-1.5 text-xs border-b-2 -mb-px ${
-                filter === f ? "border-accent text-accent font-medium" : "border-transparent text-muted hover:text-ink"
-              }`}
+              aria-selected={tab === t}
+              onClick={() => setTab(t)}
+              className={`py-2 border-b-2 -mb-px ${tab === t ? "border-accent text-accent font-medium" : "border-transparent text-muted hover:text-ink"}`}
             >
-              {f === "open" ? `Open (${openCount})` : `Resolved (${threads.length - openCount})`}
+              {t === "comments" ? `Comments (${openCount})` : `Suggested edits${suggestionCount !== null ? ` (${suggestionCount})` : ""}`}
             </button>
           ))}
         </div>
 
-        {error && (
-          <p role="alert" className="mx-4 mt-3 text-[11px] text-red-600 dark:text-red-400">
-            {error}
-          </p>
-        )}
+        {tab === "suggestions" ? (
+          <SuggestionsList
+            documentId={documentId}
+            body={body}
+            role={role}
+            userId={userId}
+            emailOf={emailOf}
+            onAccept={onAcceptSuggestion}
+            onCountChange={setSuggestionCount}
+          />
+        ) : (
+          <>
+            {mayComment && (
+              <form onSubmit={post} className="p-4 border-b border-line bg-canvas space-y-2">
+                <select
+                  value={anchor}
+                  onChange={(e) => setAnchor(e.target.value)}
+                  aria-label="What this comment is about"
+                  className={`${inputBase} text-xs py-1.5 cursor-pointer`}
+                >
+                  <option value="">The whole paper</option>
+                  {anchors.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.label}
+                    </option>
+                  ))}
+                </select>
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  rows={3}
+                  maxLength={10000}
+                  placeholder="Add a comment. Type @name to mention a co-author."
+                  aria-label="New comment"
+                  className={`${inputBase} text-xs resize-y`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) post(e);
+                  }}
+                />
+                <div className="flex justify-end">
+                  <button type="submit" disabled={busy || !draft.trim()} className={`${btnPrimary} text-xs py-1.5 px-3`}>
+                    Comment
+                  </button>
+                </div>
+              </form>
+            )}
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {comments === null ? (
-            <p className="text-xs text-center text-muted py-8">Loading comments…</p>
-          ) : visible.length === 0 ? (
-            <p className="text-xs text-center text-muted py-8">
-              {filter === "open"
-                ? mayComment
-                  ? "No open comments. Start a thread above."
-                  : "No open comments."
-                : "No resolved threads yet."}
-            </p>
-          ) : (
-            visible.map((thread) => (
-              <ThreadCard
-                key={thread.root.id}
-                thread={thread}
-                anchorLabel={thread.root.blockId ? (anchorLabel.get(thread.root.blockId) ?? "A removed part of the paper") : "The whole paper"}
-                anchorExists={!thread.root.blockId || anchorLabel.has(thread.root.blockId)}
-                emailOf={emailOf}
-                userId={userId}
-                role={role}
-                busy={busy}
-                onNavigate={onNavigate}
-                onReply={(text) =>
-                  run(() =>
-                    addComment(documentId, {
-                      body: text,
-                      blockId: thread.root.blockId,
-                      parentId: thread.root.id,
-                      mentions: findMentions(text, people),
-                    }),
-                  )
-                }
-                onResolve={(resolved) => run(() => setResolved(thread.root.id, resolved))}
-                onDelete={(id) => run(() => deleteComment(id))}
-              />
-            ))
-          )}
-        </div>
+            <div role="tablist" aria-label="Comment filter" className="flex gap-1 px-4 pt-3 border-b border-line">
+              {(["open", "resolved"] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  role="tab"
+                  aria-selected={filter === f}
+                  onClick={() => setFilter(f)}
+                  className={`px-2.5 py-1.5 text-xs border-b-2 -mb-px ${
+                    filter === f ? "border-accent text-accent font-medium" : "border-transparent text-muted hover:text-ink"
+                  }`}
+                >
+                  {f === "open" ? `Open (${openCount})` : `Resolved (${threads.length - openCount})`}
+                </button>
+              ))}
+            </div>
+
+            {error && (
+              <p role="alert" className="mx-4 mt-3 text-[11px] text-red-600 dark:text-red-400">
+                {error}
+              </p>
+            )}
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {comments === null ? (
+                <p className="text-xs text-center text-muted py-8">Loading comments…</p>
+              ) : visible.length === 0 ? (
+                <p className="text-xs text-center text-muted py-8">
+                  {filter === "open"
+                    ? mayComment
+                      ? "No open comments. Start a thread above."
+                      : "No open comments."
+                    : "No resolved threads yet."}
+                </p>
+              ) : (
+                visible.map((thread) => (
+                  <ThreadCard
+                    key={thread.root.id}
+                    thread={thread}
+                    anchorLabel={
+                      thread.root.blockId ? (anchorLabel.get(thread.root.blockId) ?? "A removed part of the paper") : "The whole paper"
+                    }
+                    anchorExists={!thread.root.blockId || anchorLabel.has(thread.root.blockId)}
+                    emailOf={emailOf}
+                    userId={userId}
+                    role={role}
+                    busy={busy}
+                    onNavigate={onNavigate}
+                    onReply={(text) =>
+                      run(() =>
+                        addComment(documentId, {
+                          body: text,
+                          blockId: thread.root.blockId,
+                          parentId: thread.root.id,
+                          mentions: findMentions(text, people),
+                        }),
+                      )
+                    }
+                    onResolve={(resolved) => run(() => setResolved(thread.root.id, resolved))}
+                    onDelete={(id) => run(() => deleteComment(id))}
+                  />
+                ))
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
