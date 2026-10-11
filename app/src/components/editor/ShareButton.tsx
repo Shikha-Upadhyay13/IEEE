@@ -4,6 +4,7 @@ import { supabase } from "../../supabaseClient";
 import { updateDocument } from "../../lib/documentWrites";
 import { btnPrimary, btnSecondary } from "../../lib/uiClasses";
 import { SharePeople } from "./SharePeople";
+import { ShareWorkspace } from "./ShareWorkspace";
 
 interface ShareButtonProps {
   documentId: string;
@@ -113,13 +114,14 @@ export function ShareButton({ documentId }: ShareButtonProps) {
           </div>
 
           <SharePeople documentId={documentId} onOwnerChange={setIsOwner} />
+          {isOwner && <ShareWorkspace documentId={documentId} />}
 
           <div className="py-3">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-medium text-ink">Public link access</p>
                 <p className="text-[11px] text-muted">
-                  {isPublic ? "Anyone with the link can read" : "Only people listed above can open it"}
+                  {isPublic ? "Anyone with the link can read" : "Only people with access can open it"}
                   {isOwner === false && " · only the owner can change this"}
                 </p>
               </div>
