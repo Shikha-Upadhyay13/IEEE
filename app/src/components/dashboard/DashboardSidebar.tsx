@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Download, FileText, LogOut, Menu, Settings, Sparkles, UserRound, X, type LucideIcon } from "lucide-react";
 import { BrandMark } from "../BrandMark";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
+import { NotificationBell } from "../NotificationBell";
 
 const NAV_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: "/dashboard", label: "My Papers", icon: FileText },
@@ -36,6 +37,7 @@ export function DashboardSidebar({ onSignOut }: { onSignOut: () => void }) {
           <span className="font-display font-semibold text-ink tracking-tight text-sm">
             IEEE Paper Builder
           </span>
+          <NotificationBell className="ml-auto" />
         </div>
 
         <WorkspaceSwitcher />

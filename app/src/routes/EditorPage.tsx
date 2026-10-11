@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, History, Maximize2, MessageSquare, MessageSquareText, Redo2, Undo2, X } from "lucide-react";
 import { CommentsPanel } from "../components/editor/CommentsPanel";
+import { NotificationBell } from "../components/NotificationBell";
 import type { PaperRole } from "../lib/sharing";
 import { ReviewPanel } from "../components/editor/ReviewPanel";
 import { redo, undo, useHistoryStore } from "../store/historyStore";
@@ -441,6 +442,7 @@ export function EditorPage() {
             </button>
           )}
           {documentId && <ShareButton documentId={documentId} />}
+          <NotificationBell />
           {documentId && (
             <ExportButton documentId={documentId} title={extractTitleText(document)} blockers={exportBlockers} compact />
           )}
