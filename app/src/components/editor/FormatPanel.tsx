@@ -6,6 +6,7 @@ import { MODES, getMode, isAllowed, lockReason, type ModeControlled, type StyleM
 import { createSnapshot } from "../../lib/versions";
 import { friendlyErrorMessage } from "../../lib/friendlyError";
 import { useConfirm } from "../ConfirmDialog";
+import { CopyrightNoticeFields } from "./CopyrightNoticeFields";
 import { inputBase, labelBase } from "../../lib/uiClasses";
 import type { FontFamily } from "../../types/document";
 
@@ -209,6 +210,8 @@ export function FormatPanel() {
           </label>
         )}
       </Field>
+
+      {meta.template === "ieee-conference" && <CopyrightNoticeFields />}
     </div>
   );
 }

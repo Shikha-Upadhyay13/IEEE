@@ -181,6 +181,7 @@ type DocumentStore = {
   setFormat: (template: Document["meta"]["template"]) => void;
   setMode: (mode: NonNullable<Document["meta"]["mode"]>) => void;
   setDraftWatermark: (draftWatermark: boolean) => void;
+  setCopyrightNotice: (copyrightNotice: Document["meta"]["copyrightNotice"]) => void;
   setPaperSize: (paperSize: PaperSize) => void;
   setShowPageNumbers: (showPageNumbers: boolean) => void;
   setAccentColor: (accentColor: string | null) => void;
@@ -360,6 +361,9 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   setDraftWatermark: (draftWatermark) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, draftWatermark } } })),
+
+  setCopyrightNotice: (copyrightNotice) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, copyrightNotice } } })),
 
   setPaperSize: (paperSize) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, paperSize } } })),

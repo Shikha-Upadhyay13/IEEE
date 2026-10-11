@@ -1,4 +1,5 @@
 import type { Document } from "../../types/document";
+import { copyrightText, cssString } from "./copyright";
 
 export type PaperSize = Document["meta"]["paperSize"];
 
@@ -127,7 +128,10 @@ export function layoutVariables(geometry: PageGeometry): Record<string, string> 
  * elements inside the content it paginates.
  */
 export function buildPageCss(
-  meta: Pick<Document["meta"], "template" | "paperSize" | "showPageNumbers" | "fontFamily" | "draftWatermark">
+  meta: Pick<
+    Document["meta"],
+    "template" | "paperSize" | "showPageNumbers" | "fontFamily" | "draftWatermark" | "copyrightNotice"
+  >
 ): string {
   const pageNumberFont = paperFontStack(meta);
   const g = getGeometry(meta);
@@ -146,5 +150,13 @@ export function buildPageCss(
       `@top-right { content: "DRAFT — not for submission"; font-family: Arial, Helvetica, sans-serif; font-size: 8pt; color: #b91c1c; letter-spacing: 0.05em; }`
     );
   }
-  return `@page { ${rules.join(" ")} }`;
+  const css = [`@page { ${rules.join(" ")} }`];
+  const notice =
+    meta.copyrightNotice && meta.template === "ieee-conference" ? copyrightText(meta.copyrightNotice) : "";
+  if (notice) {
+    css.push(
+      `@page :first { @bottom-left { content: ${cssString(notice)}; font-family: ${pageNumberFont}; font-size: 8pt; vertical-align: top; text-align: left; } }`
+    );
+  }
+  return css.join("\n");
 }

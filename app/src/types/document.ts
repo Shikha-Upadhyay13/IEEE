@@ -144,6 +144,17 @@ export const DocumentSchema = z.object({
     // created before modes existed, which infer the mode from their settings.
     mode: z.enum(["submission", "draft", "custom"]).optional(),
     draftWatermark: z.boolean().optional(),
+    // Camera-ready copyright line at the bottom of page 1; see lib/formats/copyright.ts.
+    copyrightNotice: z
+      .object({
+        variant: z.enum(["ieee", "us-gov", "crown", "eu", "custom"]),
+        code: z.string(),
+        year: z.string(),
+        price: z.string(),
+        text: z.string().optional(),
+      })
+      .nullable()
+      .optional(),
     paperSize: z.enum(["letter", "a4"]),
     pageLimit: z.number().int().positive().nullable(),
     fontFamily: FontFamilySchema.optional(),
