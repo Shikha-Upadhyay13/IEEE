@@ -10,6 +10,8 @@ import { PagedPreview } from "../components/renderer/PagedPreview";
 import { EditorPanel, type EditorView } from "../components/editor/EditorPanel";
 import { EditorOutline } from "../components/editor/EditorOutline";
 import { ChecklistPanel } from "../components/editor/ChecklistPanel";
+import { useChecklist } from "../components/editor/useChecklist";
+import { exportBlocked } from "../lib/readinessReport";
 import { ExportButton } from "../components/editor/ExportButton";
 import { ShareButton } from "../components/editor/ShareButton";
 import { VersionHistoryPanel } from "../components/editor/VersionHistoryPanel";
@@ -167,6 +169,10 @@ export function EditorPage() {
   // Paged.js pagination.
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pageCount, setPageCount] = useState<number | null>(null);
+  const checklistItems = useChecklist(pageCount);
+  const exportBlockers = exportBlocked(document, checklistItems)
+    ? checklistItems.filter((i) => i.status === "fail").length
+    : 0;
 
   const canUndo = useHistoryStore((s) => s.past.length > 0);
   const canRedo = useHistoryStore((s) => s.future.length > 0);
@@ -296,7 +302,7 @@ export function EditorPage() {
               <Redo2 size={16} aria-hidden="true" />
             </button>
           </div>
-          <ChecklistPanel pageCount={pageCount} onNavigate={navigateTo} />
+          <ChecklistPanel items={checklistItems} onNavigate={navigateTo} />
           <button
             type="button"
             onClick={() => setReviewOpen(true)}
@@ -318,7 +324,9 @@ export function EditorPage() {
             </button>
           )}
           {documentId && <ShareButton documentId={documentId} />}
-          {documentId && <ExportButton documentId={documentId} title={extractTitleText(document)} compact />}
+          {documentId && (
+            <ExportButton documentId={documentId} title={extractTitleText(document)} blockers={exportBlockers} compact />
+          )}
         </div>
       </div>
 

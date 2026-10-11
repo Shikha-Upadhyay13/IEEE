@@ -1,17 +1,16 @@
-import { useMemo, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, ChevronRight, ClipboardCheck, Info, XCircle } from "lucide-react";
+import { useRef, useState } from "react";
+import { AlertTriangle, CheckCircle2, ChevronRight, ClipboardCheck, FileDown, Info, XCircle } from "lucide-react";
 import { useDocumentStore } from "../../store/documentStore";
 import {
   STATUS_LABEL,
   checklistSummary,
-  runChecklist,
   type ChecklistFix,
   type ChecklistItem,
   type ChecklistStatus,
 } from "../../lib/checklist";
+import { downloadText, readinessReport } from "../../lib/readinessReport";
+import { extractTitleText } from "../../lib/extractTitleText";
 import type { BodyNode } from "../../types/document";
-import { figureImages } from "../../lib/figureResolution";
-import { useImageWidths } from "../../lib/useImageWidths";
 import { Popover } from "../ui/Popover";
 import { btnSecondary } from "../../lib/uiClasses";
 import type { EditorView } from "./EditorPanel";
@@ -22,8 +21,6 @@ const STATUS_ICON: Record<ChecklistStatus, { icon: typeof CheckCircle2; classNam
   warn: { icon: AlertTriangle, className: "text-amber-600 dark:text-amber-400" },
   fail: { icon: XCircle, className: "text-red-600 dark:text-red-400" },
 };
-
-const STATUS_ORDER: Record<ChecklistStatus, number> = { fail: 0, warn: 1, info: 2, pass: 3 };
 
 function nearestSectionId(nodes: BodyNode[], blockId: string, enclosing: string | null = null): string | null | undefined {
   for (const node of nodes) {
@@ -37,10 +34,10 @@ function nearestSectionId(nodes: BodyNode[], blockId: string, enclosing: string 
 }
 
 export function ChecklistPanel({
-  pageCount,
+  items,
   onNavigate,
 }: {
-  pageCount: number | null;
+  items: ChecklistItem[];
   onNavigate: (view: EditorView, blockId?: string) => void;
 }) {
   const document = useDocumentStore((s) => s.document);
@@ -48,26 +45,14 @@ export function ChecklistPanel({
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
 
-  const imageUrls = useMemo(() => {
-    const urls: string[] = [];
-    const visit = (nodes: BodyNode[]) => {
-      for (const node of nodes) {
-        if (node.type === "section") visit(node.children);
-        else if (node.type === "figure") urls.push(...figureImages(node).map((img) => img.url));
-      }
-    };
-    visit(document.body);
-    return urls;
-  }, [document.body]);
-  const imageWidths = useImageWidths(imageUrls);
-
-  const items = useMemo(
-    () =>
-      [...runChecklist(document, pageCount, imageWidths)].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]),
-    [document, pageCount, imageWidths],
-  );
   const summary = checklistSummary(items);
   const outstanding = summary.fail + summary.warn;
+
+  function downloadReport() {
+    const title = extractTitleText(document);
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "paper";
+    downloadText(`${slug}-readiness.txt`, readinessReport(document, title, items));
+  }
 
   function applyFix(fix: ChecklistFix) {
     if (fix.id === "page-range-dashes") fixReferencePageRanges();
@@ -168,9 +153,19 @@ export function ChecklistPanel({
             );
           })}
         </ul>
-        <p className="px-4 py-2.5 border-t border-line text-[11px] text-muted leading-relaxed">
-          These checks cover formatting and completeness. Always read your venue's call for papers for its own rules.
-        </p>
+        <div className="px-4 py-2.5 border-t border-line">
+          <button
+            type="button"
+            onClick={downloadReport}
+            className="flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
+          >
+            <FileDown size={13} aria-hidden="true" />
+            Download readiness report
+          </button>
+          <p className="text-[11px] text-muted leading-relaxed mt-1.5">
+            These checks cover formatting and completeness. Always read your venue's call for papers for its own rules.
+          </p>
+        </div>
       </Popover>
     </>
   );

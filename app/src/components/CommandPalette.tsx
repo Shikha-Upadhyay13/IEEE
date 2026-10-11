@@ -25,8 +25,7 @@ import { useTheme, type ThemeSetting } from "../lib/useTheme";
 import { createBlankDocument } from "../lib/blankDocument";
 import { track } from "../lib/monitoring";
 import { useDocumentStore } from "../store/documentStore";
-import { extractTitleText } from "../lib/extractTitleText";
-import { exportDocumentPdf } from "../lib/exportPdf";
+import { EXPORT_PDF_EVENT } from "../lib/exportPdf";
 
 type PaletteItem = {
   id: string;
@@ -51,7 +50,6 @@ export function CommandPalette() {
   const location = useLocation();
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
-  const document = useDocumentStore((s) => s.document);
   const appendParagraph = useDocumentStore((s) => s.appendParagraph);
   const appendSection = useDocumentStore((s) => s.appendSection);
   const appendFigure = useDocumentStore((s) => s.appendFigure);
@@ -132,11 +130,7 @@ export function CommandPalette() {
           id: "export-pdf",
           icon: Download,
           label: "Export PDF",
-          run: () => {
-            exportDocumentPdf(editorDocumentId, extractTitleText(document)).catch((err) =>
-              console.error("Export failed:", err)
-            );
-          },
+          run: () => window.dispatchEvent(new Event(EXPORT_PDF_EVENT)),
         },
       ]
     : [];
@@ -182,7 +176,7 @@ export function CommandPalette() {
     const matches = q ? all.filter((item) => item.label.toLowerCase().includes(q)) : all;
     return matches.slice(0, 10);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, papers, user, theme, editorDocumentId, document]);
+  }, [query, papers, user, theme, editorDocumentId]);
 
   function runItem(item: PaletteItem) {
     setOpen(false);

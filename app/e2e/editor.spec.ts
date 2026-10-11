@@ -58,9 +58,17 @@ test("create, reorder, cite, cross-reference and export a paper", async ({ page 
   await page.getByRole("menuitem").first().click();
   await expect(paragraph).toContainText(/Fig\. 1/);
 
+  // The new paper still has blockers (no title, an empty caption), so a
+  // Submission-mode export is refused until it's switched to Draft.
+  const exportButton = page.getByRole("button", { name: /Download PDF|Export PDF/ });
+  await exportButton.click();
+  await expect(page.getByRole("alert").filter({ hasText: /blocker/ })).toBeVisible();
+
   if (WITH_PDF) {
+    await outline.getByRole("button", { name: /Title, authors/ }).click();
+    await page.getByRole("radio", { name: "IEEE Draft" }).click();
     const download = page.waitForEvent("download", { timeout: 60_000 });
-    await page.getByRole("button", { name: "Export PDF" }).click();
+    await exportButton.click();
     expect((await download).suggestedFilename()).toMatch(/\.pdf$/);
   }
 });

@@ -32,9 +32,11 @@ async function persistExportCopy(documentId: string, title: string, blob: Blob) 
   if (insertError) console.error("Failed to record export:", insertError);
 }
 
-// Shared by ExportButton (the editor's own button) and the command
-// palette's "Export PDF" action — one place for "mint a token, call
-// pdf-service, trigger the browser download, persist a copy for Downloads".
+/** Dispatched on window to ask the open editor's ExportButton to export, so its readiness gate applies. */
+export const EXPORT_PDF_EVENT = "ieee:export-pdf";
+
+// Called by ExportButton — one place for "mint a token, call pdf-service,
+// trigger the browser download, persist a copy for Downloads".
 export async function exportDocumentPdf(documentId: string, title: string): Promise<void> {
   // Mint a short-lived token scoped to this document while we still have the
   // user's authenticated session — the pdf-service itself has none (it's a
