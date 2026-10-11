@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, History, Maximize2, MessageSquareText, Redo2, Undo2, X } from "lucide-react";
+import { ArrowLeft, History, Maximize2, MessageSquare, MessageSquareText, Redo2, Undo2, X } from "lucide-react";
+import { CommentsPanel } from "../components/editor/CommentsPanel";
+import type { PaperRole } from "../lib/sharing";
 import { ReviewPanel } from "../components/editor/ReviewPanel";
 import { redo, undo, useHistoryStore } from "../store/historyStore";
 import { resolveNumbering } from "../lib/numbering";
@@ -41,6 +43,8 @@ export function EditorPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [role, setRole] = useState<PaperRole>("owner");
   const [view, setView] = useState<EditorView>({ kind: "all" });
   const [reviewOpen, setReviewOpen] = useState(false);
   // The last content known to be persisted — compared by reference (not a
@@ -91,6 +95,7 @@ export function EditorPage() {
           return;
         }
       }
+      setRole(user && data.owner_id !== user.id ? "editor" : "owner");
       const parsed = parseDocument(data.content);
       if (!parsed.ok) {
         console.error("Paper failed validation:", parsed.error);
@@ -416,6 +421,17 @@ export function EditorPage() {
           {documentId && (
             <button
               type="button"
+              onClick={() => setCommentsOpen(true)}
+              className={`${btnSecondary} text-xs py-1.5 px-3 flex items-center gap-1.5`}
+              title="Comments from co-authors and reviewers"
+            >
+              <MessageSquare size={14} aria-hidden="true" />
+              <span>Comments</span>
+            </button>
+          )}
+          {documentId && (
+            <button
+              type="button"
               onClick={() => setHistoryOpen(true)}
               className={`${btnSecondary} text-xs py-1.5 px-3 flex items-center gap-1.5`}
               title="Version history"
@@ -485,6 +501,20 @@ export function EditorPage() {
         </div>
       </div>
       {reviewOpen && <ReviewPanel onClose={() => setReviewOpen(false)} onNavigate={(v) => navigateTo(v)} />}
+      {documentId && (
+        <CommentsPanel
+          documentId={documentId}
+          body={document.body}
+          role={role}
+          userId={user?.id ?? null}
+          isOpen={commentsOpen}
+          onClose={() => setCommentsOpen(false)}
+          onNavigate={(blockId) => {
+            setCommentsOpen(false);
+            navigateTo({ kind: "all" }, blockId);
+          }}
+        />
+      )}
       {documentId && (
         <VersionHistoryPanel
           documentId={documentId}

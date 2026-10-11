@@ -7,7 +7,8 @@ import { useAuth } from "../lib/useAuth";
 import { btnPrimary, btnSecondary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { BrandMark } from "../components/BrandMark";
-import { ArrowRight, FileQuestion, Lock, Pencil } from "lucide-react";
+import { ArrowRight, FileQuestion, Lock, MessageSquare, Pencil } from "lucide-react";
+import { CommentsPanel } from "../components/editor/CommentsPanel";
 import type { Document } from "../types/document";
 import { usePageMeta } from "../lib/usePageMeta";
 import { parseDocument } from "../lib/parseDocument";
@@ -30,6 +31,7 @@ export function ViewPage() {
   const [paperTitle, setPaperTitle] = useState<string>("IEEE Paper");
   const [role, setRole] = useState<PaperRole | null>(null);
   const canEdit = role === "owner" || role === "editor";
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "unauthorized" | "notfound">("loading");
   usePageMeta({
     title: loadState === "ready" ? paperTitle : "Shared paper",
@@ -147,6 +149,16 @@ export function ViewPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-none">
+          {role && user && (
+            <button
+              type="button"
+              onClick={() => setCommentsOpen(true)}
+              className={`${btnSecondary} text-xs py-1.5 px-3`}
+            >
+              <MessageSquare size={13} aria-hidden="true" />
+              Comments
+            </button>
+          )}
           {canEdit ? (
             <Link to={`/editor/${documentId}`} className={`${btnPrimary} text-xs py-1.5 px-3`}>
               <Pencil size={13} aria-hidden="true" />
@@ -176,6 +188,16 @@ export function ViewPage() {
           <PagedPreview document={resolvedDoc} />
         </div>
       </main>
+      {documentId && paperContent && role && user && (
+        <CommentsPanel
+          documentId={documentId}
+          body={paperContent.body}
+          role={role}
+          userId={user.id}
+          isOpen={commentsOpen}
+          onClose={() => setCommentsOpen(false)}
+        />
+      )}
     </div>
   );
 }
