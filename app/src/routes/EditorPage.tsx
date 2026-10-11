@@ -20,6 +20,7 @@ import { saveDocument } from "../lib/documentWrites";
 import { createSnapshot } from "../lib/versions";
 import { parseDocument } from "../lib/parseDocument";
 import { useAuth } from "../lib/useAuth";
+import { usePaperPresence } from "../lib/usePaperPresence";
 import { btnGhost, btnIcon, btnPrimary, btnSecondary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { BrandMark } from "../components/BrandMark";
@@ -30,6 +31,7 @@ import type { Document } from "../types/document";
 export function EditorPage() {
   const { documentId } = useParams<{ documentId: string }>();
   const { user } = useAuth();
+  const otherEditors = usePaperPresence(documentId, user ? { id: user.id, email: user.email } : null);
   const navigate = useNavigate();
   const document = useDocumentStore((s) => s.document);
   const loadedDocumentId = useDocumentStore((s) => s.documentId);
@@ -354,6 +356,27 @@ export function EditorPage() {
             >
               {pageLimit ? `${pageCount} / ${pageLimit} pages` : `${pageCount} ${pageCount === 1 ? "page" : "pages"}`}
               {overPageLimit && ` — ${pageCount - pageLimit} over limit`}
+            </span>
+          )}
+          {otherEditors.length > 0 && (
+            <span
+              className="flex items-center gap-1.5 rounded-full bg-accent-soft px-2 py-0.5 text-xs text-accent"
+              title={`${otherEditors.map((e) => e.email).join(", ")} — saves are checked, so nobody's work is overwritten silently.`}
+              aria-live="polite"
+            >
+              <span className="flex -space-x-1" aria-hidden="true">
+                {otherEditors.slice(0, 3).map((e) => (
+                  <span
+                    key={e.userId}
+                    className="w-4 h-4 rounded-full bg-accent text-accent-fg text-[9px] font-semibold flex items-center justify-center ring-1 ring-surface uppercase"
+                  >
+                    {e.email.charAt(0)}
+                  </span>
+                ))}
+              </span>
+              {otherEditors.length === 1
+                ? `${otherEditors[0].email.split("@")[0]} is also here`
+                : `${otherEditors.length} others are here`}
             </span>
           )}
         </div>
