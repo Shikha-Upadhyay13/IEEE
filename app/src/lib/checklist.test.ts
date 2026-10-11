@@ -56,7 +56,24 @@ describe("runChecklist", () => {
       body: [para("p1", [text("See "), xref("f1"), text(" and "), cite("r1")]), fig("f1")],
       references: [ref("r1")],
     });
-    expect(checklistSummary(runChecklist(doc, 5))).toEqual({ fail: 0, warn: 0, info: 0, pass: 9 });
+    expect(checklistSummary(runChecklist(doc, 5))).toEqual({ fail: 0, warn: 0, info: 1, pass: 12 });
+    expect(item(doc, "references-verified").status).toBe("info");
+  });
+
+  it("checks references for empty entries, duplicates and IEEE style", () => {
+    const doc = makeDoc({
+      body: [para("p1", [cite("r1"), cite("r2"), cite("r3")])],
+      references: [
+        { id: "r1", fields: {}, renderedText: "A. B, \"Deep nets,\" IEEE Trans., pp. 1-9, 2020." },
+        { id: "r2", fields: {}, renderedText: "A. B, \"Deep nets,\" IEEE Trans., pp. 1-9, 2020." },
+        { id: "r3", fields: {}, renderedText: " " },
+      ],
+    });
+    expect(item(doc, "references-complete").status).toBe("fail");
+    expect(item(doc, "references-duplicates").status).toBe("warn");
+    const style = item(doc, "references-style");
+    expect(style.status).toBe("info");
+    expect(style.fix?.id).toBe("page-range-dashes");
   });
 
   it("fails a missing title and unnamed authors", () => {

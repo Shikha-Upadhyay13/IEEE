@@ -32,7 +32,7 @@ describe("formatIeeeReference", () => {
         year: "1988",
       })
     ).toBe(
-      'J. F. Fuller, E. F. Fuchs, and K. J. Roesler, "Influence of harmonics on power distribution system protection," IEEE Trans. Power Del., vol. 3, pp. 549-557, 1988.'
+      'J. F. Fuller, E. F. Fuchs, and K. J. Roesler, "Influence of harmonics on power distribution system protection," IEEE Trans. Power Del., vol. 3, pp. 549–557, 1988.'
     );
   });
 
@@ -50,7 +50,7 @@ describe("bibtexToIeee", () => {
   it("numbers entries and flags missing fields", () => {
     const refs = bibtexToIeee(bib);
     expect(refs).toHaveLength(2);
-    expect(refs[0].text).toBe('J. Smith and R. Davis, "Robot Navigation," IEEE Trans. Robot., vol. 39, pp. 1012-1028, 2023.');
+    expect(refs[0].text).toBe('J. Smith and R. Davis, "Robot Navigation," IEEE Trans. Robot., vol. 39, pp. 1012–1028, 2023.');
     expect(refs[0].missing).toEqual([]);
     expect(refs[1].missing).toEqual(["authors", "venue", "year"]);
     expect(numberedList(refs).split("\n")[1]).toBe('[2] "Only a title".');

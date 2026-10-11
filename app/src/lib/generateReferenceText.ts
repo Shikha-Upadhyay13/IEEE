@@ -31,7 +31,8 @@ export const emptyReferenceFields: ReferenceFields = {
 export function generateReferenceText(fields: ReferenceFields): string {
   // Everything after the title, pre-joined — built first so the title's own
   // punctuation can be decided from whether anything actually follows it.
-  const rest = [fields.venue, fields.volume && `vol. ${fields.volume}`, fields.pages && `pp. ${fields.pages}`, fields.year]
+  const pages = fields.pages.replace(/(\w)\s*-{1,2}\s*(\w)/g, "$1–$2");
+  const rest = [fields.venue, fields.volume && `vol. ${fields.volume}`, pages && `pp. ${pages}`, fields.year]
     .filter(Boolean)
     .join(", ");
 

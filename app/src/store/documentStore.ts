@@ -3,6 +3,7 @@ import type { Document, BodyNode, InlineNode, TableSpacing, FigureImage, FigureA
 import { samplePaper } from "../data/samplePaper";
 import { generateId } from "../lib/id";
 import { emptyReferenceFields, generateReferenceText, type ReferenceFields } from "../lib/generateReferenceText";
+import { fixPageRangeDashes } from "../lib/referenceChecks";
 
 type BlockWidth = Extract<BodyNode, { type: "figure" }>["width"];
 type PaperSize = Document["meta"]["paperSize"];
@@ -222,6 +223,8 @@ type DocumentStore = {
   markReferenceVerified: (id: string, doi: string) => void;
   replaceReferenceFields: (id: string, fields: ReferenceFields) => void;
   removeReference: (id: string) => void;
+  /** Replaces hyphens in page ranges with IEEE en dashes across all references. */
+  fixReferencePageRanges: () => void;
 };
 
 export const useDocumentStore = create<DocumentStore>((set) => ({
@@ -730,6 +733,18 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
       document: {
         ...state.document,
         references: state.document.references.filter((ref) => ref.id !== id),
+      },
+    })),
+
+  fixReferencePageRanges: () =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        references: state.document.references.map((ref) => ({
+          ...ref,
+          fields: ref.fields.pages ? { ...ref.fields, pages: ref.fields.pages.replace(/-{1,2}/g, "–") } : ref.fields,
+          renderedText: fixPageRangeDashes(ref.renderedText),
+        })),
       },
     })),
 }));

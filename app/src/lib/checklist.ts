@@ -1,6 +1,7 @@
 import type { BodyNode, Document, InlineNode } from "../types/document";
 import { getMode } from "./formats/modes";
 import { getFormat } from "./formats/formats";
+import { findDuplicateReferences, hasHyphenPageRange, isUnverified, listsTooManyAuthors } from "./referenceChecks";
 
 /** fail = blocker (stops a Submission-mode export), warn = should review, info = worth knowing. */
 export type ChecklistStatus = "pass" | "info" | "warn" | "fail";
@@ -25,7 +26,11 @@ export type ChecklistItem = {
   status: ChecklistStatus;
   detail: string;
   target?: ChecklistTarget;
+  /** A safe automatic fix the panel can offer as a button. */
+  fix?: ChecklistFix;
 };
+
+export type ChecklistFix = { id: "page-range-dashes"; label: string };
 
 export function countWords(text: string): number {
   const trimmed = text.trim();
@@ -180,6 +185,61 @@ export function runChecklist(doc: Document, pageCount: number | null): Checklist
             : `All ${plural(doc.references.length, "reference")} are cited.`,
       target: { kind: "references" },
     });
+
+    const refName = (i: number) => referenceName(doc.references[i].fields, `reference ${i + 1}`);
+    const empty = doc.references.flatMap((r, i) => (r.renderedText.trim() ? [] : [i]));
+    items.push({
+      id: "references-complete",
+      label: "No empty references",
+      status: empty.length === 0 ? "pass" : "fail",
+      detail:
+        empty.length === 0
+          ? "Every reference has text."
+          : `Empty: ${empty.map((i) => `[${i + 1}]`).join(", ")}. Fill them in or delete them.`,
+      target: { kind: "references" },
+    });
+
+    const duplicates = findDuplicateReferences(doc.references);
+    items.push({
+      id: "references-duplicates",
+      label: "No duplicate references",
+      status: duplicates.length === 0 ? "pass" : "warn",
+      detail:
+        duplicates.length === 0
+          ? "No two references look like the same work."
+          : `These look like the same work: ${duplicates
+              .map(([a, b]) => `${refName(a)} and ${refName(b)}`)
+              .join("; ")}.`,
+      target: { kind: "references" },
+    });
+
+    const hyphenated = doc.references.filter((r) => hasHyphenPageRange(r.renderedText)).length;
+    const longAuthorLists = doc.references.filter(listsTooManyAuthors).length;
+    const styleNotes = [
+      hyphenated ? `${plural(hyphenated, "page range")} use a hyphen instead of an en dash (pp. 549–557).` : "",
+      longAuthorLists
+        ? `${plural(longAuthorLists, "reference")} list more than six authors — IEEE uses the first author followed by et al.`
+        : "",
+    ].filter(Boolean);
+    items.push({
+      id: "references-style",
+      label: "IEEE reference style",
+      status: styleNotes.length === 0 ? "pass" : "info",
+      detail: styleNotes.length === 0 ? "Page ranges and author lists follow IEEE style." : styleNotes.join(" "),
+      target: { kind: "references" },
+      fix: hyphenated ? { id: "page-range-dashes", label: "Use en dashes" } : undefined,
+    });
+
+    const unverified = doc.references.filter(isUnverified).length;
+    if (unverified > 0) {
+      items.push({
+        id: "references-verified",
+        label: "References checked against Crossref",
+        status: "info",
+        detail: `${plural(unverified, "reference")} not yet checked. Use Verify in References to catch wrong years, volumes and titles.`,
+        target: { kind: "references" },
+      });
+    }
   }
 
   const xrefTargets = new Set(inline.flatMap((n) => (n.type === "xref" ? [n.targetId] : [])));

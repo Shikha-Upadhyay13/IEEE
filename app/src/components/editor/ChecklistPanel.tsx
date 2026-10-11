@@ -5,6 +5,7 @@ import {
   STATUS_LABEL,
   checklistSummary,
   runChecklist,
+  type ChecklistFix,
   type ChecklistItem,
   type ChecklistStatus,
 } from "../../lib/checklist";
@@ -41,6 +42,7 @@ export function ChecklistPanel({
   onNavigate: (view: EditorView, blockId?: string) => void;
 }) {
   const document = useDocumentStore((s) => s.document);
+  const fixReferencePageRanges = useDocumentStore((s) => s.fixReferencePageRanges);
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
 
@@ -50,6 +52,10 @@ export function ChecklistPanel({
   );
   const summary = checklistSummary(items);
   const outstanding = summary.fail + summary.warn;
+
+  function applyFix(fix: ChecklistFix) {
+    if (fix.id === "page-range-dashes") fixReferencePageRanges();
+  }
 
   function go(item: ChecklistItem) {
     const target = item.target;
@@ -130,6 +136,17 @@ export function ChecklistPanel({
                   </button>
                 ) : (
                   <div className="flex items-start gap-3 px-4 py-2.5">{content}</div>
+                )}
+                {item.fix && (
+                  <div className="pl-11 pr-4 pb-2.5 -mt-1">
+                    <button
+                      type="button"
+                      onClick={() => item.fix && applyFix(item.fix)}
+                      className={`${btnSecondary} text-xs py-1 px-2.5`}
+                    >
+                      {item.fix.label}
+                    </button>
+                  </div>
                 )}
               </li>
             );
