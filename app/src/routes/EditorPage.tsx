@@ -15,6 +15,7 @@ import { ShareButton } from "../components/editor/ShareButton";
 import { VersionHistoryPanel } from "../components/editor/VersionHistoryPanel";
 import { supabase } from "../supabaseClient";
 import { updateDocument } from "../lib/documentWrites";
+import { parseDocument } from "../lib/parseDocument";
 import { useAuth } from "../lib/useAuth";
 import { btnGhost, btnIcon, btnPrimary, btnSecondary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
@@ -32,6 +33,7 @@ export function EditorPage() {
   const loadDocument = useDocumentStore((s) => s.loadDocument);
 
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [view, setView] = useState<EditorView>({ kind: "all" });
@@ -73,9 +75,15 @@ export function EditorPage() {
           navigate(`/view/${documentId}`, { replace: true });
           return;
         }
-        const content = data.content as Document;
-        lastSavedContent.current = content;
-        loadDocument(documentId, content);
+        const parsed = parseDocument(data.content);
+        if (!parsed.ok) {
+          console.error("Paper failed validation:", parsed.error);
+          setLoadError(parsed.error);
+          setLoadState("error");
+          return;
+        }
+        lastSavedContent.current = parsed.document;
+        loadDocument(documentId, parsed.document);
         setLoadState("ready");
       });
     return () => {
@@ -198,8 +206,11 @@ export function EditorPage() {
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-canvas px-6 text-center">
         <BrandMark size="lg" className="bg-muted text-accent-fg" />
         <p className="text-sm text-muted max-w-sm">
-          Couldn't load that paper — it may not exist, or you may not have access.
+          {loadError
+            ? "This paper's saved data couldn't be read, so it was not opened (nothing was changed). Restore an earlier version or contact support."
+            : "Couldn't load that paper — it may not exist, or you may not have access."}
         </p>
+        {loadError && <p className="text-xs text-muted max-w-sm font-mono break-words">{loadError}</p>}
         <Link to="/dashboard" className={btnPrimary}>
           <ArrowLeft size={14} aria-hidden="true" />
           Back to Dashboard

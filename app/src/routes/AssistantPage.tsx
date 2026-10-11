@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { updateDocument } from "../lib/documentWrites";
+import { parseDocument } from "../lib/parseDocument";
 import { useAuth } from "../lib/useAuth";
 import { useDebouncedValue } from "../lib/useDebouncedValue";
 import { summarizeDocumentForContext } from "../lib/summarizeDocument";
@@ -242,7 +243,8 @@ export function AssistantPage() {
       setDocumentContext(null);
       return;
     }
-    setDocumentContext(summarizeDocumentForContext(data.content as Document));
+    const parsed = parseDocument(data.content);
+    setDocumentContext(parsed.ok ? summarizeDocumentForContext(parsed.document) : null);
   }
 
   useEffect(() => {
@@ -263,7 +265,13 @@ export function AssistantPage() {
       setInsertingIndex(null);
       return;
     }
-    const doc = data.content as Document;
+    const parsed = parseDocument(data.content);
+    if (!parsed.ok) {
+      console.error("Paper failed validation:", parsed.error);
+      setInsertingIndex(null);
+      return;
+    }
+    const doc = parsed.document;
     const prepared = prepareAssistantTextForPaper(content);
     if (prepared.paragraphs.length === 0) {
       setInsertingIndex(null);

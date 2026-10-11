@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { resolveNumbering } from "../lib/numbering";
 import { PagedPreview } from "../components/renderer/PagedPreview";
 import { supabase } from "../supabaseClient";
+import { parseDocument } from "../lib/parseDocument";
 import type { Document } from "../types/document";
 
 /**
@@ -31,16 +32,13 @@ export function PrintView() {
     let cancelled = false;
 
     async function load() {
+      let raw: unknown = null;
       if (token) {
         const { data, error } = await supabase.rpc("get_document_by_export_token", {
           export_token: token,
         });
         if (cancelled) return;
-        if (error || !data) {
-          setLoadError(true);
-          return;
-        }
-        setPaperContent(data as Document);
+        raw = error ? null : data;
       } else {
         const { data, error } = await supabase
           .from("documents")
@@ -48,12 +46,15 @@ export function PrintView() {
           .eq("id", documentId)
           .single();
         if (cancelled) return;
-        if (error || !data) {
-          setLoadError(true);
-          return;
-        }
-        setPaperContent(data.content as Document);
+        raw = error || !data ? null : data.content;
       }
+      const parsed = raw ? parseDocument(raw) : null;
+      if (!parsed?.ok) {
+        if (parsed) console.error("Paper failed validation:", parsed.error);
+        setLoadError(true);
+        return;
+      }
+      setPaperContent(parsed.document);
     }
     load();
     return () => {

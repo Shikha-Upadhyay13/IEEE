@@ -10,6 +10,7 @@ import { BrandMark } from "../components/BrandMark";
 import { ArrowRight, FileQuestion, Lock, Pencil } from "lucide-react";
 import type { Document } from "../types/document";
 import { usePageMeta } from "../lib/usePageMeta";
+import { parseDocument } from "../lib/parseDocument";
 
 type SharedDocumentRow = {
   id: string;
@@ -52,9 +53,15 @@ export function ViewPage() {
           return;
         }
 
+        const parsed = parseDocument(data.content);
+        if (!parsed.ok) {
+          console.error("Shared paper failed validation:", parsed.error);
+          setLoadState("notfound");
+          return;
+        }
         setIsOwner(data.is_owner);
         setPaperTitle(data.title || "Untitled IEEE Paper");
-        setPaperContent(data.content as Document);
+        setPaperContent(parsed.document);
         setLoadState("ready");
       } catch (err) {
         if (!cancelled) {

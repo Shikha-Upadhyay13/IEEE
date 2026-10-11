@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../supabaseClient";
 import { resolveNumbering } from "../../lib/numbering";
 import { DocumentThumbnail } from "../renderer/DocumentThumbnail";
-import type { Document, ResolvedDocument } from "../../types/document";
+import { parseDocument } from "../../lib/parseDocument";
+import type { ResolvedDocument } from "../../types/document";
 
 export function PaperThumbnail({ documentId }: { documentId: string }) {
   const [resolved, setResolved] = useState<ResolvedDocument | null>(null);
@@ -20,7 +21,9 @@ export function PaperThumbnail({ documentId }: { documentId: string }) {
           console.error("Failed to load paper thumbnail:", error);
           return;
         }
-        setResolved(resolveNumbering(data.content as Document));
+        const parsed = parseDocument(data.content);
+        if (parsed.ok) setResolved(resolveNumbering(parsed.document));
+        else console.error("Paper thumbnail failed validation:", parsed.error);
       });
     return () => {
       cancelled = true;
