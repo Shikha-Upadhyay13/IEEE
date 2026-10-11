@@ -25,6 +25,8 @@ export type FormatSpec = {
   /** "journal": author line + first-page affiliation footnote + running head. */
   frontMatter: "conference" | "journal";
   biographies: boolean;
+  /** Abstract length IEEE asks for in this format; min 0 means no minimum. */
+  abstractWords: { min: number; max: number };
 };
 
 /**
@@ -56,6 +58,7 @@ export const IEEE_CONFERENCE: FormatSpec = {
   },
   frontMatter: "conference",
   biographies: false,
+  abstractWords: { min: 0, max: 150 },
 };
 
 // ieee-template.css's own font-family rule is the IEEE-compliant default
@@ -102,6 +105,7 @@ export const IEEE_PEER_REVIEW: FormatSpec = {
   },
   frontMatter: "conference",
   biographies: false,
+  abstractWords: { min: 150, max: 250 },
 };
 
 /**
@@ -116,6 +120,7 @@ export const IEEE_JOURNAL: FormatSpec = {
   geometry: IEEE_CONFERENCE.geometry,
   frontMatter: "journal",
   biographies: true,
+  abstractWords: { min: 150, max: 250 },
 };
 
 /**
@@ -129,6 +134,7 @@ export const IEEE_TECHNOTE: FormatSpec = {
   geometry: IEEE_CONFERENCE.geometry,
   frontMatter: "journal",
   biographies: false,
+  abstractWords: { min: 0, max: 250 },
 };
 
 export const FORMATS: Record<FormatId, FormatSpec> = {

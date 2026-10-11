@@ -56,7 +56,7 @@ describe("runChecklist", () => {
       body: [para("p1", [text("See "), xref("f1"), text(" and "), cite("r1")]), fig("f1")],
       references: [ref("r1")],
     });
-    expect(checklistSummary(runChecklist(doc, 5))).toEqual({ fail: 0, warn: 0, pass: 9 });
+    expect(checklistSummary(runChecklist(doc, 5))).toEqual({ fail: 0, warn: 0, info: 0, pass: 9 });
   });
 
   it("fails a missing title and unnamed authors", () => {
@@ -70,6 +70,18 @@ describe("runChecklist", () => {
   it("warns when the abstract runs over 150 words and fails when empty", () => {
     expect(item(makeDoc({ abstract: { text: "word ".repeat(151) } }), "abstract").status).toBe("warn");
     expect(item(makeDoc({ abstract: { text: "" } }), "abstract").status).toBe("fail");
+  });
+
+  it("uses the 150–250 word range for journal formats", () => {
+    const journal = (words: number) => {
+      const doc = makeDoc({ abstract: { text: "word ".repeat(words) } });
+      doc.meta.template = "ieee-journal";
+      return item(doc, "abstract");
+    };
+    expect(journal(200).status).toBe("pass");
+    expect(journal(100).status).toBe("warn");
+    expect(journal(260).status).toBe("warn");
+    expect(journal(260).label).toBe("Abstract (150–250 words)");
   });
 
   it("fails Custom mode, including legacy papers with a non-Times font", () => {

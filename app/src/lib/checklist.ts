@@ -1,7 +1,16 @@
 import type { BodyNode, Document, InlineNode } from "../types/document";
 import { getMode } from "./formats/modes";
+import { getFormat } from "./formats/formats";
 
-export type ChecklistStatus = "pass" | "warn" | "fail";
+/** fail = blocker (stops a Submission-mode export), warn = should review, info = worth knowing. */
+export type ChecklistStatus = "pass" | "info" | "warn" | "fail";
+
+export const STATUS_LABEL: Record<ChecklistStatus, string> = {
+  fail: "Blocker",
+  warn: "Warning",
+  info: "Note",
+  pass: "Passed",
+};
 
 /** Where the editor should take the user to fix an item. */
 export type ChecklistTarget =
@@ -17,8 +26,6 @@ export type ChecklistItem = {
   detail: string;
   target?: ChecklistTarget;
 };
-
-export const ABSTRACT_WORD_LIMIT = 150;
 
 export function countWords(text: string): number {
   const trimmed = text.trim();
@@ -77,17 +84,21 @@ export function runChecklist(doc: Document, pageCount: number | null): Checklist
     target: { kind: "details" },
   });
 
+  const format = getFormat(doc.meta);
+  const { min, max } = format.abstractWords;
   const abstractWords = countWords(doc.abstract.text);
   items.push({
     id: "abstract",
-    label: `Abstract (${ABSTRACT_WORD_LIMIT} words or fewer)`,
-    status: abstractWords === 0 ? "fail" : abstractWords > ABSTRACT_WORD_LIMIT ? "warn" : "pass",
+    label: min > 0 ? `Abstract (${min}–${max} words)` : `Abstract (${max} words or fewer)`,
+    status: abstractWords === 0 ? "fail" : abstractWords > max || abstractWords < min ? "warn" : "pass",
     detail:
       abstractWords === 0
         ? "Write an abstract."
-        : abstractWords > ABSTRACT_WORD_LIMIT
-          ? `${abstractWords} words — ${abstractWords - ABSTRACT_WORD_LIMIT} over the usual IEEE limit.`
-          : `${plural(abstractWords, "word")}.`,
+        : abstractWords > max
+          ? `${abstractWords} words — ${abstractWords - max} over the ${format.label} limit.`
+          : abstractWords < min
+            ? `${abstractWords} words — ${format.label} abstracts are usually at least ${min}.`
+            : `${plural(abstractWords, "word")}.`,
     target: { kind: "details" },
   });
 
@@ -221,6 +232,7 @@ export function checklistSummary(items: ChecklistItem[]) {
   return {
     fail: items.filter((i) => i.status === "fail").length,
     warn: items.filter((i) => i.status === "warn").length,
+    info: items.filter((i) => i.status === "info").length,
     pass: items.filter((i) => i.status === "pass").length,
   };
 }

@@ -1,19 +1,26 @@
 import { useMemo, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, ChevronRight, ClipboardCheck, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronRight, ClipboardCheck, Info, XCircle } from "lucide-react";
 import { useDocumentStore } from "../../store/documentStore";
-import { checklistSummary, runChecklist, type ChecklistItem, type ChecklistStatus } from "../../lib/checklist";
+import {
+  STATUS_LABEL,
+  checklistSummary,
+  runChecklist,
+  type ChecklistItem,
+  type ChecklistStatus,
+} from "../../lib/checklist";
 import type { BodyNode } from "../../types/document";
 import { Popover } from "../ui/Popover";
 import { btnSecondary } from "../../lib/uiClasses";
 import type { EditorView } from "./EditorPanel";
 
-const STATUS_ICON: Record<ChecklistStatus, { icon: typeof CheckCircle2; className: string; label: string }> = {
-  pass: { icon: CheckCircle2, className: "text-emerald-600 dark:text-emerald-400", label: "Passed" },
-  warn: { icon: AlertTriangle, className: "text-amber-600 dark:text-amber-400", label: "Warning" },
-  fail: { icon: XCircle, className: "text-red-600 dark:text-red-400", label: "Needs fixing" },
+const STATUS_ICON: Record<ChecklistStatus, { icon: typeof CheckCircle2; className: string }> = {
+  pass: { icon: CheckCircle2, className: "text-emerald-600 dark:text-emerald-400" },
+  info: { icon: Info, className: "text-sky-600 dark:text-sky-400" },
+  warn: { icon: AlertTriangle, className: "text-amber-600 dark:text-amber-400" },
+  fail: { icon: XCircle, className: "text-red-600 dark:text-red-400" },
 };
 
-const STATUS_ORDER: Record<ChecklistStatus, number> = { fail: 0, warn: 1, pass: 2 };
+const STATUS_ORDER: Record<ChecklistStatus, number> = { fail: 0, warn: 1, info: 2, pass: 3 };
 
 function nearestSectionId(nodes: BodyNode[], blockId: string, enclosing: string | null = null): string | null | undefined {
   for (const node of nodes) {
@@ -91,7 +98,9 @@ export function ChecklistPanel({
           <p className="text-xs text-muted mt-0.5">
             {outstanding === 0
               ? "Everything we can check looks ready."
-              : `${summary.fail} to fix, ${summary.warn} to review. Click an item to jump to it.`}
+              : `${summary.fail} ${summary.fail === 1 ? "blocker" : "blockers"}, ${summary.warn} ${
+                  summary.warn === 1 ? "warning" : "warnings"
+                }. Click an item to jump to it.`}
           </p>
         </div>
         <ul className="py-1">
@@ -101,7 +110,7 @@ export function ChecklistPanel({
             const clickable = item.target !== undefined && item.status !== "pass";
             const content = (
               <>
-                <Icon size={16} className={`flex-none mt-0.5 ${status.className}`} aria-label={status.label} />
+                <Icon size={16} className={`flex-none mt-0.5 ${status.className}`} aria-label={STATUS_LABEL[item.status]} />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium">{item.label}</span>
                   <span className="block text-xs text-muted mt-0.5 break-words">{item.detail}</span>
