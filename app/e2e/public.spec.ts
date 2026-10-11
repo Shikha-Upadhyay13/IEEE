@@ -25,6 +25,27 @@ test("public pages have their own title, description and crawler files", async (
   expect(await sitemap.text()).toContain("<urlset");
 });
 
+test("the sample paper paginates onto US Letter pages with two IEEE columns", async ({ page }) => {
+  await page.goto("/");
+  const firstPage = page.locator(".pagedjs_page").first();
+  await expect(firstPage).toBeAttached({ timeout: 30_000 });
+  const size = await firstPage.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return { width: parseFloat(style.width), height: parseFloat(style.height) };
+  });
+  expect(size.width).toBeCloseTo(8.5 * 96, 0);
+  expect(size.height).toBeCloseTo(11 * 96, 0);
+  const columns = await page
+    .locator(".pagedjs_page .ieee-columns")
+    .first()
+    .evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { count: style.columnCount, gap: parseFloat(style.columnGap) };
+    });
+  expect(columns.count).toBe("2");
+  expect(columns.gap).toBeCloseTo(0.25 * 96, 0);
+});
+
 test("signed-out visitors are sent from the dashboard to login", async ({ page }) => {
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/login/);
