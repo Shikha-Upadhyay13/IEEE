@@ -3,6 +3,7 @@ import { Link2, X } from "lucide-react";
 import { supabase } from "../../supabaseClient";
 import { updateDocument } from "../../lib/documentWrites";
 import { btnPrimary, btnSecondary } from "../../lib/uiClasses";
+import { SharePeople } from "./SharePeople";
 
 interface ShareButtonProps {
   documentId: string;
@@ -13,6 +14,7 @@ export function ShareButton({ documentId }: ShareButtonProps) {
   const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isOwner, setIsOwner] = useState<boolean | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const shareUrl = `${window.location.origin}/view/${documentId}`;
@@ -94,11 +96,11 @@ export function ShareButton({ documentId }: ShareButtonProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-surface border border-line rounded-xl shadow-xl p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] bg-surface border border-line rounded-xl shadow-xl p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
           <div className="flex items-center justify-between pb-3 border-b border-line">
             <div>
               <h3 className="text-xs font-semibold text-ink">Share this paper</h3>
-              <p className="text-[11px] text-muted">Read-only link for co-authors & reviewers</p>
+              <p className="text-[11px] text-muted">Invite co-authors and reviewers, or publish a read-only link</p>
             </div>
             <button
               type="button"
@@ -110,19 +112,22 @@ export function ShareButton({ documentId }: ShareButtonProps) {
             </button>
           </div>
 
+          <SharePeople documentId={documentId} onOwnerChange={setIsOwner} />
+
           <div className="py-3">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-medium text-ink">Public link access</p>
                 <p className="text-[11px] text-muted">
-                  {isPublic ? "Anyone with the link can read" : "Only you can view"}
+                  {isPublic ? "Anyone with the link can read" : "Only people listed above can open it"}
+                  {isOwner === false && " · only the owner can change this"}
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={handleTogglePublic}
-                disabled={loading}
+                disabled={loading || isOwner === false}
                 role="switch"
                 aria-checked={isPublic}
                 aria-label="Public link access"

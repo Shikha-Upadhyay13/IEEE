@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabaseClient";
 import { identifyUser } from "./monitoring";
+import { runAccountSetup } from "./accountSetup";
 
 // If Supabase is unreachable (DNS/offline/paused project), getSession can
 // hang while retrying token refresh — without a timeout the whole app stays
@@ -36,6 +37,7 @@ export function useAuth() {
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       identifyUser(newSession?.user.id ?? null);
+      if (newSession) runAccountSetup(newSession.user.id);
       if (!cancelled) setSession(newSession);
     });
 
