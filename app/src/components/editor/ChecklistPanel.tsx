@@ -10,6 +10,8 @@ import {
   type ChecklistStatus,
 } from "../../lib/checklist";
 import type { BodyNode } from "../../types/document";
+import { figureImages } from "../../lib/figureResolution";
+import { useImageWidths } from "../../lib/useImageWidths";
 import { Popover } from "../ui/Popover";
 import { btnSecondary } from "../../lib/uiClasses";
 import type { EditorView } from "./EditorPanel";
@@ -46,9 +48,23 @@ export function ChecklistPanel({
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
 
+  const imageUrls = useMemo(() => {
+    const urls: string[] = [];
+    const visit = (nodes: BodyNode[]) => {
+      for (const node of nodes) {
+        if (node.type === "section") visit(node.children);
+        else if (node.type === "figure") urls.push(...figureImages(node).map((img) => img.url));
+      }
+    };
+    visit(document.body);
+    return urls;
+  }, [document.body]);
+  const imageWidths = useImageWidths(imageUrls);
+
   const items = useMemo(
-    () => [...runChecklist(document, pageCount)].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]),
-    [document, pageCount],
+    () =>
+      [...runChecklist(document, pageCount, imageWidths)].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]),
+    [document, pageCount, imageWidths],
   );
   const summary = checklistSummary(items);
   const outstanding = summary.fail + summary.warn;

@@ -150,6 +150,14 @@ describe("runChecklist", () => {
     expect(result.target).toEqual({ kind: "block", id: "f2" });
   });
 
+  it("warns about figures below 300 dpi once their size is known", () => {
+    const doc = makeDoc({ body: [para("p1", [xref("f1")]), { ...fig("f1"), images: [{ url: "a.png", alt: "" }] } as BodyNode] });
+    expect(item(doc, "figure-resolution").status).toBe("pass");
+    const low = runChecklist(doc, 4, new Map([["a.png", 600]])).find((i) => i.id === "figure-resolution");
+    expect(low?.status).toBe("warn");
+    expect(low?.detail).toContain("171 dpi");
+  });
+
   it("fails empty captions", () => {
     const doc = makeDoc({ body: [para("p1", [xref("f1")]), fig("f1", [text(" ")])] });
     expect(item(doc, "captions").status).toBe("fail");

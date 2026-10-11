@@ -2,6 +2,7 @@ import type { BodyNode, Document, InlineNode } from "../types/document";
 import { getMode } from "./formats/modes";
 import { getFormat } from "./formats/formats";
 import { findUndefinedAcronyms } from "./acronyms";
+import { MIN_PHOTO_DPI, figureImages, findLowResolutionFigures } from "./figureResolution";
 import { findDuplicateReferences, hasHyphenPageRange, isUnverified, listsTooManyAuthors } from "./referenceChecks";
 
 /** fail = blocker (stops a Submission-mode export), warn = should review, info = worth knowing. */
@@ -66,7 +67,11 @@ function referenceName(fields: Record<string, string>, fallback: string) {
   return fields.title?.trim() || fields.author?.trim() || fallback;
 }
 
-export function runChecklist(doc: Document, pageCount: number | null): ChecklistItem[] {
+export function runChecklist(
+  doc: Document,
+  pageCount: number | null,
+  imageWidths: ReadonlyMap<string, number> = new Map()
+): ChecklistItem[] {
   const items: ChecklistItem[] = [];
 
   const title = inlineText(doc.titleBlock.title).trim();
@@ -285,6 +290,26 @@ export function runChecklist(doc: Document, pageCount: number | null): Checklist
           : `${plural(emptyCaptions.length, "figure or table", "figures or tables")} without a caption.`,
     target: emptyCaptions[0] ? { kind: "block", id: emptyCaptions[0].id } : undefined,
   });
+
+  const figures: Extract<BodyNode, { type: "figure" }>[] = [];
+  walk(doc.body, (node) => {
+    if (node.type === "figure" && figureImages(node).length > 0) figures.push(node);
+  });
+  if (figures.length > 0) {
+    const low = findLowResolutionFigures(figures, doc.meta, imageWidths);
+    items.push({
+      id: "figure-resolution",
+      label: "Figure resolution",
+      status: low.length === 0 ? "pass" : "warn",
+      detail:
+        low.length === 0
+          ? `Images are at least ${MIN_PHOTO_DPI} dpi at their printed size.`
+          : `${plural(low.length, "figure")} below ${MIN_PHOTO_DPI} dpi at printed size (lowest ${Math.min(
+              ...low.map((f) => f.dpi)
+            )} dpi). IEEE asks for ${MIN_PHOTO_DPI} dpi for photos and 600 dpi for line art.`,
+      target: low[0] ? { kind: "block", id: low[0].id } : undefined,
+    });
+  }
 
   const paragraphs: { id: string; text: string }[] = [];
   walk(doc.body, (node) => {
