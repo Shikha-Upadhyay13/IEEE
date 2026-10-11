@@ -91,3 +91,26 @@ describe("insertSectionParagraphs", () => {
     expect(section("Introduction").children).toHaveLength(2);
   });
 });
+
+describe("addAcknowledgmentParagraph", () => {
+  beforeEach(() => {
+    useDocumentStore.getState().loadDocument("doc-1", createBlankDocument());
+  });
+
+  function acknowledgments() {
+    return useDocumentStore
+      .getState()
+      .document.body.filter((n) => n.type === "section" && /^acknowledg/i.test(n.heading));
+  }
+
+  it("creates the Acknowledgment section once and appends to it", () => {
+    const s = useDocumentStore.getState();
+    const first = s.addAcknowledgmentParagraph("The authors used a tool.");
+    s.addAcknowledgmentParagraph("Thanks to the lab.");
+    const sections = acknowledgments();
+    expect(sections).toHaveLength(1);
+    const children = sections[0].type === "section" ? sections[0].children : [];
+    expect(children.map((c) => c.id)[0]).toBe(first);
+    expect(children).toHaveLength(2);
+  });
+});

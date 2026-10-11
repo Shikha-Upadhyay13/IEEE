@@ -8,6 +8,7 @@ import { friendlyErrorMessage } from "../../lib/friendlyError";
 import { useConfirm } from "../ConfirmDialog";
 import { CopyrightNoticeFields } from "./CopyrightNoticeFields";
 import { JournalFields } from "./JournalFields";
+import { AiDisclosureFields } from "./AiDisclosureFields";
 import { inputBase, labelBase } from "../../lib/uiClasses";
 import type { FontFamily } from "../../types/document";
 
@@ -230,6 +231,7 @@ export function FormatPanel() {
 
       {meta.template === "ieee-conference" && <CopyrightNoticeFields />}
       {currentFormat.frontMatter === "journal" && <JournalFields biographies={currentFormat.biographies} />}
+      <AiDisclosureFields />
     </div>
   );
 }

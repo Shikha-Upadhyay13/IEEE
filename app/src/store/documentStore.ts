@@ -4,6 +4,7 @@ import { samplePaper } from "../data/samplePaper";
 import { generateId } from "../lib/id";
 import { emptyReferenceFields, generateReferenceText, type ReferenceFields } from "../lib/generateReferenceText";
 import { fixPageRangeDashes } from "../lib/referenceChecks";
+import { isAcknowledgmentHeading } from "../lib/formats/blind";
 
 type BlockWidth = Extract<BodyNode, { type: "figure" }>["width"];
 type PaperSize = Document["meta"]["paperSize"];
@@ -185,6 +186,8 @@ type DocumentStore = {
   setCopyrightNotice: (copyrightNotice: Document["meta"]["copyrightNotice"]) => void;
   setJournalInfo: (journal: Document["meta"]["journal"]) => void;
   setDoubleBlind: (doubleBlind: boolean) => void;
+  /** Appends a paragraph to the Acknowledgment section, creating it at the end of the paper if needed. Returns the paragraph id. */
+  addAcknowledgmentParagraph: (text: string) => string;
   /** Upserts the biography for one author; an empty text with no photo removes it. */
   setBiography: (authorId: string, patch: { text?: string; photoUrl?: string | undefined }) => void;
   setPaperSize: (paperSize: PaperSize) => void;
@@ -378,6 +381,23 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   setDoubleBlind: (doubleBlind) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, doubleBlind } } })),
+
+  addAcknowledgmentParagraph: (text) => {
+    const paragraph: BodyNode = { type: "paragraph", id: generateId("p"), content: [{ type: "text", text }] };
+    set((state) => {
+      const body = state.document.body;
+      const index = body.findIndex((n) => n.type === "section" && isAcknowledgmentHeading(n.heading));
+      const next =
+        index === -1
+          ? [
+              ...body,
+              { type: "section" as const, id: generateId("sec"), heading: "Acknowledgment", level: 1, children: [paragraph] },
+            ]
+          : body.map((n, i) => (i === index && n.type === "section" ? { ...n, children: [...n.children, paragraph] } : n));
+      return { document: { ...state.document, body: next } };
+    });
+    return paragraph.id;
+  },
 
   setBiography: (authorId, patch) =>
     set((state) => {
