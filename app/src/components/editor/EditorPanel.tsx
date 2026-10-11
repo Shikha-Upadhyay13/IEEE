@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { Menu, type MenuItem } from "../ui/Menu";
 import { useDocumentStore, collectSectionOptions, collectSectionDescendantIds } from "../../store/documentStore";
-import type { BodyNode, FontFamily, InlineNode } from "../../types/document";
+import type { BodyNode, InlineNode } from "../../types/document";
 import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 import { FigureEditor } from "./FigureEditor";
 import { TableEditor } from "./TableEditor";
@@ -43,6 +43,7 @@ import { EquationEditor } from "./EquationEditor";
 import { PasteImportDialog } from "./PasteImportDialog";
 import { SectionDraftPanel } from "./SectionDraftPanel";
 import { AppearancePanel } from "./AppearancePanel";
+import { FormatPanel } from "./FormatPanel";
 import { AuthorsEditor } from "./AuthorsEditor";
 import { btnGhost, btnSecondary, cardBase, inputBase, labelBase } from "../../lib/uiClasses";
 import { useEditorPreferences } from "../../lib/useEditorPreferences";
@@ -67,14 +68,6 @@ function blockMenuItems(onAdd: (type: BlockType) => void): MenuItem[] {
     onSelect: () => onAdd(type),
   }));
 }
-
-const FONT_OPTIONS: { value: FontFamily; label: string }[] = [
-  { value: "times", label: "Times New Roman (IEEE default)" },
-  { value: "arial", label: "Arial" },
-  { value: "helvetica", label: "Helvetica" },
-  { value: "georgia", label: "Georgia" },
-  { value: "calibri", label: "Calibri" },
-];
 
 function findNodeById(nodes: BodyNode[], id: string): BodyNode | null {
   for (const node of nodes) {
@@ -522,9 +515,6 @@ function PaperDetailsCard() {
   const setTitle = useDocumentStore((s) => s.setTitle);
   const setAbstract = useDocumentStore((s) => s.setAbstract);
   const setKeywords = useDocumentStore((s) => s.setKeywords);
-  const setFontFamily = useDocumentStore((s) => s.setFontFamily);
-  const setPaperSize = useDocumentStore((s) => s.setPaperSize);
-  const setShowPageNumbers = useDocumentStore((s) => s.setShowPageNumbers);
   const setPageLimit = useDocumentStore((s) => s.setPageLimit);
 
   const titleText = document.titleBlock.title
@@ -579,48 +569,6 @@ function PaperDetailsCard() {
       <KeywordsInput keywords={document.keywords} onChange={setKeywords} />
 
       <div>
-        <label htmlFor="paper-font" className={labelBase}>
-          Font
-        </label>
-        <select
-          id="paper-font"
-          value={document.meta.fontFamily ?? "times"}
-          onChange={(e) => setFontFamily(e.target.value as FontFamily)}
-          className={`${inputBase} cursor-pointer`}
-        >
-          {FONT_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        {document.meta.fontFamily && document.meta.fontFamily !== "times" && (
-          <p className="text-xs text-amber-600 dark:text-amber-500 mt-1.5">
-            IEEE submissions require Times New Roman — this is for draft/preview only and won't be
-            submission-compliant.
-          </p>
-        )}
-      </div>
-
-      <div className="mt-4">
-        <label htmlFor="paper-size" className={labelBase}>
-          Paper size
-        </label>
-        <select
-          id="paper-size"
-          value={document.meta.paperSize}
-          onChange={(e) => setPaperSize(e.target.value as "letter" | "a4")}
-          className={`${inputBase} cursor-pointer`}
-        >
-          <option value="letter">US Letter (8.5 × 11 in)</option>
-          <option value="a4">A4 (210 × 297 mm)</option>
-        </select>
-        <p className="text-xs text-muted mt-1.5">
-          Both are official IEEE conference sizes — Letter for US/Canada, A4 for most other regions.
-        </p>
-      </div>
-
-      <div className="mt-4">
         <label htmlFor="page-limit" className={labelBase}>
           Page limit
         </label>
@@ -643,22 +591,7 @@ function PaperDetailsCard() {
         </p>
       </div>
 
-      <div className="mt-4 flex items-start gap-2">
-        <input
-          id="show-page-numbers"
-          type="checkbox"
-          checked={document.meta.showPageNumbers ?? false}
-          onChange={(e) => setShowPageNumbers(e.target.checked)}
-          className="mt-0.5 flex-none"
-        />
-        <label htmlFor="show-page-numbers" className="text-sm text-ink cursor-pointer">
-          Show page numbers
-          <span className="block text-xs text-muted mt-0.5">
-            Off by default — IEEE's own conference template says "do not add page numbers"; most venues
-            add them during publication. Turn this on only if your specific conference asks for them.
-          </span>
-        </label>
-      </div>
+      <FormatPanel />
     </div>
   );
 }

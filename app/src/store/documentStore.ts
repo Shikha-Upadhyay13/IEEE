@@ -178,6 +178,9 @@ type DocumentStore = {
   setAbstract: (text: string) => void;
   setKeywords: (commaSeparated: string) => void;
   setFontFamily: (fontFamily: FontFamily) => void;
+  setFormat: (template: Document["meta"]["template"]) => void;
+  setMode: (mode: NonNullable<Document["meta"]["mode"]>) => void;
+  setDraftWatermark: (draftWatermark: boolean) => void;
   setPaperSize: (paperSize: PaperSize) => void;
   setShowPageNumbers: (showPageNumbers: boolean) => void;
   setAccentColor: (accentColor: string | null) => void;
@@ -348,6 +351,15 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   setFontFamily: (fontFamily) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, fontFamily } } })),
+
+  setFormat: (template) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, template } } })),
+
+  setMode: (mode) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, mode } } })),
+
+  setDraftWatermark: (draftWatermark) =>
+    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, draftWatermark } } })),
 
   setPaperSize: (paperSize) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, paperSize } } })),

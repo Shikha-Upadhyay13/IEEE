@@ -9,6 +9,8 @@ import {
   clearAppearanceDefaults,
 } from "../../lib/paperAppearanceDefaults";
 import type { Document } from "../../types/document";
+import { getMode, isAllowed } from "../../lib/formats/modes";
+import { LockNote } from "./FormatPanel";
 
 type AccentTargetKey = keyof NonNullable<Document["meta"]["accentTargets"]>;
 type LinkStyleKey = keyof NonNullable<Document["meta"]["linkStyle"]>;
@@ -110,6 +112,9 @@ export function AppearancePanel({ defaultExpanded = false }: { defaultExpanded?:
   const [justSaved, setJustSaved] = useState(false);
 
   const accentColor = meta.accentColor ?? null;
+  const mode = getMode(meta);
+  const linkStyleAllowed = isAllowed("linkStyle", mode);
+  const spacingAllowed = isAllowed("spacingDensity", mode);
 
   function handleSaveDefault() {
     saveAppearanceDefaults({
@@ -219,7 +224,8 @@ export function AppearancePanel({ defaultExpanded = false }: { defaultExpanded?:
               Applies to citation <span className="font-mono">[1]</span> and figure/table cross-reference
               links in your exported PDF.
             </p>
-            <div className="flex flex-col gap-2">
+            {!linkStyleAllowed && <LockNote property="linkStyle" />}
+            <fieldset disabled={!linkStyleAllowed} className="flex flex-col gap-2 mt-2 disabled:opacity-50">
               <label className="flex items-center gap-2 text-sm text-ink cursor-pointer">
                 <input
                   type="checkbox"
@@ -243,8 +249,8 @@ export function AppearancePanel({ defaultExpanded = false }: { defaultExpanded?:
                 />
                 Use accent color{!accentColor && " (pick a color above first)"}
               </label>
-            </div>
-            {meta.linkStyle?.colored && (
+            </fieldset>
+            {linkStyleAllowed && meta.linkStyle?.colored && (
               <p className="text-xs text-amber-600 dark:text-amber-500 mt-2">
                 Some venues require plain black text with no special styling in the final PDF — check your
                 submission guidelines before enabling this.
@@ -260,13 +266,15 @@ export function AppearancePanel({ defaultExpanded = false }: { defaultExpanded?:
               Breathing room around paragraphs, headings, figures, tables, and equations in your exported
               PDF. Margins, fonts, and column width stay fixed to spec regardless of this setting.
             </p>
-            <div className="inline-flex rounded-md border border-line overflow-hidden">
+            {!spacingAllowed && <LockNote property="spacingDensity" />}
+            <div className={`inline-flex rounded-md border border-line overflow-hidden ${spacingAllowed ? "" : "mt-2 opacity-50"}`}>
               {SPACING_OPTIONS.map((opt, i) => {
-                const active = (meta.spacingDensity ?? "standard") === opt.value;
+                const active = (spacingAllowed ? (meta.spacingDensity ?? "standard") : "standard") === opt.value;
                 return (
                   <button
                     key={opt.value}
                     type="button"
+                    disabled={!spacingAllowed}
                     onClick={() => setSpacingDensity(opt.value)}
                     aria-pressed={active}
                     className={`px-3 py-1.5 text-sm transition-colors ${i > 0 ? "border-l border-line" : ""} ${
