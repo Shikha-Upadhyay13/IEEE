@@ -98,6 +98,7 @@ export function resolveNumbering(doc: Document): ResolvedDocument {
           const number = formatSectionNumber(sectionSiblingIndex, depth);
           return {
             ...node,
+            depth,
             resolvedNumber: number,
             children: resolveBody(node.children, depth + 1),
           };
@@ -144,20 +145,20 @@ export function resolveNumbering(doc: Document): ResolvedDocument {
     }
   })(resolvedBody);
 
+  // A cross-reference to a deleted figure or table renders as "?", like LaTeX's "??".
+  function patchInline(nodes: ResolvedInlineNode[]): ResolvedInlineNode[] {
+    return nodes.map((inline) => {
+      if (inline.type !== "xref") return inline;
+      const num =
+        inline.targetType === "figure" ? figureNumbers.get(inline.targetId) : tableNumbers.get(inline.targetId);
+      return { ...inline, resolvedNumber: num ?? "?" };
+    });
+  }
+
   (function patchXrefs(nodes: ResolvedBodyNode[]) {
     for (const node of nodes) {
-      if (node.type === "paragraph") {
-        node.content = node.content.map((inline) => {
-          if (inline.type === "xref") {
-            const num =
-              inline.targetType === "figure"
-                ? figureNumbers.get(inline.targetId)
-                : tableNumbers.get(inline.targetId);
-            return { ...inline, resolvedNumber: num ?? 0 };
-          }
-          return inline;
-        });
-      }
+      if (node.type === "paragraph") node.content = patchInline(node.content);
+      if (node.type === "figure" || node.type === "table") node.caption = patchInline(node.caption);
       if (node.type === "section") patchXrefs(node.children);
     }
   })(resolvedBody);

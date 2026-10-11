@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { IEEEConferenceTemplate } from "./IEEEConferenceTemplate";
 import type { ResolvedDocument } from "../../types/document";
 
-// .ieee-paper's fixed width (see ieee-template.css) — 180mm at 96dpi, a fixed
-// physical size regardless of the card it's shrunk into.
-const NATURAL_WIDTH_PX = (180 / 25.4) * 96;
+// The text block is about 7.25in wide in every two-column IEEE format; the
+// thumbnail uses that fixed physical size regardless of the card it's shrunk into.
+const NATURAL_WIDTH_PX = 7.25 * 96;
 // The rendered page fills this fraction of the card's actual (responsive)
 // width — the rest is gray margin left/right, same visual idea as the real
 // editor preview's page-floating-on-a-gray-backdrop treatment.

@@ -6,40 +6,7 @@ import type {
   ResolvedInlineNode,
 } from "../../types/document";
 import "../../styles/ieee-template.css";
-
-// ieee-template.css's own font-family rule is the IEEE-compliant default
-// (Times New Roman) and is deliberately never edited — this map only
-// supplies an inline override for the non-default, non-compliant choices,
-// so a document that has never set fontFamily (or explicitly chose "times")
-// renders through the CSS file exactly as before.
-const FONT_STACKS: Record<string, string> = {
-  arial: "Arial, Helvetica, sans-serif",
-  helvetica: "Helvetica, Arial, sans-serif",
-  georgia: "Georgia, 'Times New Roman', serif",
-  calibri: "Calibri, 'Segoe UI', sans-serif",
-};
-
-// IEEE's own conference template text (verified directly against the
-// official IEEE-EIT-Paper_template.pdf — see ARCHITECTURE.md) gives exact
-// A4 margins distinct from the Letter defaults already baked into
-// ieee-template.css's base @page rule: top 19mm, bottom 40mm, side 15mm
-// (column width/gutter are unchanged between sizes). Declared as a second
-// @page rule rather than edited into the CSS file directly — the file's own
-// @page stays the permanent, always-compliant Letter default; this only
-// ever *overrides* it for a document that opted into A4, so nothing here
-// risks the guaranteed-format promise for the common case.
-const A4_PAGE_CSS = `@page { size: A4; margin-top: 19mm; margin-bottom: 40mm; margin-left: 15mm; margin-right: 15mm; }`;
-
-// The official template's own text says explicitly "Do not add page
-// numbers" — see the research behind this feature — so this is opt-in only
-// (Document.meta.showPageNumbers), never part of the base stylesheet.
-// counter(page) is standard CSS Paged Media; Paged.js (which does the
-// actual pagination here, in both the live preview and the PDF export path
-// — see PagedPreview.tsx) resolves it into real page-number text per page,
-// the same way it resolves everything else in an @page margin box.
-function buildPageNumberCss(fontFamily: string): string {
-  return `@page { @bottom-center { content: counter(page); font-family: ${fontFamily}; font-size: 8pt; } }`;
-}
+import { FONT_STACKS, getGeometry, layoutVariables } from "../../lib/formats/formats";
 
 // Real math rendering (KaTeX) rather than displaying the stored LaTeX as
 // literal text. throwOnError: false so a mid-edit/incomplete expression
@@ -85,11 +52,11 @@ function InlineContent({ nodes }: { nodes: ResolvedInlineNode[] }) {
 function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
   switch (node.type) {
     case "section": {
-      const HeadingTag = node.level === 1 ? "h2" : "h3";
-      const headingClass = node.level === 1 ? "ieee-heading-1" : "ieee-heading-2";
-      // IEEE convention: top-level (I., A.) sections use a period, deeper
-      // nesting (1), a)) uses a parenthesis — matches numbering.ts's depth rule.
-      const label = node.level <= 2 ? `${node.resolvedNumber}. ` : `${node.resolvedNumber}) `;
+      const HeadingTag = node.depth === 0 ? "h2" : node.depth === 1 ? "h3" : "h4";
+      const headingClass = node.depth === 0 ? "ieee-heading-1" : node.depth === 1 ? "ieee-heading-2" : "ieee-heading-3";
+      // IEEE convention: I. and A. headings use a period, deeper ones (1), a))
+      // a parenthesis — matches numbering.ts's depth rule.
+      const label = node.depth <= 1 ? `${node.resolvedNumber}. ` : `${node.resolvedNumber}) `;
       return (
         <section id={`sec-${node.id}`}>
           <HeadingTag className={headingClass}>
@@ -168,12 +135,7 @@ function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
 
 export function IEEEConferenceTemplate({ document }: { document: ResolvedDocument }) {
   const fontOverride = FONT_STACKS[document.meta.fontFamily ?? "times"];
-  const pageCssOverrides = [
-    document.meta.paperSize === "a4" ? A4_PAGE_CSS : "",
-    document.meta.showPageNumbers ? buildPageNumberCss(fontOverride ?? "'Times New Roman', Times, serif") : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const layoutVars = layoutVariables(getGeometry(document.meta));
 
   // Same "inline override, base CSS file untouched" pattern as fontOverride
   // above — ieee-template.css's own .ieee-cite-ref/.ieee-xref rule reads
@@ -195,9 +157,8 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
     <div
       className="ieee-paper"
       data-spacing-density={document.meta.spacingDensity ?? "standard"}
-      style={{ ...(fontOverride ? { fontFamily: fontOverride } : {}), ...linkStyleVars }}
+      style={{ ...layoutVars, ...(fontOverride ? { fontFamily: fontOverride } : {}), ...linkStyleVars }}
     >
-      {pageCssOverrides && <style>{pageCssOverrides}</style>}
       <h1 className="ieee-title">
         <InlineContent nodes={document.titleBlock.title as ResolvedInlineNode[]} />
       </h1>

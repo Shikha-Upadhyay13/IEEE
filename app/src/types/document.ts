@@ -203,7 +203,16 @@ export type ResolvedInlineNode =
   | (Extract<InlineNode, { type: "xref" }> & { resolvedNumber: number | string });
 
 export type ResolvedBodyNode =
-  | { type: "section"; id: string; heading: string; level: number; resolvedNumber: string; children: ResolvedBodyNode[] }
+  | {
+      type: "section";
+      id: string;
+      heading: string;
+      level: number;
+      /** Nesting depth in the tree (0 = top level). Drives heading style; `level` is not trusted. */
+      depth: number;
+      resolvedNumber: string;
+      children: ResolvedBodyNode[];
+    }
   | { type: "paragraph"; id: string; content: ResolvedInlineNode[] }
   | {
       type: "figure";

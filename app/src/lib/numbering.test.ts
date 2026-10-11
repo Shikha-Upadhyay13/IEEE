@@ -271,13 +271,37 @@ describe("xref resolution", () => {
     expect(para.content[0].resolvedNumber).toBe("II"); // t2 is table II
   });
 
-  it("resolves xref 0 for a reference to a non-existent target", () => {
+  it("resolves ? for a reference to a non-existent target", () => {
     const doc = makeDoc([
       paragraph("p1", [xref("x1", "figure", "ghost")]),
     ]);
     const resolved = resolveNumbering(doc);
     const para = resolved.body[0] as { content: { resolvedNumber: number | string }[] };
-    expect(para.content[0].resolvedNumber).toBe(0); // fallback for missing target
+    expect(para.content[0].resolvedNumber).toBe("?");
+  });
+
+  it("resolves xrefs inside figure and table captions", () => {
+    const fig: BodyNode = {
+      type: "figure", id: "f1", width: "single-column", images: [], caption: [xref("x1", "table", "t1")],
+    };
+    const tab: BodyNode = {
+      type: "table", id: "t1", width: "single-column", caption: [xref("x2", "figure", "f1")], rows: [["A"]],
+    };
+    const resolved = resolveNumbering(makeDoc([fig, tab]));
+    const [f, t] = resolved.body as { caption: { resolvedNumber: number | string }[] }[];
+    expect(f.caption[0].resolvedNumber).toBe("I");
+    expect(t.caption[0].resolvedNumber).toBe(1);
+  });
+
+  it("styles headings by tree depth, not the stored level", () => {
+    const nested: BodyNode = {
+      type: "section", id: "s1", heading: "Top", level: 3,
+      children: [{ type: "section", id: "s2", heading: "Sub", level: 1, children: [] }],
+    };
+    const [top] = resolveNumbering(makeDoc([nested])).body;
+    expect(top.type === "section" && top.depth).toBe(0);
+    const sub = top.type === "section" ? top.children[0] : null;
+    expect(sub?.type === "section" && sub.depth).toBe(1);
   });
 
   it("correctly resolves a forward xref (figure comes after the paragraph citing it)", () => {

@@ -1,8 +1,11 @@
 import { Previewer } from "pagedjs";
 
+/** A stylesheet URL, or `{ name: cssText }` for CSS generated at runtime. */
+export type PagedStylesheet = string | Record<string, string>;
+
 /**
  * Paginates `sourceHtml` into real, page-sized chunks, using the @page/column
- * rules from `stylesheetUrls`. Renders into a detached scratch container (never
+ * rules from `stylesheets`. Renders into a detached scratch container (never
  * the visible DOM) so a caller can discard the result of a superseded/stale run
  * without it ever having touched the page — see PagedPreview for why that
  * matters (React StrictMode double-invokes effects in dev, and rapid edits can
@@ -11,7 +14,7 @@ import { Previewer } from "pagedjs";
  */
 export async function paginate(
   sourceHtml: string,
-  stylesheetUrls: string[]
+  stylesheets: PagedStylesheet[]
 ): Promise<DocumentFragment> {
   // Paged.js measures real layout (getBoundingClientRect etc.), so its render
   // target must be attached to the document while it runs — a fully detached
@@ -24,7 +27,7 @@ export async function paginate(
   document.body.appendChild(scratch);
   try {
     const previewer = new Previewer();
-    await previewer.preview(sourceHtml, stylesheetUrls, scratch);
+    await previewer.preview(sourceHtml, stylesheets, scratch);
     const fragment = document.createDocumentFragment();
     fragment.append(...Array.from(scratch.childNodes));
     return fragment;

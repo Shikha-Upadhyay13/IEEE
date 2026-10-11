@@ -3,6 +3,7 @@ import type { ResolvedDocument } from "../../types/document";
 import { IEEEConferenceTemplate } from "./IEEEConferenceTemplate";
 import { paginate } from "../../lib/pagination/pagedjs-adapter";
 import ieeeTemplateCssUrl from "../../styles/ieee-template.css?url";
+import { buildPageCss } from "../../lib/formats/formats";
 
 /**
  * Renders `document` twice: once into a hidden "source" container (plain,
@@ -43,7 +44,10 @@ export function PagedPreview({
       if (!sourceRef.current || !targetRef.current) return;
       setStatus("paginating");
       try {
-        const fragment = await paginate(sourceRef.current.innerHTML, [ieeeTemplateCssUrl]);
+        const fragment = await paginate(sourceRef.current.innerHTML, [
+          ieeeTemplateCssUrl,
+          { "ieee-page.css": buildPageCss(document.meta) },
+        ]);
         if (cancelled || !targetRef.current) return; // stale run or unmounted — discard
         targetRef.current.replaceChildren(fragment);
         setStatus("done");

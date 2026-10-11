@@ -1,5 +1,5 @@
 /*
- * Fixed IEEE conference template chrome — never user-editable.
+ * Fixed IEEE template chrome — never user-editable.
  * Values sourced from official IEEE conference templates (verified against
  * IEEE-EIT-Paper_template.pdf and the IEEE PES sample paper), see
  * ARCHITECTURE.md and PRD.md for citations.
@@ -11,13 +11,10 @@
  * doesn't compromise the guarantee this file otherwise exists to make.
  */
 
-@page {
-  size: letter;
-  margin-top: 0.75in;
-  margin-bottom: 1in;
-  margin-left: 0.625in;
-  margin-right: 0.625in;
-}
+/* Page size and margins (@page) and the column grid come from the format
+   registry in src/lib/formats/formats.ts: @page is generated per document
+   and handed to Paged.js, and the grid arrives as the --ieee-* custom
+   properties set on .ieee-paper. The fallbacks below are the Letter values. */
 
 /* Paged.js ships no CSS of its own — .pagedjs_page (the actual on-screen
    "sheet of paper" box it renders into) has no background unless we set
@@ -30,12 +27,12 @@
 }
 
 .ieee-paper {
-  /* Explicit width = 2 × 88mm columns + 4mm gutter. Without this, the container
+  /* Explicit width = the format's text block. Without this, the container
      shrink-to-fits to its content's natural width (observed: 5000px+ in testing),
      which makes CSS column-count/column-width divide up a width far larger than
      the actual page, so only column 1's left edge is ever visible on the page —
      column 2 ends up thousands of pixels off to the right. */
-  width: 180mm;
+  width: var(--ieee-text-width, 7.25in);
   margin: 0 auto;
   font-family: "Times New Roman", Times, serif;
   color: #000;
@@ -76,9 +73,9 @@
 /* --- Two-column body area --- */
 
 .ieee-columns {
-  column-count: 2;
-  column-width: 88mm;
-  column-gap: 4mm;
+  column-count: var(--ieee-column-count, 2);
+  column-width: var(--ieee-column-width, 3.5in);
+  column-gap: var(--ieee-column-gap, 0.25in);
   column-fill: auto;
   text-align: justify;
 }
@@ -122,6 +119,17 @@
   font-style: italic;
   text-align: left;
   margin: 8pt 0 4pt 0;
+  break-after: avoid;
+}
+
+/* Heading 3+: "1) Third level" and "a) Fourth level" — italic, indented like a paragraph */
+.ieee-heading-3 {
+  font-size: 10pt;
+  font-weight: 400;
+  font-style: italic;
+  text-align: left;
+  text-indent: 3.5mm;
+  margin: 6pt 0 3pt 0;
   break-after: avoid;
 }
 
