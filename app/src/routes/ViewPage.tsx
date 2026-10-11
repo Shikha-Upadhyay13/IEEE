@@ -11,13 +11,15 @@ import { ArrowRight, FileQuestion, Lock, Pencil } from "lucide-react";
 import type { Document } from "../types/document";
 import { usePageMeta } from "../lib/usePageMeta";
 import { parseDocument } from "../lib/parseDocument";
+import type { PaperRole } from "../lib/sharing";
 
 type SharedDocumentRow = {
   id: string;
   title: string | null;
   content: unknown;
   is_public: boolean;
-  is_owner: boolean;
+  is_owner: boolean | null;
+  role: PaperRole | null;
 };
 
 export function ViewPage() {
@@ -26,7 +28,8 @@ export function ViewPage() {
 
   const [paperContent, setPaperContent] = useState<Document | null>(null);
   const [paperTitle, setPaperTitle] = useState<string>("IEEE Paper");
-  const [isOwner, setIsOwner] = useState(false);
+  const [role, setRole] = useState<PaperRole | null>(null);
+  const canEdit = role === "owner" || role === "editor";
   const [loadState, setLoadState] = useState<"loading" | "ready" | "unauthorized" | "notfound">("loading");
   usePageMeta({
     title: loadState === "ready" ? paperTitle : "Shared paper",
@@ -59,7 +62,7 @@ export function ViewPage() {
           setLoadState("notfound");
           return;
         }
-        setIsOwner(data.is_owner);
+        setRole(data.is_owner ? "owner" : data.role);
         setPaperTitle(data.title || "Untitled IEEE Paper");
         setPaperContent(parsed.document);
         setLoadState("ready");
@@ -94,7 +97,7 @@ export function ViewPage() {
         </div>
         <h2 className="text-xl font-bold text-ink">Paper unavailable</h2>
         <p className="text-sm text-muted max-w-md">
-          This paper is private or no longer exists. If it's yours, sign in with the account that owns it.
+          This paper is private or no longer exists. If it's yours or was shared with you, sign in with that email address.
         </p>
         <div className="flex items-center gap-3 mt-2">
           <Link to="/login" className={btnPrimary}>
@@ -139,15 +142,19 @@ export function ViewPage() {
             {paperTitle}
           </h1>
           <span className="hidden md:inline-flex text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-canvas text-muted">
-            Read-only
+            {role && !canEdit ? `Read-only · ${role}` : "Read-only"}
           </span>
         </div>
 
         <div className="flex items-center gap-2 flex-none">
-          {isOwner ? (
+          {canEdit ? (
             <Link to={`/editor/${documentId}`} className={`${btnPrimary} text-xs py-1.5 px-3`}>
               <Pencil size={13} aria-hidden="true" />
               Edit Paper
+            </Link>
+          ) : role ? (
+            <Link to="/dashboard" className={`${btnSecondary} text-xs py-1.5 px-3`}>
+              Dashboard
             </Link>
           ) : (
             <>
