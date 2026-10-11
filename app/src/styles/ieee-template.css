@@ -295,6 +295,45 @@
   color: var(--ieee-link-color, inherit);
 }
 
+/* --- Peer-review draft format (single column, 12pt, 1.5 spacing) --- */
+
+.ieee-paper[data-format="ieee-peer-review"] .ieee-title {
+  font-size: 20pt;
+}
+.ieee-paper[data-format="ieee-peer-review"] .ieee-author-group,
+.ieee-paper[data-format="ieee-peer-review"] .ieee-author-name {
+  font-size: 12pt;
+}
+.ieee-paper[data-format="ieee-peer-review"] .ieee-affiliation {
+  font-size: 11pt;
+}
+.ieee-paper[data-format="ieee-peer-review"] .ieee-abstract,
+.ieee-paper[data-format="ieee-peer-review"] .ieee-keywords {
+  font-size: 11pt;
+  line-height: 1.65;
+}
+.ieee-paper[data-format="ieee-peer-review"] .ieee-heading-1,
+.ieee-paper[data-format="ieee-peer-review"] .ieee-heading-2,
+.ieee-paper[data-format="ieee-peer-review"] .ieee-heading-3,
+.ieee-paper[data-format="ieee-peer-review"] .ieee-references-heading {
+  font-size: 12pt;
+}
+.ieee-paper[data-format="ieee-peer-review"] .ieee-paragraph {
+  font-size: 12pt;
+  line-height: 1.8;
+  text-indent: 0.5in;
+}
+.ieee-paper[data-format="ieee-peer-review"] .ieee-equation {
+  font-size: 12pt;
+}
+.ieee-paper[data-format="ieee-peer-review"] .ieee-figure-caption,
+.ieee-paper[data-format="ieee-peer-review"] .ieee-table-caption,
+.ieee-paper[data-format="ieee-peer-review"] .ieee-table,
+.ieee-paper[data-format="ieee-peer-review"] .ieee-reference-item {
+  font-size: 10pt;
+  line-height: 1.5;
+}
+
 /* --- Spacing density (Appearance panel) ---
    Only ever touches margin-bottom/margin around paragraphs, headings,
    figures, tables, and equations — never page margins, font sizes, or

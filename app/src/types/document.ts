@@ -138,7 +138,12 @@ export type FontFamily = z.infer<typeof FontFamilySchema>;
 export const DocumentSchema = z.object({
   schemaVersion: z.literal(1),
   meta: z.object({
-    template: z.literal("ieee-conference"),
+    // The paper's IEEE format; see lib/formats/formats.ts.
+    template: z.enum(["ieee-conference", "ieee-peer-review"]),
+    // Which styling is allowed; see lib/formats/modes.ts. Absent on papers
+    // created before modes existed, which infer the mode from their settings.
+    mode: z.enum(["submission", "draft", "custom"]).optional(),
+    draftWatermark: z.boolean().optional(),
     paperSize: z.enum(["letter", "a4"]),
     pageLimit: z.number().int().positive().nullable(),
     fontFamily: FontFamilySchema.optional(),

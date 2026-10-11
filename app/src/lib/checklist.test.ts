@@ -72,10 +72,19 @@ describe("runChecklist", () => {
     expect(item(makeDoc({ abstract: { text: "" } }), "abstract").status).toBe("fail");
   });
 
-  it("fails a non-Times font", () => {
+  it("fails Custom mode, including legacy papers with a non-Times font", () => {
     const doc = makeDoc();
     doc.meta.fontFamily = "arial";
-    expect(item(doc, "font").status).toBe("fail");
+    expect(item(doc, "mode").status).toBe("fail");
+  });
+
+  it("warns in Draft mode and passes in Submission mode", () => {
+    const doc = makeDoc();
+    doc.meta.mode = "draft";
+    expect(item(doc, "mode").status).toBe("warn");
+    doc.meta.mode = "submission";
+    doc.meta.fontFamily = "arial";
+    expect(item(doc, "mode").status).toBe("pass");
   });
 
   it("checks the page count against the venue limit", () => {

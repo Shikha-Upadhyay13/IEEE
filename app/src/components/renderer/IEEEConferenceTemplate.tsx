@@ -156,6 +156,7 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
   return (
     <div
       className="ieee-paper"
+      data-format={document.meta.template}
       data-spacing-density={document.meta.spacingDensity ?? "standard"}
       style={{ ...layoutVars, ...(fontOverride ? { fontFamily: fontOverride } : {}), ...linkStyleVars }}
     >

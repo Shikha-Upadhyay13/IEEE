@@ -13,8 +13,10 @@ export type PageGeometry = {
   textWidth: string;
 };
 
+export type FormatId = Document["meta"]["template"];
+
 export type FormatSpec = {
-  id: string;
+  id: FormatId;
   label: string;
   description: string;
   geometry: Record<PaperSize, PageGeometry>;
@@ -65,9 +67,40 @@ export function paperFontStack(meta: Pick<Document["meta"], "fontFamily">): stri
   return FONT_STACKS[meta.fontFamily ?? "times"] ?? TIMES_STACK;
 }
 
-export const FORMATS: Record<string, FormatSpec> = {
-  [IEEE_CONFERENCE.id]: IEEE_CONFERENCE,
+/**
+ * Single-column review manuscript (IEEEtran peerreview / onecolumn draft):
+ * 6.5in text block, 1in margins, 12pt body at 1.5 line spacing.
+ */
+export const IEEE_PEER_REVIEW: FormatSpec = {
+  id: "ieee-peer-review",
+  label: "IEEE Peer-review draft",
+  description: "Single column, 12pt, 1.5 spacing — for journal review copies and advisors.",
+  geometry: {
+    letter: {
+      size: "letter",
+      margin: { top: "1in", bottom: "1in", left: "1in", right: "1in" },
+      columnCount: 1,
+      columnWidth: "6.5in",
+      columnGap: "0in",
+      textWidth: "6.5in",
+    },
+    a4: {
+      size: "A4",
+      margin: { top: "25mm", bottom: "25mm", left: "25mm", right: "25mm" },
+      columnCount: 1,
+      columnWidth: "160mm",
+      columnGap: "0mm",
+      textWidth: "160mm",
+    },
+  },
 };
+
+export const FORMATS: Record<FormatId, FormatSpec> = {
+  "ieee-conference": IEEE_CONFERENCE,
+  "ieee-peer-review": IEEE_PEER_REVIEW,
+};
+
+export const FORMAT_LIST: FormatSpec[] = [IEEE_CONFERENCE, IEEE_PEER_REVIEW];
 
 export function getFormat(meta: Pick<Document["meta"], "template">): FormatSpec {
   return FORMATS[meta.template] ?? IEEE_CONFERENCE;
@@ -94,7 +127,7 @@ export function layoutVariables(geometry: PageGeometry): Record<string, string> 
  * elements inside the content it paginates.
  */
 export function buildPageCss(
-  meta: Pick<Document["meta"], "template" | "paperSize" | "showPageNumbers" | "fontFamily">
+  meta: Pick<Document["meta"], "template" | "paperSize" | "showPageNumbers" | "fontFamily" | "draftWatermark">
 ): string {
   const pageNumberFont = paperFontStack(meta);
   const g = getGeometry(meta);
@@ -107,6 +140,11 @@ export function buildPageCss(
   ];
   if (meta.showPageNumbers) {
     rules.push(`@bottom-center { content: counter(page); font-family: ${pageNumberFont}; font-size: 8pt; }`);
+  }
+  if (meta.draftWatermark) {
+    rules.push(
+      `@top-right { content: "DRAFT — not for submission"; font-family: Arial, Helvetica, sans-serif; font-size: 8pt; color: #b91c1c; letter-spacing: 0.05em; }`
+    );
   }
   return `@page { ${rules.join(" ")} }`;
 }

@@ -1,4 +1,5 @@
 import type { BodyNode, Document, InlineNode } from "../types/document";
+import { getMode } from "./formats/modes";
 
 export type ChecklistStatus = "pass" | "warn" | "fail";
 
@@ -99,15 +100,17 @@ export function runChecklist(doc: Document, pageCount: number | null): Checklist
     target: { kind: "details" },
   });
 
-  const font = doc.meta.fontFamily ?? "times";
+  const mode = getMode(doc.meta);
   items.push({
-    id: "font",
-    label: "Times New Roman",
-    status: font === "times" ? "pass" : "fail",
+    id: "mode",
+    label: "IEEE Submission mode",
+    status: mode === "submission" ? "pass" : mode === "draft" ? "warn" : "fail",
     detail:
-      font === "times"
-        ? "The paper uses Times New Roman."
-        : "IEEE requires Times New Roman — switch the font back before submitting.",
+      mode === "submission"
+        ? "Styling is locked to the IEEE template (Times New Roman, no page numbers, plain links)."
+        : mode === "draft"
+          ? "Draft mode can add page numbers, styled links and a DRAFT mark — switch to Submission before submitting."
+          : "Custom mode is not IEEE-compliant — switch to Submission before submitting.",
     target: { kind: "details" },
   });
 

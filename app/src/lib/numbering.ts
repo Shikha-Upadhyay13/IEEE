@@ -6,6 +6,7 @@ import type {
   ResolvedInlineNode,
   ResolvedDocument,
 } from "../types/document";
+import { effectiveMeta } from "./formats/modes";
 
 // Simple int -> Roman numeral conversion (no library needed for paper-scale numbers).
 function toRoman(num: number): string {
@@ -179,6 +180,7 @@ export function resolveNumbering(doc: Document): ResolvedDocument {
 
   return {
     ...doc,
+    meta: effectiveMeta(doc.meta),
     body: resolvedBody,
     references: resolvedReferences,
   };
