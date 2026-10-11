@@ -13,15 +13,29 @@ function jsonResponse(body: unknown) {
 describe("handleShareRequest", () => {
   it("renders the public paper's title and abstract", async () => {
     const fetchMock = vi.fn(async () =>
-      jsonResponse([{ title: "Row", content: { titleBlock: { title: [{ text: "Graph Nets" }] }, abstract: { text: "We study graphs." } } }])
+      jsonResponse([
+        {
+          title: "Row",
+          is_public: true,
+          content: { titleBlock: { title: [{ text: "Graph Nets" }] }, abstract: { text: "We study graphs." } },
+        },
+      ])
     );
     const res = await handleShareRequest(new Request(`https://example.org/api/share?id=${ID}`), env, fetchMock);
     const html = await res.text();
     expect(html).toContain('<meta property="og:title" content="Graph Nets">');
     expect(html).toContain('content="We study graphs."');
     expect(html).toContain(`<meta property="og:url" content="https://example.org/view/${ID}">`);
-    const calledUrl = String((fetchMock.mock.calls[0] as unknown[])[0]);
-    expect(calledUrl).toContain("is_public=eq.true");
+    const [calledUrl, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(calledUrl).toBe("https://proj.supabase.co/rest/v1/rpc/get_shared_document");
+    expect(JSON.parse(String(init.body))).toEqual({ doc_id: ID });
+  });
+
+  it("ignores rows that are not shared", async () => {
+    const res = await handleShareRequest(new Request(`https://example.org/api/share?id=${ID}`), env, async () =>
+      jsonResponse([{ title: "Secret", is_public: false, content: { titleBlock: { title: [{ text: "Secret" }] } } }])
+    );
+    expect(await res.text()).not.toContain("Secret");
   });
 
   it("never queries Supabase for malformed ids", async () => {

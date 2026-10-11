@@ -31,13 +31,21 @@ export async function handleShareRequest(
 
   if (UUID.test(id) && env.supabaseUrl && env.anonKey) {
     try {
-      const endpoint = `${env.supabaseUrl.replace(/\/+$/, "")}/rest/v1/documents?id=eq.${id}&is_public=eq.true&select=title,content`;
+      const endpoint = `${env.supabaseUrl.replace(/\/+$/, "")}/rest/v1/rpc/get_shared_document`;
       const res = await fetchImpl(endpoint, {
-        headers: { apikey: env.anonKey, Authorization: `Bearer ${env.anonKey}` },
+        method: "POST",
+        headers: {
+          apikey: env.anonKey,
+          Authorization: `Bearer ${env.anonKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ doc_id: id }),
       });
       if (res.ok) {
-        const rows = (await res.json()) as { title: string | null; content: unknown }[];
-        if (rows[0]) preview = previewFromContent(rows[0].title, rows[0].content);
+        // Anonymous callers only ever get shared papers back from this function.
+        const rows = (await res.json()) as { title: string | null; content: unknown; is_public: boolean }[];
+        const row = rows.find((r) => r.is_public);
+        if (row) preview = previewFromContent(row.title, row.content);
       }
     } catch (err) {
       console.error("Share preview lookup failed:", err);

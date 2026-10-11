@@ -10,6 +10,10 @@ import { RichParagraphEditor } from "./richtext/RichParagraphEditor";
 
 type Figure = Extract<BodyNode, { type: "figure" }>;
 
+// Mirrors the figures bucket limits in supabase/migrations/005_security_hardening.sql.
+const FIGURE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+const MAX_FIGURE_BYTES = 10 * 1024 * 1024;
+
 export function FigureEditor({ node }: { node: Figure }) {
   const addFigureImage = useDocumentStore((s) => s.addFigureImage);
   const removeFigureImageAt = useDocumentStore((s) => s.removeFigureImageAt);
@@ -30,9 +34,19 @@ export function FigureEditor({ node }: { node: Figure }) {
   async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !user || !documentId) return;
+    setUploadError(null);
+    if (!FIGURE_TYPES.includes(file.type)) {
+      setUploadError("Use a PNG, JPEG, GIF or WebP image.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_FIGURE_BYTES) {
+      setUploadError("Images must be 10 MB or smaller.");
+      e.target.value = "";
+      return;
+    }
 
     setUploading(true);
-    setUploadError(null);
     try {
       const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
       // Path prefix (first segment = the uploading user's id) is exactly what
@@ -133,7 +147,7 @@ export function FigureEditor({ node }: { node: Figure }) {
 
       <input
         type="file"
-        accept="image/*"
+        accept={FIGURE_TYPES.join(",")}
         onChange={handleFileChange}
         disabled={uploading}
         className="text-xs text-muted file:mr-2 file:rounded file:border-0 file:bg-canvas file:px-2 file:py-1 file:text-xs file:font-medium file:text-ink hover:file:bg-line"

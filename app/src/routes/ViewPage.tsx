@@ -11,6 +11,14 @@ import { ArrowRight, FileQuestion, Lock, Pencil } from "lucide-react";
 import type { Document } from "../types/document";
 import { usePageMeta } from "../lib/usePageMeta";
 
+type SharedDocumentRow = {
+  id: string;
+  title: string | null;
+  content: unknown;
+  is_public: boolean;
+  is_owner: boolean;
+};
+
 export function ViewPage() {
   const { documentId } = useParams<{ documentId: string }>();
   const { user } = useAuth();
@@ -32,27 +40,19 @@ export function ViewPage() {
     async function load() {
       setLoadState("loading");
       try {
-        const { data, error } = await supabase
-          .from("documents")
-          .select("id, title, content, is_public, owner_id")
-          .eq("id", documentId)
-          .single();
+        // Returns the paper only if it's shared or the caller owns it, so a
+        // private paper and a missing one are indistinguishable here.
+        const { data: rows, error } = await supabase.rpc("get_shared_document", { doc_id: documentId });
 
         if (cancelled) return;
 
+        const data = (rows as SharedDocumentRow[] | null)?.[0];
         if (error || !data) {
-          setLoadState("notfound");
+          setLoadState(error ? "notfound" : "unauthorized");
           return;
         }
 
-        const isUserOwner = Boolean(user && user.id === data.owner_id);
-        setIsOwner(isUserOwner);
-
-        if (!data.is_public && !isUserOwner) {
-          setLoadState("unauthorized");
-          return;
-        }
-
+        setIsOwner(data.is_owner);
         setPaperTitle(data.title || "Untitled IEEE Paper");
         setPaperContent(data.content as Document);
         setLoadState("ready");
@@ -85,9 +85,9 @@ export function ViewPage() {
         <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
           <Lock size={22} aria-hidden="true" />
         </div>
-        <h2 className="text-xl font-bold text-ink">Private Paper</h2>
+        <h2 className="text-xl font-bold text-ink">Paper unavailable</h2>
         <p className="text-sm text-muted max-w-md">
-          The author has not enabled public link sharing for this paper, or you may need to sign in with an account that owns it.
+          This paper is private or no longer exists. If it's yours, sign in with the account that owns it.
         </p>
         <div className="flex items-center gap-3 mt-2">
           <Link to="/login" className={btnPrimary}>
