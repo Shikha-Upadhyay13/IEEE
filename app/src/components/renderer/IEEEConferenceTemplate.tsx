@@ -168,6 +168,8 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
     <div
       className="ieee-paper"
       data-format={document.meta.template}
+      data-mode={document.meta.mode}
+      data-double-blind={blind ? "true" : undefined}
       data-spacing-density={document.meta.spacingDensity ?? "standard"}
       style={{ ...layoutVars, ...(fontOverride ? { fontFamily: fontOverride } : {}), ...linkStyleVars }}
     >

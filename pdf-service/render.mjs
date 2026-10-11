@@ -1,4 +1,5 @@
 import { chromium } from "playwright";
+import { finalizePdf } from "./finalizePdf.mjs";
 
 const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
 
@@ -37,11 +38,29 @@ export async function renderPdf({ documentId, token, signal }) {
     // size CSS unless this is set — without it, an A4 document would still
     // export at Letter dimensions even though the on-screen preview (which
     // isn't subject to this Playwright-specific default) shows A4 correctly.
-    return await page.pdf({
+    const info = await page.evaluate(() => {
+      const paper = document.querySelector(".ieee-paper");
+      const text = (selector) => document.querySelector(selector)?.textContent?.trim() ?? "";
+      const names = [...document.querySelectorAll(".ieee-author-name")].map((el) => el.textContent.trim());
+      const blind = paper?.getAttribute("data-double-blind") === "true";
+      return {
+        title: text(".ieee-title"),
+        authors: blind ? "" : text(".ieee-journal-authors") || names.filter(Boolean).join(", "),
+        keywords: text(".ieee-keywords")
+          .replace(/^Index Terms—/, "")
+          .split(",")
+          .map((k) => k.trim())
+          .filter(Boolean),
+        submission: paper?.getAttribute("data-mode") === "submission",
+      };
+    });
+
+    const pdf = await page.pdf({
       printBackground: true,
       preferCSSPageSize: true,
       margin: { top: 0, bottom: 0, left: 0, right: 0 },
     });
+    return await finalizePdf(pdf, info);
   } finally {
     signal?.removeEventListener("abort", closeOnAbort);
     await browser.close().catch(() => {});
