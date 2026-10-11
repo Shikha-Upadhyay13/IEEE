@@ -124,3 +124,6 @@ jobs:
 
       - name: Syntax check
         run: node --check server.mjs && node --check render.mjs && node --check export.mjs
+
+      - name: Unit tests
+        run: npm test

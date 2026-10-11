@@ -1,5 +1,6 @@
 import http from "node:http";
 import { renderPdf } from "./render.mjs";
+import { HttpError, isExportTokenValid, parseExportRequest, readBody } from "./exportRequest.mjs";
 import { captureError, initMonitoring } from "./monitoring.mjs";
 
 await initMonitoring("pdf-service");
@@ -31,14 +32,16 @@ function processNextJob() {
   activeRenders++;
 
   let timedOut = false;
+  const controller = new AbortController();
   const timeoutId = setTimeout(() => {
     timedOut = true;
+    controller.abort();
     const timeoutErr = new Error("Render timed out");
     timeoutErr.isTimeout = true;
     job.reject(timeoutErr);
   }, RENDER_TIMEOUT_MS);
 
-  job.task()
+  job.task(controller.signal)
     .then((result) => {
       if (!timedOut) {
         clearTimeout(timeoutId);
@@ -69,13 +72,9 @@ function queueRender(task) {
   });
 }
 
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    let data = "";
-    req.on("data", (chunk) => (data += chunk));
-    req.on("end", () => resolve(data));
-    req.on("error", reject);
-  });
+function sendJson(res, status, body, headers = {}) {
+  res.writeHead(status, { "Content-Type": "application/json", ...headers });
+  res.end(JSON.stringify(body));
 }
 
 const server = http.createServer(async (req, res) => {
@@ -119,43 +118,33 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && req.url === "/export") {
     try {
-      const body = JSON.parse(await readBody(req));
-      const { documentId, token } = body;
-      if (!documentId) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "documentId is required" }));
-        return;
+      const { documentId, token } = parseExportRequest(await readBody(req));
+      if (!(await isExportTokenValid(token))) {
+        throw new HttpError(401, "Export link expired. Please try again.");
       }
-      const pdfBuffer = await queueRender(() => renderPdf({ documentId, token }));
+      const pdfBuffer = await queueRender((signal) => renderPdf({ documentId, token, signal }));
       res.writeHead(200, {
         "Content-Type": "application/pdf",
         "Content-Disposition": "attachment; filename=paper.pdf",
       });
       res.end(pdfBuffer);
     } catch (err) {
+      if (err instanceof HttpError) {
+        sendJson(res, err.status, { error: err.message });
+        return;
+      }
       if (err.isQueueFull) {
-        res.writeHead(503, { "Content-Type": "application/json", "Retry-After": "10" });
-        res.end(
-          JSON.stringify({
-            error: "Render queue is full. Please try again in a few moments.",
-          })
-        );
+        sendJson(res, 503, { error: "Render queue is full. Please try again in a few moments." }, { "Retry-After": "10" });
         return;
       }
       if (err.isTimeout) {
         captureError(err, { route: "/export", reason: "timeout" });
-        res.writeHead(504, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            error: "Render timed out. Ensure all external assets and images are accessible.",
-          })
-        );
+        sendJson(res, 504, { error: "Render timed out. Ensure all external assets and images are accessible." });
         return;
       }
       console.error("Export failed:", err);
       captureError(err, { route: "/export" });
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Export failed", detail: String(err) }));
+      sendJson(res, 500, { error: "Export failed" });
     }
     return;
   }

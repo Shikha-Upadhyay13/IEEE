@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "export": "node export.mjs",
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "test": "node --test"
   },
   "dependencies": {
     "@sentry/node": "^11.1.0",

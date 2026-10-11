@@ -8,12 +8,14 @@ const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
  * for local testing) and the HTTP server (server.mjs, for the browser's
  * Export button) — one rendering call site, not two.
  */
-export async function renderPdf({ documentId, token }) {
-  const url = token
-    ? `${FRONTEND_URL}/print/${documentId}?token=${token}`
-    : `${FRONTEND_URL}/print/${documentId}`;
+export async function renderPdf({ documentId, token, signal }) {
+  const base = `${FRONTEND_URL}/print/${encodeURIComponent(documentId)}`;
+  const url = token ? `${base}?token=${encodeURIComponent(token)}` : base;
 
   const browser = await chromium.launch();
+  // A timed-out render must not leave its Chromium process running.
+  const closeOnAbort = () => browser.close().catch(() => {});
+  signal?.addEventListener("abort", closeOnAbort, { once: true });
   try {
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "networkidle" });
@@ -41,6 +43,7 @@ export async function renderPdf({ documentId, token }) {
       margin: { top: 0, bottom: 0, left: 0, right: 0 },
     });
   } finally {
-    await browser.close();
+    signal?.removeEventListener("abort", closeOnAbort);
+    await browser.close().catch(() => {});
   }
 }

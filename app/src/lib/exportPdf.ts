@@ -53,7 +53,8 @@ export async function exportDocumentPdf(documentId: string, title: string): Prom
   });
   if (!response.ok) {
     track("pdf_export_failed", { stage: "render", status: response.status });
-    throw new Error(`Export failed: ${response.status}`);
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? `Export failed: ${response.status}`);
   }
   track("pdf_exported");
 
