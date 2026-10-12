@@ -1,16 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeViolation, handleCspReport, parseCspReports, stripUrl } from "./cspReport";
-
-describe("stripUrl", () => {
-  it("keeps origin and path, dropping tokens in the query and fragment", () => {
-    expect(stripUrl("https://app.example.org/unsubscribe?token=abc#x")).toBe("https://app.example.org/unsubscribe");
-  });
-
-  it("reduces non-web URLs and keywords to their scheme or name", () => {
-    expect(stripUrl("data:image/png;base64,AAAA")).toBe("data");
-    expect(stripUrl("inline")).toBe("inline");
-  });
-});
+import { describeViolation, handleCspReport, parseCspReports } from "./cspReport";
 
 describe("parseCspReports", () => {
   it("reads the legacy report-uri shape", () => {

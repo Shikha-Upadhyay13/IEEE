@@ -1,3 +1,5 @@
+import { scrubDeep } from "./security/urls";
+
 type SentryModule = typeof import("@sentry/react");
 type PostHogClient = (typeof import("posthog-js"))["default"];
 
@@ -28,6 +30,12 @@ function withPosthog(fn: (p: PostHogClient) => void) {
   else if (import.meta.env.VITE_POSTHOG_KEY) pendingPosthog.push(fn);
 }
 
+/** Share of page loads and navigations traced for performance alerts; 10% unless configured. */
+export function tracesSampleRate(configured: string | undefined): number {
+  const rate = Number(configured);
+  return configured?.trim() && Number.isFinite(rate) && rate >= 0 && rate <= 1 ? rate : 0.1;
+}
+
 export function initMonitoring() {
   if (initialised || typeof window === "undefined") return;
   initialised = true;
@@ -38,8 +46,13 @@ export function initMonitoring() {
       .then((mod) => {
         mod.init({
           dsn,
-          environment: import.meta.env.MODE,
-          tracesSampleRate: 0,
+          environment: import.meta.env.VITE_SENTRY_ENVIRONMENT || import.meta.env.MODE,
+          release: import.meta.env.VITE_RELEASE || undefined,
+          integrations: [mod.browserTracingIntegration()],
+          tracesSampleRate: tracesSampleRate(import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE),
+          beforeSend: (event) => scrubDeep(event),
+          beforeSendTransaction: (event) => scrubDeep(event),
+          beforeBreadcrumb: (crumb) => scrubDeep(crumb),
         });
         sentry = mod;
         pendingSentry.splice(0).forEach((fn) => fn(mod));

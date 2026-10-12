@@ -37,8 +37,12 @@ function seoFiles(siteUrl: string): Plugin {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const siteUrl = normalizeSiteUrl(env.VITE_SITE_URL || 'http://localhost:5173')
+  const release = env.VITE_RELEASE || env.VERCEL_GIT_COMMIT_SHA || ''
   return {
     plugins: [react(), tailwindcss(), seoFiles(siteUrl)],
+    define: {
+      'import.meta.env.VITE_RELEASE': JSON.stringify(release),
+    },
     test: {
       include: ['src/**/*.test.{ts,tsx}'],
     },

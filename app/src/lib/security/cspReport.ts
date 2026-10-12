@@ -1,6 +1,7 @@
 // Turns Content-Security-Policy violation reports into one short log line each.
 // Browsers send either the legacy report-uri shape ({"csp-report": {...}})
 // or the Reporting API shape ([{type: "csp-violation", body: {...}}]).
+import { stripUrl } from "./urls.js";
 
 export interface CspViolation {
   directive: string;
@@ -16,17 +17,6 @@ const MAX_REPORTS = 20;
 type Raw = Record<string, unknown>;
 
 const text = (value: unknown): string => (typeof value === "string" ? value : "");
-
-/** Drops the query and fragment, which can carry share, export and unsubscribe tokens. */
-export function stripUrl(value: string): string {
-  if (!value) return "";
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:" || url.protocol === "wss:" ? `${url.origin}${url.pathname}` : url.protocol.replace(/:$/, "");
-  } catch {
-    return value.split(/[?#]/)[0].slice(0, 200);
-  }
-}
 
 function fromLegacy(r: Raw): CspViolation {
   const line = r["line-number"];
