@@ -39,6 +39,9 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: Bundle-size budget
+        run: node scripts/bundle-budget.mjs
+
   e2e:
     name: Frontend — Playwright end-to-end
     runs-on: ubuntu-latest
