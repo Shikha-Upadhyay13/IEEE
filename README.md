@@ -57,6 +57,7 @@ app/            React + Vite frontend — the editor, dashboard, AI Assistant, e
 pdf-service/    Headless-Chromium PDF export microservice
 ai-service/     Groq (chat) + image-generation proxy microservice
 supabase/       migrations/ — the Postgres schema, RLS policies, and storage buckets, in order
+docs/           RELEASE.md (staging and the release checklist), RUNBOOK.md (rollback, restores, key rotation, outages)
 references/     Reference material used while building the IEEE template
 ```
 
