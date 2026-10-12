@@ -82,6 +82,11 @@ jobs:
 
       - name: Check the Content-Security-Policy against the production build
         run: npm run build && node scripts/csp-smoke.mjs
+        env:
+          # Production endpoints are https; the http placeholders above would be (rightly) blocked.
+          VITE_SUPABASE_URL: https://ci-placeholder.supabase.co
+          VITE_PDF_SERVICE_URL: https://pdf.ci-placeholder.example
+          VITE_AI_SERVICE_URL: https://ai.ci-placeholder.example
 
       - name: Upload traces on failure
         if: failure()
