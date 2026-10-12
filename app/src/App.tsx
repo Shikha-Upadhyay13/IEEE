@@ -28,6 +28,7 @@ const ProfilePage = lazy(() => import("./routes/ProfilePage").then((m) => ({ def
 const SettingsPage = lazy(() => import("./routes/SettingsPage").then((m) => ({ default: m.SettingsPage })));
 const DownloadsPage = lazy(() => import("./routes/DownloadsPage").then((m) => ({ default: m.DownloadsPage })));
 const ViewPage = lazy(() => import("./routes/ViewPage").then((m) => ({ default: m.ViewPage })));
+const UnsubscribePage = lazy(() => import("./routes/UnsubscribePage").then((m) => ({ default: m.UnsubscribePage })));
 const TemplatesGalleryPage = lazy(() =>
   import("./routes/TemplatesGalleryPage").then((m) => ({ default: m.TemplatesGalleryPage }))
 );
@@ -82,6 +83,8 @@ function App() {
           <Route path="/print/:documentId" element={<PrintView />} />
           {/* Public read-only paper viewer for shared links */}
           <Route path="/view/:documentId" element={<ViewPage />} />
+          {/* Linked from notification email; the token in the link is the credential. */}
+          <Route path="/unsubscribe" element={<UnsubscribePage />} />
         </Routes>
       </Suspense>
       <ChatLauncher />
