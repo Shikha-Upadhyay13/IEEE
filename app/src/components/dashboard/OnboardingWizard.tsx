@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
-import { createBlankDocument } from "../../lib/blankDocument";
+import { createBlankPaperFor } from "../../lib/profile";
+import { useAuth } from "../../lib/useAuth";
 import { track } from "../../lib/monitoring";
 import { createSamplePaper } from "../../data/samplePaper";
 import { STARTER_TEMPLATES, type StarterTemplateId } from "../../lib/starterTemplates";
@@ -33,6 +34,7 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
   const [choice, setChoice] = useState<TemplateChoice>("sample");
   const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   if (!isOpen) return null;
 
@@ -60,7 +62,8 @@ export function OnboardingWizard({ userId, isOpen, onClose }: OnboardingWizardPr
     }
 
     try {
-      const docContent = choice === "sample" ? createSamplePaper() : createBlankDocument(choice);
+      const docContent =
+        choice === "sample" ? createSamplePaper() : await createBlankPaperFor({ id: userId, email: user?.email }, choice);
       const title =
         choice === "sample"
           ? "Sample: Preparation of a Formatted Conference Paper"

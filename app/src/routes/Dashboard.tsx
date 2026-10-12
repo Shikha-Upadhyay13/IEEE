@@ -8,7 +8,7 @@ import { allTags, hasTag, parseTags } from "../lib/tags";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { deleteDocument, updateDocument } from "../lib/documentWrites";
-import { createBlankDocument } from "../lib/blankDocument";
+import { createBlankPaperFor } from "../lib/profile";
 import { track } from "../lib/monitoring";
 import { takePendingTemplate, type GalleryChoice } from "../lib/pendingTemplate";
 import { createSamplePaper } from "../data/samplePaper";
@@ -346,7 +346,7 @@ export function Dashboard() {
     if (!user) return;
     setCreating(true);
     const isSample = template === "sample";
-    const content = isSample ? createSamplePaper() : createBlankDocument(template);
+    const content = isSample ? createSamplePaper() : await createBlankPaperFor(user, template);
     const title = isSample ? "Sample: Preparation of a Formatted Conference Paper" : "Untitled paper";
     const { data, error } = await supabase
       .from("documents")

@@ -22,7 +22,7 @@ import {
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../lib/useAuth";
 import { useTheme, type ThemeSetting } from "../lib/useTheme";
-import { createBlankDocument } from "../lib/blankDocument";
+import { createBlankPaperFor } from "../lib/profile";
 import { track } from "../lib/monitoring";
 import { useDocumentStore } from "../store/documentStore";
 import { EXPORT_PDF_EVENT } from "../lib/exportPdf";
@@ -96,7 +96,7 @@ export function CommandPalette() {
 
   async function createAndOpenPaper() {
     if (!user) return;
-    const blank = createBlankDocument();
+    const blank = await createBlankPaperFor(user);
     const { data, error } = await supabase
       .from("documents")
       .insert({ owner_id: user.id, title: "Untitled paper", content: blank })
