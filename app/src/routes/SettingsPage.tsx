@@ -9,6 +9,7 @@ import { btnDanger, btnSecondary, cardBase, inputBase, labelBase, pageShell } fr
 import { collectAccountData, deleteAccount, downloadJson, exportFilename } from "../lib/accountData";
 import { useConfirm } from "../components/ConfirmDialog";
 import { DashboardSidebar } from "../components/dashboard/DashboardSidebar";
+import { NotificationSettings } from "../components/settings/NotificationSettings";
 import { formatJoinDate } from "../lib/formatJoinDate";
 
 const THEME_OPTIONS: { value: ThemeSetting; label: string }[] = [
@@ -126,7 +127,7 @@ export function SettingsPage() {
       <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 px-4 py-6 sm:px-8 sm:py-10 focus:outline-none">
         <h1 className="font-display text-2xl font-semibold text-ink tracking-tight mb-1">Settings</h1>
         <p className="text-sm text-muted mb-6">
-          Your account, appearance, and Doc Buddy preferences.
+          Your account, appearance, notifications, and Doc Buddy preferences.
         </p>
 
         {/* Account summary banner — full width, real content (avatar, join
@@ -208,6 +209,8 @@ export function SettingsPage() {
               </div>
             </div>
           </div>
+
+          {user && <NotificationSettings userId={user.id} className="lg:col-span-3" />}
 
           <div className={`${cardBase} p-6 lg:col-span-3`}>
             <h2 className="text-base font-semibold text-ink mb-1">Your data</h2>
