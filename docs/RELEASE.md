@@ -21,8 +21,10 @@ Set this up once:
    `VITE_SENTRY_ENVIRONMENT=staging`, and the **Production** environment the
    production values.
 3. Add the preview domain pattern to `ALLOWED_ORIGINS` on the staging services.
-4. Point the `E2E_*` GitHub secrets at a test account in the staging project,
-   so the signed-in e2e flow runs in CI.
+4. Create two test accounts in the staging project, without two-factor
+   sign-in, and set the GitHub secrets `E2E_EMAIL`/`E2E_PASSWORD` and
+   `E2E_EMAIL_2`/`E2E_PASSWORD_2`, so the signed-in editor flow and the
+   sharing and comments flow run in CI.
 
 `supabase db push` records what it applied in its own history table. On a
 project whose migrations were pasted into the SQL editor that history is
