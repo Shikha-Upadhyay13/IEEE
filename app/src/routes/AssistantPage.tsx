@@ -72,7 +72,7 @@ const INPUT_MAX_HEIGHT = 160;
 const FOLLOW_UP_SUGGESTIONS = ["Make it shorter", "Make it more formal", "Simplify the language", "Continue"];
 
 const PROJECT_SCHEMA_WARNING =
-  "Project color, default paper, and instructions aren't saving — this database needs the latest migration. Run every block at the bottom of supabase/schema.sql in the Supabase SQL Editor, then reload.";
+  "Project color, default paper, and instructions aren't saving — this database needs the latest migration. Run supabase/migrations/000_base_schema.sql again in the Supabase SQL Editor, then reload.";
 
 function deriveTitle(messages: ChatMessage[]): string {
   const firstUser = messages.find((m) => m.role === "user")?.content.trim();
@@ -202,7 +202,7 @@ export function AssistantPage() {
           return;
         }
         // Most likely cause: one or both of the projects migrations (see
-        // supabase/schema.sql) haven't been run on this database yet — fall
+        // supabase/migrations/000_base_schema.sql) haven't been run on this database yet — fall
         // back to the columns that always exist so Projects still loads,
         // just without default paper/color/instructions until they're run.
         console.error("Failed to load projects (retrying with legacy columns only):", error);

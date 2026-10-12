@@ -1,5 +1,5 @@
--- IEEE Paper Builder — Milestone 6 schema
--- Run this once in the Supabase Dashboard: SQL Editor -> New query -> paste -> Run.
+-- IEEE Paper Builder — base schema (formerly supabase/schema.sql).
+-- Safe to re-run: every statement is guarded, like the later migrations.
 
 -- ── documents table ─────────────────────────────────────────────
 create table if not exists documents (
@@ -13,18 +13,22 @@ create table if not exists documents (
 
 alter table documents enable row level security;
 
+drop policy if exists "select own documents" on documents;
 create policy "select own documents"
   on documents for select
   using (auth.uid() = owner_id);
 
+drop policy if exists "insert own documents" on documents;
 create policy "insert own documents"
   on documents for insert
   with check (auth.uid() = owner_id);
 
+drop policy if exists "update own documents" on documents;
 create policy "update own documents"
   on documents for update
   using (auth.uid() = owner_id);
 
+drop policy if exists "delete own documents" on documents;
 create policy "delete own documents"
   on documents for delete
   using (auth.uid() = owner_id);
@@ -38,24 +42,24 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists documents_set_updated_at on documents;
 create trigger documents_set_updated_at
 before update on documents
 for each row
 execute function set_updated_at();
 
 -- ── figures storage bucket ──────────────────────────────────────
--- Public read (so exported PDFs and the print route can load images by URL
--- with no auth token juggling); writes restricted to the owning user, matched
--- by the first path segment being their own user id
--- (figures/{owner_id}/{documentId}/{imageId}.{ext}).
+-- Public bucket, so exported PDFs and the print route can load images by URL
+-- with no auth token juggling. There is deliberately no select policy on
+-- storage.objects: public URLs work without one, and a select policy would
+-- let anyone list every user's files (005 removes the one older databases had).
+-- Writes are restricted to the owning user, matched by the first path segment
+-- being their own user id (figures/{owner_id}/{documentId}/{imageId}.{ext}).
 insert into storage.buckets (id, name, public)
 values ('figures', 'figures', true)
 on conflict (id) do nothing;
 
-create policy "anyone can view figures"
-on storage.objects for select
-using (bucket_id = 'figures');
-
+drop policy if exists "users upload their own figures" on storage.objects;
 create policy "users upload their own figures"
 on storage.objects for insert
 with check (
@@ -63,6 +67,7 @@ with check (
   and (storage.foldername(name))[1] = auth.uid()::text
 );
 
+drop policy if exists "users update their own figures" on storage.objects;
 create policy "users update their own figures"
 on storage.objects for update
 using (
@@ -70,6 +75,7 @@ using (
   and (storage.foldername(name))[1] = auth.uid()::text
 );
 
+drop policy if exists "users delete their own figures" on storage.objects;
 create policy "users delete their own figures"
 on storage.objects for delete
 using (
@@ -160,18 +166,22 @@ create table if not exists projects (
 
 alter table projects enable row level security;
 
+drop policy if exists "select own projects" on projects;
 create policy "select own projects"
   on projects for select
   using (auth.uid() = owner_id);
 
+drop policy if exists "insert own projects" on projects;
 create policy "insert own projects"
   on projects for insert
   with check (auth.uid() = owner_id);
 
+drop policy if exists "update own projects" on projects;
 create policy "update own projects"
   on projects for update
   using (auth.uid() = owner_id);
 
+drop policy if exists "delete own projects" on projects;
 create policy "delete own projects"
   on projects for delete
   using (auth.uid() = owner_id);
@@ -194,22 +204,27 @@ create table if not exists conversations (
 
 alter table conversations enable row level security;
 
+drop policy if exists "select own conversations" on conversations;
 create policy "select own conversations"
   on conversations for select
   using (auth.uid() = owner_id);
 
+drop policy if exists "insert own conversations" on conversations;
 create policy "insert own conversations"
   on conversations for insert
   with check (auth.uid() = owner_id);
 
+drop policy if exists "update own conversations" on conversations;
 create policy "update own conversations"
   on conversations for update
   using (auth.uid() = owner_id);
 
+drop policy if exists "delete own conversations" on conversations;
 create policy "delete own conversations"
   on conversations for delete
   using (auth.uid() = owner_id);
 
+drop trigger if exists conversations_set_updated_at on conversations;
 create trigger conversations_set_updated_at
 before update on conversations
 for each row
@@ -231,14 +246,17 @@ create table if not exists generated_images (
 
 alter table generated_images enable row level security;
 
+drop policy if exists "select own generated images" on generated_images;
 create policy "select own generated images"
   on generated_images for select
   using (auth.uid() = owner_id);
 
+drop policy if exists "insert own generated images" on generated_images;
 create policy "insert own generated images"
   on generated_images for insert
   with check (auth.uid() = owner_id);
 
+drop policy if exists "delete own generated images" on generated_images;
 create policy "delete own generated images"
   on generated_images for delete
   using (auth.uid() = owner_id);
@@ -260,14 +278,17 @@ create table if not exists exports (
 
 alter table exports enable row level security;
 
+drop policy if exists "select own exports" on exports;
 create policy "select own exports"
   on exports for select
   using (auth.uid() = owner_id);
 
+drop policy if exists "insert own exports" on exports;
 create policy "insert own exports"
   on exports for insert
   with check (auth.uid() = owner_id);
 
+drop policy if exists "delete own exports" on exports;
 create policy "delete own exports"
   on exports for delete
   using (auth.uid() = owner_id);
@@ -280,6 +301,7 @@ insert into storage.buckets (id, name, public)
 values ('exports', 'exports', false)
 on conflict (id) do nothing;
 
+drop policy if exists "users read their own exported pdfs" on storage.objects;
 create policy "users read their own exported pdfs"
 on storage.objects for select
 using (
@@ -287,6 +309,7 @@ using (
   and (storage.foldername(name))[1] = auth.uid()::text
 );
 
+drop policy if exists "users upload their own exported pdfs" on storage.objects;
 create policy "users upload their own exported pdfs"
 on storage.objects for insert
 with check (
@@ -294,6 +317,7 @@ with check (
   and (storage.foldername(name))[1] = auth.uid()::text
 );
 
+drop policy if exists "users delete their own exported pdfs" on storage.objects;
 create policy "users delete their own exported pdfs"
 on storage.objects for delete
 using (

@@ -71,7 +71,7 @@ export function DownloadsPage() {
     setDownloadingId(row.id);
     try {
       // Short-lived signed URL, not a permanent one — the bucket is private
-      // (see supabase/schema.sql), matching the export_tokens pattern used
+      // (see supabase/migrations/000_base_schema.sql), matching the export_tokens pattern used
       // for the PDF service's own headless print-route access.
       const { data, error } = await supabase.storage.from("exports").createSignedUrl(row.storage_path, 60);
       if (error || !data) throw error ?? new Error("Could not create a download link");

@@ -41,7 +41,7 @@ export async function exportDocumentPdf(documentId: string, title: string): Prom
   // Mint a short-lived token scoped to this document while we still have the
   // user's authenticated session — the pdf-service itself has none (it's a
   // headless script), so it can't call this RPC itself. See
-  // ARCHITECTURE.md §5.3 and supabase/schema.sql.
+  // ARCHITECTURE.md §5.3 and supabase/migrations/000_base_schema.sql.
   const { data: token, error: tokenError } = await supabase.rpc("create_export_token", { doc_id: documentId });
   if (tokenError || !token) {
     track("pdf_export_failed", { stage: "token" });

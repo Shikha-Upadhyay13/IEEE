@@ -49,11 +49,10 @@ const GRANTS = `
 
 const migrationFiles = () => readdirSync(join(SUPABASE_DIR, "migrations")).filter((f) => f.endsWith(".sql")).sort();
 
-/** A fresh database with schema.sql and every migration before `stopBefore` applied. */
+/** A fresh database with every migration before `stopBefore` applied. */
 export async function createDb({ stopBefore } = {}) {
   const db = new PGlite();
   await db.exec(SUPABASE_STUBS);
-  await db.exec(readFileSync(join(SUPABASE_DIR, "schema.sql"), "utf8"));
   for (const file of migrationFiles()) {
     if (stopBefore && file >= stopBefore) break;
     await db.exec(readFileSync(join(SUPABASE_DIR, "migrations", file), "utf8"));

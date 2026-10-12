@@ -1,7 +1,7 @@
 {
   "name": "supabase-tests",
   "private": true,
-  "description": "Applies schema.sql and every migration to an in-process Postgres and checks row-level security.",
+  "description": "Applies every migration to an in-process Postgres and checks row-level security.",
   "type": "module",
   "scripts": {
     "test": "node --test"
