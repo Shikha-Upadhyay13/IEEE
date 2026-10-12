@@ -5,6 +5,7 @@ import { friendlyErrorMessage } from "../../lib/friendlyError";
 import { formatJoinDate } from "../../lib/formatJoinDate";
 import { changeEmail, changePassword, passwordProblem, signOutOtherSessions } from "../../lib/accountSecurity";
 import { isEmail } from "../../lib/sharing";
+import { TwoFactorSection } from "./TwoFactorSection";
 
 type Status = { kind: "ok" | "error"; text: string } | null;
 
@@ -210,6 +211,7 @@ export function AccountTab({ user, onSignOut }: { user: User; onSignOut: () => v
       <div className={`${cardBase} p-6 space-y-6 [&>*+*]:border-t [&>*+*]:border-line [&>*+*]:pt-6`}>
         <EmailSection user={user} />
         <PasswordSection />
+        <TwoFactorSection />
         <SessionsSection />
       </div>
     </div>

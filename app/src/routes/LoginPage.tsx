@@ -9,6 +9,67 @@ import { BrandMark } from "../components/BrandMark";
 import { friendlyErrorMessage } from "../lib/friendlyError";
 import { useServiceHealth } from "../lib/useServiceHealth";
 import { track } from "../lib/monitoring";
+import { useAuth } from "../lib/useAuth";
+import { isTotpCode, needsSecondFactor, verifySignInCode } from "../lib/mfa";
+
+function SecondFactorStep({ onDone }: { onDone: () => void }) {
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!isTotpCode(code)) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await verifySignInCode(code);
+      onDone();
+    } catch (err) {
+      setError(friendlyErrorMessage(err));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <h2 className="font-display text-2xl font-semibold text-ink tracking-tight mb-1">Enter your code</h2>
+      <p className="text-sm text-muted mb-8">Open your authenticator app and type the 6-digit code for IEEE Paper Builder.</p>
+      <form onSubmit={submit} className="flex flex-col gap-4">
+        <div>
+          <label htmlFor="login-code" className={labelBase}>
+            Code
+          </label>
+          <input
+            id="login-code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            autoFocus
+            maxLength={7}
+            className={`${inputBase} font-mono tracking-widest`}
+          />
+        </div>
+        <button type="submit" disabled={busy || !isTotpCode(code)} className={`${btnPrimary} mt-2 w-full py-2.5`}>
+          {busy ? "Checking…" : "Verify"}
+        </button>
+      </form>
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900 rounded-md px-3 py-2 mt-4">
+          {error}
+        </p>
+      )}
+      <p className="mt-6 text-sm text-muted">
+        Lost your phone? Use another authenticator you set up, or{" "}
+        <button type="button" onClick={() => void supabase.auth.signOut()} className="text-accent font-medium hover:underline">
+          sign in as someone else
+        </button>
+        .
+      </p>
+    </>
+  );
+}
 
 const FEATURES = [
   "Drag-and-drop editing, no LaTeX required",
@@ -26,6 +87,8 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   const health = useServiceHealth();
+  const { session } = useAuth();
+  const awaitingCode = needsSecondFactor(session);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -56,9 +119,10 @@ export function LoginPage() {
           setMessage("Check your email to confirm your account, then sign in.");
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/dashboard");
+        // Accounts with an authenticator app stay here for the code step.
+        if (!needsSecondFactor(data.session)) navigate("/dashboard");
       }
     } catch (err) {
       setError(friendlyErrorMessage(err));
@@ -123,6 +187,10 @@ export function LoginPage() {
             <span className="font-display font-semibold text-ink tracking-tight">IEEE Paper Builder</span>
           </div>
 
+          {awaitingCode ? (
+            <SecondFactorStep onDone={() => navigate("/dashboard")} />
+          ) : (
+          <>
           <h2 className="font-display text-2xl font-semibold text-ink tracking-tight mb-1">
             {mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}
           </h2>
@@ -252,6 +320,8 @@ export function LoginPage() {
               </>
             )}
           </p>
+          </>
+          )}
         </div>
       </div>
     </div>
