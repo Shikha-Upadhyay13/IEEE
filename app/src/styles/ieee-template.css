@@ -282,6 +282,15 @@
   padding-left: 3.5mm;
 }
 
+/* Paged.js justifies the last line of an element it breaks across pages, so
+   the line looks continued. When the break falls between children (a
+   reference list split between items), that justification is inherited by
+   every whole child and stretches their last lines; a child broken mid-text
+   is marked itself and keeps it. */
+[data-align-last-split-element="justify"] > * {
+  text-align-last: auto;
+}
+
 /* --- Inline citation / cross-reference markers --- */
 
 .ieee-cite-ref,
