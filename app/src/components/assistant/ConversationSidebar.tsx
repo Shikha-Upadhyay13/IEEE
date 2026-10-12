@@ -76,8 +76,10 @@ export function ConversationSidebar({
 
   // Shared by the permanent desktop rail and the mobile drawer — every
   // navigating action also closes the drawer (a harmless no-op on desktop,
-  // where it's already closed).
-  function SidebarBody() {
+  // where it's already closed). Called as a function, not rendered as
+  // <SidebarBody />: a component declared here would remount on every render,
+  // dropping the rename input's caret and the profile menu's open state.
+  function sidebarBody() {
     return (
       <>
         <div className="flex items-center gap-2 px-4 pt-4 pb-1">
@@ -226,7 +228,7 @@ export function ConversationSidebar({
     <>
       {/* Desktop rail — unchanged from before, just hidden below md. */}
       <div className="hidden md:flex w-72 flex-none h-full flex-col bg-[#0f2433] text-gray-300">
-        <SidebarBody />
+        {sidebarBody()}
       </div>
 
       {/* Mobile drawer, opened via AssistantPage's own header hamburger. */}
@@ -241,7 +243,7 @@ export function ConversationSidebar({
             >
               <X size={16} aria-hidden="true" />
             </button>
-            <SidebarBody />
+            {sidebarBody()}
           </div>
         </div>
       )}
