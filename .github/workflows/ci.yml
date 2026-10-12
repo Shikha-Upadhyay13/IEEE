@@ -150,3 +150,41 @@ jobs:
 
       - name: Apply migrations and test policies
         run: npm test
+
+  supabase-stack:
+    name: Database — migrations on a real Supabase stack
+    runs-on: ubuntu-latest
+    env:
+      DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Postgres with every migration applied
+        run: supabase db start
+
+      - name: Run every migration again
+        run: |
+          for f in supabase/migrations/*.sql; do
+            echo "::group::$f"
+            psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Check the schema is complete
+        run: |
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -tA -c "
+            select count(*) from unnest(array['documents','workspaces','comments','notifications','notification_preferences','profiles']) t
+            where to_regclass('public.' || t) is null
+          " | grep -qx 0
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -tA -c "
+            select count(*) from pg_tables where schemaname = 'public' and not rowsecurity
+          " | grep -qx 0
+
+      - name: Stop
+        if: always()
+        run: supabase stop --no-backup
