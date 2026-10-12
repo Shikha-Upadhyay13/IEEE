@@ -1,5 +1,7 @@
 // Fails the build when the JavaScript or CSS shipped to browsers grows past
-// the budgets below, measured gzipped. Usage: npm run build && node scripts/bundle-budget.mjs
+// the budgets below, measured gzipped. Build with VITE_SENTRY_DSN and
+// VITE_POSTHOG_KEY set (any value) so their lazily loaded chunks are counted.
+// Usage: npm run build && node scripts/bundle-budget.mjs
 import { readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
@@ -7,11 +9,13 @@ import { gzipSync } from "node:zlib";
 const ASSETS = join(resolve(import.meta.dirname, ".."), "dist", "assets");
 
 // Raise a budget deliberately, in its own commit, when growth is expected.
+// Measured on a build with Sentry and PostHog enabled (CI sets placeholder
+// keys), since without them their lazily loaded chunks are left out.
 const BUDGET_KB = {
   // What the first page load fetches: the entry script and everything index.html preloads.
   initialJs: 370,
   largestJsChunk: 415,
-  totalJs: 990,
+  totalJs: 1240,
   totalCss: 25,
 };
 

@@ -38,6 +38,9 @@ jobs:
 
       - name: Production build
         run: npm run build
+        env:
+          VITE_SENTRY_DSN: https://public@o0.ingest.sentry.io/0
+          VITE_POSTHOG_KEY: phc_ci_placeholder
 
       - name: Bundle-size budget
         run: node scripts/bundle-budget.mjs
