@@ -5,6 +5,7 @@ alter table public.documents
   add column if not exists is_public boolean not null default false;
 
 -- Allow anyone (including unauthenticated visitors) to read public documents
+drop policy if exists "anyone can view public documents" on public.documents;
 create policy "anyone can view public documents"
   on public.documents for select
   using (is_public = true);

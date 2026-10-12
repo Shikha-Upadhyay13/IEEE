@@ -8,7 +8,8 @@
 -- papers are now readable only one at a time, by someone who has the link.
 drop policy if exists "anyone can view public documents" on public.documents;
 
-create or replace function public.get_shared_document(doc_id uuid)
+drop function if exists public.get_shared_document(uuid);
+create function public.get_shared_document(doc_id uuid)
 returns table (id uuid, title text, content jsonb, is_public boolean, is_owner boolean)
 language sql
 stable
@@ -38,6 +39,7 @@ alter table public.export_tokens
 -- anyone list every user's uploaded files; listing is now owner-only.
 drop policy if exists "anyone can view figures" on storage.objects;
 
+drop policy if exists "users list their own figures" on storage.objects;
 create policy "users list their own figures"
 on storage.objects for select
 using (

@@ -15,6 +15,7 @@ create index if not exists idx_document_versions_doc_id_created
 
 alter table public.document_versions enable row level security;
 
+drop policy if exists "select own document versions" on public.document_versions;
 create policy "select own document versions"
   on public.document_versions for select
   using (
@@ -25,6 +26,7 @@ create policy "select own document versions"
     )
   );
 
+drop policy if exists "insert own document versions" on public.document_versions;
 create policy "insert own document versions"
   on public.document_versions for insert
   with check (
@@ -35,6 +37,7 @@ create policy "insert own document versions"
     )
   );
 
+drop policy if exists "delete own document versions" on public.document_versions;
 create policy "delete own document versions"
   on public.document_versions for delete
   using (

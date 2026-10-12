@@ -168,26 +168,34 @@ alter table public.comments enable row level security;
 alter table public.suggestions enable row level security;
 
 -- Workspaces: members read; creating goes through create_workspace().
+drop policy if exists "members read workspaces" on public.workspaces;
 create policy "members read workspaces" on public.workspaces for select
   using (public.workspace_role(id) is not null);
+drop policy if exists "admins rename workspaces" on public.workspaces;
 create policy "admins rename workspaces" on public.workspaces for update
   using (public.workspace_role(id) in ('owner', 'admin'));
+drop policy if exists "owners delete shared workspaces" on public.workspaces;
 create policy "owners delete shared workspaces" on public.workspaces for delete
   using (public.workspace_role(id) = 'owner' and not personal);
 
+drop policy if exists "members read members" on public.workspace_members;
 create policy "members read members" on public.workspace_members for select
   using (public.workspace_role(workspace_id) is not null);
+drop policy if exists "admins change member roles" on public.workspace_members;
 create policy "admins change member roles" on public.workspace_members for update
   using (public.workspace_role(workspace_id) in ('owner', 'admin') and role <> 'owner')
   with check (role in ('admin', 'member'));
+drop policy if exists "admins remove members or members leave" on public.workspace_members;
 create policy "admins remove members or members leave" on public.workspace_members for delete
   using (
     role <> 'owner'
     and (user_id = auth.uid() or public.workspace_role(workspace_id) in ('owner', 'admin'))
   );
 
+drop policy if exists "admins read workspace invitations" on public.workspace_invitations;
 create policy "admins read workspace invitations" on public.workspace_invitations for select
   using (public.workspace_role(workspace_id) in ('owner', 'admin'));
+drop policy if exists "admins revoke workspace invitations" on public.workspace_invitations;
 create policy "admins revoke workspace invitations" on public.workspace_invitations for delete
   using (public.workspace_role(workspace_id) in ('owner', 'admin'));
 
@@ -197,15 +205,19 @@ drop policy if exists "insert own documents" on public.documents;
 drop policy if exists "update own documents" on public.documents;
 drop policy if exists "delete own documents" on public.documents;
 
+drop policy if exists "users create papers in their workspaces" on public.documents;
 create policy "users create papers in their workspaces" on public.documents for insert
   with check (
     owner_id = auth.uid()
     and (workspace_id is null or public.workspace_role(workspace_id) is not null)
   );
+drop policy if exists "members read documents" on public.documents;
 create policy "members read documents" on public.documents for select
   using (public.can_read_document(id));
+drop policy if exists "editors update documents" on public.documents;
 create policy "editors update documents" on public.documents for update
   using (public.can_edit_document(id));
+drop policy if exists "owners delete documents" on public.documents;
 create policy "owners delete documents" on public.documents for delete
   using (owner_id = auth.uid());
 
@@ -248,35 +260,48 @@ create trigger documents_guard_update
 before update on public.documents
 for each row execute function public.guard_document_update();
 
+drop policy if exists "members read document members" on public.document_members;
 create policy "members read document members" on public.document_members for select
   using (public.can_read_document(document_id));
+drop policy if exists "owners change document roles" on public.document_members;
 create policy "owners change document roles" on public.document_members for update
   using (public.document_role(document_id) = 'owner')
   with check (role in ('editor', 'reviewer', 'viewer'));
+drop policy if exists "owners remove members or members leave" on public.document_members;
 create policy "owners remove members or members leave" on public.document_members for delete
   using (user_id = auth.uid() or public.document_role(document_id) = 'owner');
 
+drop policy if exists "owners read document invitations" on public.document_invitations;
 create policy "owners read document invitations" on public.document_invitations for select
   using (public.document_role(document_id) = 'owner');
+drop policy if exists "owners revoke document invitations" on public.document_invitations;
 create policy "owners revoke document invitations" on public.document_invitations for delete
   using (public.document_role(document_id) = 'owner');
 
+drop policy if exists "readers read comments" on public.comments;
 create policy "readers read comments" on public.comments for select
   using (public.can_read_document(document_id));
+drop policy if exists "reviewers add comments" on public.comments;
 create policy "reviewers add comments" on public.comments for insert
   with check (author_id = auth.uid() and public.can_comment_document(document_id));
+drop policy if exists "authors edit and editors resolve comments" on public.comments;
 create policy "authors edit and editors resolve comments" on public.comments for update
   using (author_id = auth.uid() or public.can_edit_document(document_id))
   with check (public.can_comment_document(document_id));
+drop policy if exists "authors and owners delete comments" on public.comments;
 create policy "authors and owners delete comments" on public.comments for delete
   using (author_id = auth.uid() or public.document_role(document_id) = 'owner');
 
+drop policy if exists "readers read suggestions" on public.suggestions;
 create policy "readers read suggestions" on public.suggestions for select
   using (public.can_read_document(document_id));
+drop policy if exists "reviewers add suggestions" on public.suggestions;
 create policy "reviewers add suggestions" on public.suggestions for insert
   with check (author_id = auth.uid() and status = 'open' and public.can_comment_document(document_id));
+drop policy if exists "editors decide suggestions" on public.suggestions;
 create policy "editors decide suggestions" on public.suggestions for update
   using (public.can_edit_document(document_id));
+drop policy if exists "authors and owners delete suggestions" on public.suggestions;
 create policy "authors and owners delete suggestions" on public.suggestions for delete
   using (author_id = auth.uid() or public.document_role(document_id) = 'owner');
 
@@ -334,10 +359,13 @@ for each row execute function public.guard_suggestion_update();
 drop policy if exists "select own document versions" on public.document_versions;
 drop policy if exists "insert own document versions" on public.document_versions;
 drop policy if exists "delete own document versions" on public.document_versions;
+drop policy if exists "readers read versions" on public.document_versions;
 create policy "readers read versions" on public.document_versions for select
   using (public.can_read_document(document_id));
+drop policy if exists "editors add versions" on public.document_versions;
 create policy "editors add versions" on public.document_versions for insert
   with check (public.can_edit_document(document_id));
+drop policy if exists "owners delete versions" on public.document_versions;
 create policy "owners delete versions" on public.document_versions for delete
   using (public.document_role(document_id) = 'owner');
 
