@@ -13,7 +13,7 @@ const NAV_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
 
 const FOOTER_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: "/settings", label: "Settings", icon: Settings },
-  { to: "/profile", label: "My account", icon: UserRound },
+  { to: "/settings?tab=account", label: "My account", icon: UserRound },
 ];
 
 function navClass(active: boolean) {

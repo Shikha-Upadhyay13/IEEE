@@ -24,7 +24,6 @@ const Dashboard = lazy(() => import("./routes/Dashboard").then((m) => ({ default
 const EditorPage = lazy(() => import("./routes/EditorPage").then((m) => ({ default: m.EditorPage })));
 const PrintView = lazy(() => import("./routes/PrintView").then((m) => ({ default: m.PrintView })));
 const AssistantPage = lazy(() => import("./routes/AssistantPage").then((m) => ({ default: m.AssistantPage })));
-const ProfilePage = lazy(() => import("./routes/ProfilePage").then((m) => ({ default: m.ProfilePage })));
 const SettingsPage = lazy(() => import("./routes/SettingsPage").then((m) => ({ default: m.SettingsPage })));
 const DownloadsPage = lazy(() => import("./routes/DownloadsPage").then((m) => ({ default: m.DownloadsPage })));
 const ViewPage = lazy(() => import("./routes/ViewPage").then((m) => ({ default: m.ViewPage })));
@@ -75,7 +74,7 @@ function App() {
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="/editor/:documentId" element={<RequireAuth><EditorPage /></RequireAuth>} />
           <Route path="/assistant" element={<RequireAuth><AssistantPage /></RequireAuth>} />
-          <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+          <Route path="/profile" element={<Navigate to="/settings?tab=account" replace />} />
           <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
           <Route path="/downloads" element={<RequireAuth><DownloadsPage /></RequireAuth>} />
           {/* Not behind RequireAuth: the headless PDF export path has no user

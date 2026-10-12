@@ -20,7 +20,7 @@ export function ProfileMenu({ userEmail, onSignOut }: { userEmail: string | null
       {open && (
         <div className="absolute bottom-full left-3 right-3 mb-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden text-sm">
           <Link
-            to="/profile"
+            to="/settings?tab=account"
             onClick={() => setOpen(false)}
             className="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 text-gray-200 transition-colors"
           >

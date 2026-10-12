@@ -93,6 +93,7 @@ export const DISALLOWED_PREFIXES = [
   "/downloads",
   "/print/",
   "/reset-password",
+  "/unsubscribe",
 ];
 
 export function findPublicRoute(path: string): PublicRoute | undefined {

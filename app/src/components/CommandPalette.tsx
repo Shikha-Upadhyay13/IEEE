@@ -143,7 +143,7 @@ export function CommandPalette() {
         { id: "nav-assistant", icon: Sparkles, label: "Go to Doc Buddy", run: () => navigate("/assistant") },
         { id: "nav-downloads", icon: Download, label: "Go to Downloads", run: () => navigate("/downloads") },
         { id: "nav-settings", icon: Settings, label: "Go to Settings", run: () => navigate("/settings") },
-        { id: "nav-profile", icon: UserRound, label: "Go to My Account", run: () => navigate("/profile") },
+        { id: "nav-profile", icon: UserRound, label: "Go to My Account", run: () => navigate("/settings?tab=account") },
         { id: "new-paper", icon: Plus, label: "New paper", run: createAndOpenPaper },
         {
           id: "toggle-theme",
