@@ -22,56 +22,60 @@ function navClass(active: boolean) {
   }`;
 }
 
+// Declared at module level: a component defined inside DashboardSidebar would be
+// a new type on every render, remounting the workspace switcher, which reloads
+// workspaces, which re-renders the page, in a loop.
+function NavBody({ pathname, onNavigate, onSignOut }: { pathname: string; onNavigate: () => void; onSignOut: () => void }) {
+  return (
+    <>
+      <div className="flex items-center gap-2 px-2 mb-6">
+        <BrandMark />
+        <span className="font-display font-semibold text-ink tracking-tight text-sm">
+          IEEE Paper Builder
+        </span>
+        <NotificationBell className="ml-auto" />
+      </div>
+
+      <WorkspaceSwitcher />
+
+      <nav className="flex flex-col gap-1">
+        {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+          <Link key={to} to={to} onClick={onNavigate} className={navClass(pathname === to)}>
+            <Icon size={16} strokeWidth={1.8} className="flex-none" aria-hidden="true" />
+            {label}
+          </Link>
+        ))}
+      </nav>
+
+      <div className="mt-auto flex flex-col gap-1 pt-4 border-t border-line">
+        {FOOTER_ITEMS.map(({ to, label, icon: Icon }) => (
+          <Link key={to} to={to} onClick={onNavigate} className={navClass(pathname === to)}>
+            <Icon size={16} strokeWidth={1.8} className="flex-none" aria-hidden="true" />
+            {label}
+          </Link>
+        ))}
+        <button
+          onClick={() => {
+            onNavigate();
+            onSignOut();
+          }}
+          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted hover:bg-canvas hover:text-ink transition-colors text-left"
+        >
+          <LogOut size={16} strokeWidth={1.8} className="flex-none" aria-hidden="true" />
+          Sign out
+        </button>
+      </div>
+    </>
+  );
+}
+
 export function DashboardSidebar({ onSignOut }: { onSignOut: () => void }) {
   const location = useLocation();
   // Below md there's no room for a permanent 240px column (see the mobile
   // audit — it left ~135px for the entire page), so the same nav collapses
   // into a hamburger-triggered drawer instead of trying to shrink in place.
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  function NavBody() {
-    return (
-      <>
-        <div className="flex items-center gap-2 px-2 mb-6">
-          <BrandMark />
-          <span className="font-display font-semibold text-ink tracking-tight text-sm">
-            IEEE Paper Builder
-          </span>
-          <NotificationBell className="ml-auto" />
-        </div>
-
-        <WorkspaceSwitcher />
-
-        <nav className="flex flex-col gap-1">
-          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-            <Link key={to} to={to} onClick={() => setMobileOpen(false)} className={navClass(location.pathname === to)}>
-              <Icon size={16} strokeWidth={1.8} className="flex-none" aria-hidden="true" />
-              {label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="mt-auto flex flex-col gap-1 pt-4 border-t border-line">
-          {FOOTER_ITEMS.map(({ to, label, icon: Icon }) => (
-            <Link key={to} to={to} onClick={() => setMobileOpen(false)} className={navClass(location.pathname === to)}>
-              <Icon size={16} strokeWidth={1.8} className="flex-none" aria-hidden="true" />
-              {label}
-            </Link>
-          ))}
-          <button
-            onClick={() => {
-              setMobileOpen(false);
-              onSignOut();
-            }}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted hover:bg-canvas hover:text-ink transition-colors text-left"
-          >
-            <LogOut size={16} strokeWidth={1.8} className="flex-none" aria-hidden="true" />
-            Sign out
-          </button>
-        </div>
-      </>
-    );
-  }
+  const navBody = <NavBody pathname={location.pathname} onNavigate={() => setMobileOpen(false)} onSignOut={onSignOut} />;
 
   return (
     <>
@@ -92,7 +96,7 @@ export function DashboardSidebar({ onSignOut }: { onSignOut: () => void }) {
 
       {/* Desktop sidebar — unchanged from before, just hidden below md. */}
       <div className="hidden md:flex w-60 flex-none h-screen sticky top-0 flex-col bg-surface border-r border-line px-3 py-4">
-        <NavBody />
+        {navBody}
       </div>
 
       {/* Mobile drawer, opened by the hamburger above. */}
@@ -111,7 +115,7 @@ export function DashboardSidebar({ onSignOut }: { onSignOut: () => void }) {
             >
               <X size={18} aria-hidden="true" />
             </button>
-            <NavBody />
+            {navBody}
           </div>
         </div>
       )}
