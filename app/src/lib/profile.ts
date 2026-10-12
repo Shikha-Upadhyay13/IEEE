@@ -142,6 +142,14 @@ export function applyNewPaperDefaults(doc: Document, profile: Profile, email?: s
   };
 }
 
+/** HTML attributes for the editor: the spelling dialect steers the browser's spell checker. */
+export function editorAttributes(profile: Profile): { lang?: string; spellCheck: boolean } {
+  return {
+    ...(profile.paperDefaults.dialect && { lang: profile.paperDefaults.dialect }),
+    spellCheck: profile.editorPreferences.spellcheck ?? true,
+  };
+}
+
 /** A starter paper with the account's defaults; a profile that can't load never blocks creating one. */
 export async function createBlankPaperFor(user: { id: string; email?: string }, template?: StarterTemplateId): Promise<Document> {
   let profile = EMPTY_PROFILE;

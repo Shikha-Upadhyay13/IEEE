@@ -24,6 +24,7 @@ import { createSnapshot } from "../lib/versions";
 import { parseDocument } from "../lib/parseDocument";
 import { useAuth } from "../lib/useAuth";
 import { usePaperPresence } from "../lib/usePaperPresence";
+import { useEditorAttributes } from "../lib/useEditorAttributes";
 import { btnGhost, btnIcon, btnPrimary, btnSecondary } from "../lib/uiClasses";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { BrandMark } from "../components/BrandMark";
@@ -35,6 +36,7 @@ export function EditorPage() {
   const { documentId } = useParams<{ documentId: string }>();
   const { user } = useAuth();
   const otherEditors = usePaperPresence(documentId, user ? { id: user.id, email: user.email } : null);
+  const writingAttributes = useEditorAttributes(user?.id);
   const navigate = useNavigate();
   const document = useDocumentStore((s) => s.document);
   const loadedDocumentId = useDocumentStore((s) => s.documentId);
@@ -457,6 +459,7 @@ export function EditorPage() {
           id="main-content"
           tabIndex={-1}
           aria-label="Paper editor"
+          {...writingAttributes}
           className="flex-1 min-w-0 h-full flex flex-col border-r border-line bg-surface focus:outline-none"
         >
           <EditorPanel view={view} />

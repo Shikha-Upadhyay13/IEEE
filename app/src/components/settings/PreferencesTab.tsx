@@ -1,6 +1,7 @@
 import { Image as ImageIcon, MessageSquare } from "lucide-react";
 import { useTheme, type ThemeSetting } from "../../lib/useTheme";
 import { cardBase } from "../../lib/uiClasses";
+import { PaperDefaultsCard } from "./PaperDefaultsCard";
 
 const THEME_OPTIONS: { value: ThemeSetting; label: string }[] = [
   { value: "light", label: "Light" },
@@ -39,11 +40,13 @@ function ThemePreview({ mode }: { mode: ThemeSetting }) {
   );
 }
 
-export function PreferencesTab() {
+export function PreferencesTab({ userId }: { userId: string | undefined }) {
   const { theme, setTheme } = useTheme();
 
   return (
     <div className="grid lg:grid-cols-3 gap-6">
+      {userId && <PaperDefaultsCard userId={userId} className="lg:col-span-3" />}
+
       <div className={`${cardBase} p-6 lg:col-span-2`}>
         <h2 className="text-base font-semibold text-ink mb-1">Appearance</h2>
         <p className="text-sm text-muted mb-4">Applies across the whole app.</p>

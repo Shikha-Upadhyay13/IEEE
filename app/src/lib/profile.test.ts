@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../supabaseClient", () => ({ supabase: {} }));
 
-import { EMPTY_PROFILE, applyNewPaperDefaults, fromRow, normalizeOrcid } from "./profile";
+import { EMPTY_PROFILE, applyNewPaperDefaults, editorAttributes, fromRow, normalizeOrcid } from "./profile";
 import { createBlankDocument } from "./blankDocument";
 
 describe("normalizeOrcid", () => {
@@ -27,6 +27,15 @@ describe("fromRow", () => {
     expect(profile.paperDefaults).toEqual({});
     expect(profile.editorPreferences).toEqual({ spellcheck: false });
     expect(fromRow(null)).toEqual(EMPTY_PROFILE);
+  });
+});
+
+describe("editorAttributes", () => {
+  it("passes the dialect to the browser and keeps spell check on unless turned off", () => {
+    expect(editorAttributes(EMPTY_PROFILE)).toEqual({ spellCheck: true });
+    expect(
+      editorAttributes({ ...EMPTY_PROFILE, paperDefaults: { dialect: "en-GB" }, editorPreferences: { spellcheck: false } }),
+    ).toEqual({ lang: "en-GB", spellCheck: false });
   });
 });
 

@@ -81,7 +81,7 @@ export function SettingsPage() {
           <div id="settings-panel" role="tabpanel" aria-labelledby={`settings-tab-${tab}`} className="flex-1 min-w-0">
             {user && tab === "profile" && <ProfileTab userId={user.id} email={user.email} />}
             {user && tab === "account" && <AccountTab user={user} onSignOut={handleSignOut} />}
-            {tab === "preferences" && <PreferencesTab />}
+            {tab === "preferences" && <PreferencesTab userId={user?.id} />}
             {user && tab === "notifications" && <NotificationSettings userId={user.id} className="max-w-2xl" />}
             {user && tab === "workspace" && <WorkspaceTab userId={user.id} />}
             {user && tab === "data" && <DataPrivacyTab userId={user.id} />}
