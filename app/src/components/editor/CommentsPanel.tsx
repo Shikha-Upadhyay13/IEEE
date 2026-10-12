@@ -19,6 +19,7 @@ import { friendlyErrorMessage } from "../../lib/friendlyError";
 import { btnPrimary, btnSecondary, inputBase } from "../../lib/uiClasses";
 import type { BodyNode, InlineNode } from "../../types/document";
 import { SuggestionsList } from "./SuggestionsList";
+import { PaperNotifyLevel } from "./PaperNotifyLevel";
 
 const REFRESH_MS = 30_000;
 
@@ -249,6 +250,7 @@ export function CommentsPanel({ documentId, body, role, userId, isOpen, onClose,
             </div>
           </>
         )}
+        {userId && <PaperNotifyLevel documentId={documentId} userId={userId} />}
       </div>
     </div>
   );
