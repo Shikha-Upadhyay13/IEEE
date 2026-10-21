@@ -21,7 +21,7 @@ no longer apply.
 
 1. **Conference** (Letter and A4, IEEE Word template geometry) and **Peer-review draft** (single column, 1.5 spacing). This covers most student and conference use.
 2. **Journal / Transactions** (running heads, first-page footnote, biographies) and **Technote**.
-3. **IEEE Access**, **Computer Society** (conference and journal) and **Letters** (SPL, WCL page limits).
+3. **IEEE Access**, **Computer Society** (conference and journal) and **Letters** (SPL, WCL page limits) — done.
 
 Geometry per format (from IEEEtran v1.8b and the IEEE Word templates):
 

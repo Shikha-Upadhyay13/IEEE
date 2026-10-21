@@ -23,6 +23,14 @@ const EXPECTED_PAGES: Record<string, number> = {
   "ieee-technote-a4": 1,
   "ieee-peer-review-letter": 2,
   "ieee-peer-review-a4": 2,
+  "ieee-access-letter": 2,
+  "ieee-access-a4": 2,
+  "ieee-compsoc-conference-letter": 2,
+  "ieee-compsoc-conference-a4": 2,
+  "ieee-compsoc-journal-letter": 1,
+  "ieee-compsoc-journal-a4": 1,
+  "ieee-letters-letter": 1,
+  "ieee-letters-a4": 1,
 };
 
 const inches = (length: string) => {
