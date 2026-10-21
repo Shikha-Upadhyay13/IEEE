@@ -1,25 +1,32 @@
 import { ArrowDown, ArrowUp, BookMarked, FileText, Layers, Palette, Plus } from "lucide-react";
 import type { ReactNode } from "react";
 import { useDocumentStore } from "../../store/documentStore";
+import { getFormat } from "../../lib/formats/formats";
 import { formatSectionNumber } from "../../lib/numbering";
 import type { BodyNode } from "../../types/document";
 import type { EditorView } from "./EditorPanel";
 
 type OutlineSection = { id: string; label: string; number: string; depth: number };
 
-function collectOutline(nodes: BodyNode[], depth = 0): OutlineSection[] {
+function collectOutline(
+  nodes: BodyNode[],
+  depth = 0,
+  scheme: "roman" | "arabic" = "roman",
+  parentPath: number[] = [],
+): OutlineSection[] {
   const out: OutlineSection[] = [];
   let index = 0;
   for (const node of nodes) {
     if (node.type !== "section") continue;
     index += 1;
+    const path = [...parentPath, index];
     out.push({
       id: node.id,
       label: node.heading.trim() || "Untitled section",
-      number: formatSectionNumber(index, depth),
+      number: formatSectionNumber(index, depth, scheme, parentPath),
       depth,
     });
-    if (depth < 1) out.push(...collectOutline(node.children, depth + 1));
+    if (depth < 1) out.push(...collectOutline(node.children, depth + 1, scheme, path));
   }
   return out;
 }
@@ -59,10 +66,11 @@ function OutlineButton({
 
 export function EditorOutline({ view, onChange }: { view: EditorView; onChange: (view: EditorView) => void }) {
   const body = useDocumentStore((s) => s.document.body);
+  const template = useDocumentStore((s) => s.document.meta.template);
   const referenceCount = useDocumentStore((s) => s.document.references.length);
   const reorderBlocks = useDocumentStore((s) => s.reorderBlocks);
   const appendSection = useDocumentStore((s) => s.appendSection);
-  const sections = collectOutline(body);
+  const sections = collectOutline(body, 0, getFormat({ template }).headingScheme);
   const topLevelSectionIds = body.filter((n) => n.type === "section").map((n) => n.id);
 
   function addSection() {

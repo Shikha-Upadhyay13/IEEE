@@ -50,14 +50,15 @@ function InlineContent({ nodes }: { nodes: ResolvedInlineNode[] }) {
   );
 }
 
-function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
+function BodyNodeRenderer({ node, headingScheme }: { node: ResolvedBodyNode; headingScheme: "roman" | "arabic" }) {
   switch (node.type) {
     case "section": {
       const HeadingTag = node.depth === 0 ? "h2" : node.depth === 1 ? "h3" : "h4";
       const headingClass = node.depth === 0 ? "ieee-heading-1" : node.depth === 1 ? "ieee-heading-2" : "ieee-heading-3";
-      // IEEE convention: I. and A. headings use a period, deeper ones (1), a))
-      // a parenthesis — matches numbering.ts's depth rule.
-      const label = node.depth <= 1 ? `${node.resolvedNumber}. ` : `${node.resolvedNumber}) `;
+      // Roman IEEE: I. and A. use a period; deeper ones (1), a)) a parenthesis.
+      // CompSoc Arabic numbers already contain dots (1.1), so always end with a period.
+      const label =
+        headingScheme === "arabic" || node.depth <= 1 ? `${node.resolvedNumber}. ` : `${node.resolvedNumber}) `;
       return (
         <section id={`sec-${node.id}`}>
           <HeadingTag className={headingClass}>
@@ -65,7 +66,7 @@ function BodyNodeRenderer({ node }: { node: ResolvedBodyNode }) {
             {node.heading}
           </HeadingTag>
           {node.children.map((child) => (
-            <BodyNodeRenderer key={child.id} node={child} />
+            <BodyNodeRenderer key={child.id} node={child} headingScheme={headingScheme} />
           ))}
         </section>
       );
@@ -229,7 +230,7 @@ export function IEEEConferenceTemplate({ document }: { document: ResolvedDocumen
         )}
 
         {document.body.map((node) => (
-          <BodyNodeRenderer key={node.id} node={node} />
+          <BodyNodeRenderer key={node.id} node={node} headingScheme={format.headingScheme} />
         ))}
 
         <h2 className="ieee-references-heading" id="references">

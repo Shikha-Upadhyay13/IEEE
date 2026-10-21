@@ -6,6 +6,7 @@ import type {
   ResolvedInlineNode,
   ResolvedDocument,
 } from "../types/document";
+import { getFormat } from "./formats/formats";
 import { effectiveMeta } from "./formats/modes";
 import { withoutAcknowledgments } from "./formats/blind";
 
@@ -45,12 +46,15 @@ function toLetters(num: number): string {
   return result;
 }
 
-// IEEE section numbering convention by nesting depth:
-// depth 0 (top-level): Roman numerals — I, II, III
-// depth 1 (subsection): capital letters — A, B, C
-// depth 2: Arabic numerals — 1, 2, 3
-// depth 3+: lowercase letters — a, b, c
-export function formatSectionNumber(siblingIndex: number, depth: number): string {
+// IEEE section numbering by nesting depth. "roman" (Transactions, conference,
+// Access, Letters): I / A / 1 / a. "arabic" (Computer Society): 1 / 1.1 / 1.1.1.
+export function formatSectionNumber(
+  siblingIndex: number,
+  depth: number,
+  scheme: "roman" | "arabic" = "roman",
+  parentPath: number[] = [],
+): string {
+  if (scheme === "arabic") return [...parentPath, siblingIndex].join(".");
   if (depth === 0) return toRoman(siblingIndex);
   if (depth === 1) return toLetters(siblingIndex);
   if (depth === 2) return String(siblingIndex);
@@ -65,6 +69,7 @@ export function formatSectionNumber(siblingIndex: number, depth: number): string
 export function resolveNumbering(doc: Document): ResolvedDocument {
   const counters: Counters = { figure: 0, table: 0, equation: 0 };
   const citationOrder = new Map<string, number>();
+  const headingScheme = getFormat(doc.meta).headingScheme;
 
   function citationNumber(refId: string): number {
     let n = citationOrder.get(refId);
@@ -89,7 +94,7 @@ export function resolveNumbering(doc: Document): ResolvedDocument {
     });
   }
 
-  function resolveBody(nodes: BodyNode[], depth: number): ResolvedBodyNode[] {
+  function resolveBody(nodes: BodyNode[], depth: number, parentPath: number[] = []): ResolvedBodyNode[] {
     // Scoped to this one call, i.e. to one set of siblings — this is what makes
     // subsection numbering reset within each parent instead of sharing a global count.
     let sectionSiblingIndex = 0;
@@ -97,12 +102,13 @@ export function resolveNumbering(doc: Document): ResolvedDocument {
       switch (node.type) {
         case "section": {
           sectionSiblingIndex += 1;
-          const number = formatSectionNumber(sectionSiblingIndex, depth);
+          const path = [...parentPath, sectionSiblingIndex];
+          const number = formatSectionNumber(sectionSiblingIndex, depth, headingScheme, parentPath);
           return {
             ...node,
             depth,
             resolvedNumber: number,
-            children: resolveBody(node.children, depth + 1),
+            children: resolveBody(node.children, depth + 1, path),
           };
         }
         case "paragraph":

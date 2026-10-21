@@ -184,6 +184,21 @@ describe("section numbering", () => {
     expect(sub.children[0].resolvedNumber).toBe("1");
     expect(sub.children[1].resolvedNumber).toBe("2");
   });
+
+  it("uses dotted Arabic section numbers for CompSoc formats", () => {
+    const doc = makeDoc([
+      section("s1", "Intro", [section("s1a", "Sub"), section("s1b", "Sub2")]),
+      section("s2", "Method", [section("s2a", "Sub")]),
+    ]);
+    doc.meta.template = "ieee-compsoc-conference";
+    const resolved = resolveNumbering(doc);
+    const [s1, s2] = resolved.body as { resolvedNumber: string; children: { resolvedNumber: string }[] }[];
+    expect(s1.resolvedNumber).toBe("1");
+    expect(s1.children[0].resolvedNumber).toBe("1.1");
+    expect(s1.children[1].resolvedNumber).toBe("1.2");
+    expect(s2.resolvedNumber).toBe("2");
+    expect(s2.children[0].resolvedNumber).toBe("2.1");
+  });
 });
 
 // ─── Citation ordering ───────────────────────────────────────────────────────
