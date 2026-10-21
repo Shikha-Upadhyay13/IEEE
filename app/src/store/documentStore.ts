@@ -5,6 +5,7 @@ import { generateId } from "../lib/id";
 import { emptyReferenceFields, generateReferenceText, type ReferenceFields } from "../lib/generateReferenceText";
 import { fixPageRangeDashes } from "../lib/referenceChecks";
 import { isAcknowledgmentHeading } from "../lib/formats/blind";
+import { getFormat } from "../lib/formats/formats";
 
 type BlockWidth = Extract<BodyNode, { type: "figure" }>["width"];
 type PaperSize = Document["meta"]["paperSize"];
@@ -365,7 +366,19 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, fontFamily } } })),
 
   setFormat: (template) =>
-    set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, template } } })),
+    set((state) => {
+      const limit = getFormat({ template }).defaultPageLimit;
+      return {
+        document: {
+          ...state.document,
+          meta: {
+            ...state.document.meta,
+            template,
+            ...(limit !== null ? { pageLimit: limit } : {}),
+          },
+        },
+      };
+    }),
 
   setMode: (mode) =>
     set((state) => ({ document: { ...state.document, meta: { ...state.document.meta, mode } } })),

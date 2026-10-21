@@ -60,6 +60,14 @@ describe("author and affiliation actions", () => {
     s.setPageLimit(null);
     expect(useDocumentStore.getState().document.meta.pageLimit).toBeNull();
   });
+
+  it("applies a format's default page limit when switching to Letters", () => {
+    useDocumentStore.getState().setFormat("ieee-letters");
+    expect(useDocumentStore.getState().document.meta).toMatchObject({ template: "ieee-letters", pageLimit: 4 });
+    useDocumentStore.getState().setFormat("ieee-conference");
+    expect(useDocumentStore.getState().document.meta.template).toBe("ieee-conference");
+    expect(useDocumentStore.getState().document.meta.pageLimit).toBe(4);
+  });
 });
 
 describe("insertSectionParagraphs", () => {
