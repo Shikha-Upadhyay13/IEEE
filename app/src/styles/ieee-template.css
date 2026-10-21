@@ -355,6 +355,55 @@
   justify-content: center;
 }
 
+/* --- IEEE Access: slightly larger title, otherwise journal-like --- */
+
+.ieee-paper[data-format="ieee-access"] .ieee-title {
+  font-size: 24pt;
+  font-weight: 600;
+}
+
+/* --- Computer Society: Helvetica titles/headings, 9.5bp-ish body for journals --- */
+
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-title,
+.ieee-paper[data-format="ieee-compsoc-conference"] .ieee-title {
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 700;
+}
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-heading-1,
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-heading-2,
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-heading-3,
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-references-heading,
+.ieee-paper[data-format="ieee-compsoc-conference"] .ieee-heading-1,
+.ieee-paper[data-format="ieee-compsoc-conference"] .ieee-heading-2,
+.ieee-paper[data-format="ieee-compsoc-conference"] .ieee-heading-3,
+.ieee-paper[data-format="ieee-compsoc-conference"] .ieee-references-heading {
+  font-family: Helvetica, Arial, sans-serif;
+  text-transform: none;
+  font-variant: normal;
+  letter-spacing: 0;
+  text-align: left;
+}
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-heading-1,
+.ieee-paper[data-format="ieee-compsoc-conference"] .ieee-heading-1 {
+  font-size: 12pt;
+  font-weight: 700;
+}
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-paragraph,
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-equation {
+  font-size: 9.5pt;
+  line-height: 1.25;
+}
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-abstract,
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-keywords {
+  font-size: 9pt;
+}
+
+/* CompSoc journals left-align reference labels rather than hanging-indent IEEE style. */
+.ieee-paper[data-format="ieee-compsoc-journal"] .ieee-reference-item {
+  text-indent: 0;
+  padding-left: 0;
+}
+
 /* --- Technical note format (journal layout set in 9pt) --- */
 
 .ieee-paper[data-format="ieee-technote"] .ieee-title {
