@@ -3,10 +3,22 @@ import { supabase } from "../supabaseClient";
 import type { Document } from "../types/document";
 import { generateId } from "./id";
 import { createBlankDocument } from "./blankDocument";
+import { getFormat } from "./formats/formats";
 import type { StarterTemplateId } from "./starterTemplates";
 
 export const PaperDefaultsSchema = z.object({
-  template: z.enum(["ieee-conference", "ieee-peer-review", "ieee-journal", "ieee-technote"]).optional(),
+  template: z
+    .enum([
+      "ieee-conference",
+      "ieee-peer-review",
+      "ieee-journal",
+      "ieee-technote",
+      "ieee-access",
+      "ieee-compsoc-conference",
+      "ieee-compsoc-journal",
+      "ieee-letters",
+    ])
+    .optional(),
   paperSize: z.enum(["letter", "a4"]).optional(),
   mode: z.enum(["submission", "draft", "custom"]).optional(),
   dialect: z.enum(["en-US", "en-GB"]).optional(),
@@ -113,11 +125,14 @@ export async function saveProfile(userId: string, profile: Profile): Promise<Pro
  */
 export function applyNewPaperDefaults(doc: Document, profile: Profile, email?: string): Document {
   const { template, paperSize, mode } = profile.paperDefaults;
+  const nextTemplate = template ?? doc.meta.template;
+  const limit = getFormat({ template: nextTemplate }).defaultPageLimit;
   const meta = {
     ...doc.meta,
     ...(template && { template }),
     ...(paperSize && { paperSize }),
     ...(mode && { mode }),
+    ...(limit !== null ? { pageLimit: limit } : {}),
   };
   const name = profile.fullName.trim();
   if (!name || doc.titleBlock.authors.length > 0) return { ...doc, meta };
